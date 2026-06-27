@@ -1,0 +1,526 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  email        String   @unique
+  password     String
+  role         String
+  profileImage String?
+  createdAt    DateTime @default(now())
+
+  lists      List[]
+  categories Category[]
+  favorites  FavoriteItem[]
+
+  customer   Customer?
+  shopkeeper Shopkeeper?
+  rider      Rider?
+
+  hiddenItems      HiddenItem[]
+  sentRequests     Friendship[] @relation("sender")
+  receivedRequests Friendship[] @relation("receiver")
+
+  sentSharedLists     SharedList[] @relation("SentSharedLists")
+  receivedSharedLists SharedList[] @relation("ReceivedSharedLists")
+   customerRiderRequests RiderRequest[] @relation("RiderRequestCustomer")
+ riderMessagesSent     RiderMessage[] @relation("RiderMessageSender")
+
+  messages    Message[] @relation("UserMessages")
+  shopReports ShopReport[] @relation("ShopReportReporter")
+  passwordResetTokens PasswordResetToken[]
+  notifications Notification[]
+}
+
+model PasswordResetToken {
+  id        Int       @id @default(autoincrement())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Customer {
+  id     Int  @id @default(autoincrement())
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int  @unique
+}
+
+model Friendship {
+  id         Int      @id @default(autoincrement())
+  senderId   Int
+  receiverId Int
+  status     String   @default("PENDING")
+  createdAt  DateTime @default(now())
+
+  sender   User @relation("sender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("receiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+}
+
+model Shopkeeper {
+  id       Int    @id @default(autoincrement())
+  shopName String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   Int    @unique
+  isSuspended Boolean @default(false)
+  suspensionReason String? @db.VarChar(800)
+  suspendedAt DateTime?
+  revertRequestedAt DateTime?
+  revertMessage String? @db.Text
+  revertStatus String? @default("NONE")
+  resolvedAt   DateTime?
+
+  products                   Product[]
+  shopDetails                ShopDetails?
+  orderNotifications         ShopkeeperOrderNotification[]
+  stockNotifications         ShopkeeperStockNotification[]
+  shopReports                ShopReport[]
+}
+
+model Rider {
+ id              Int    @id @default(autoincrement())
+ phoneNo         String
+ cnicFrontPhoto  String
+ cnicBackPhoto   String
+ vehicleDocument String
+ status          String @default("pending")
+ user            User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+ userId          Int    @unique
+
+  currentLat      Float?
+  currentLng      Float?
+  locationLabel   String?
+  isLocationOn    Boolean @default(false)
+  locationUpdatedAt DateTime?
+
+  dailyCashLimit        Float?
+  paymentMethodType     String?
+  paymentProviderName   String?
+  paymentAccountNumber  String?
+
+  riderRequests   RiderRequest[]
+   riderMessages   RiderMessage[]
+ }
+
+model PaymentProvider {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  type      String
+  createdAt DateTime @default(now())
+
+  @@index([type])
+}
+
+model Product {
+  id            Int        @id @default(autoincrement())
+  name          String
+  brand         String?
+  specification String?
+  price         Float
+  quantity      Int
+  threshold     Int?
+  shopkeeper    Shopkeeper @relation(fields: [shopkeeperId], references: [id], onDelete: Cascade)
+  shopkeeperId  Int
+  createdAt     DateTime   @default(now())
+  orderNotifications ShopkeeperOrderNotification[]
+  stockNotifications  ShopkeeperStockNotification[]
+}
+
+model ShopDetails {
+  id           Int        @id @default(autoincrement())
+  shopkeeperId Int        @unique
+  shopkeeper   Shopkeeper @relation(fields: [shopkeeperId], references: [id], onDelete: Cascade)
+  shopName     String
+  city         String
+  latitude     Float
+  longitude    Float
+  phone        String     @default("")
+  timing       String     @default("")
+  description  String     @default("")
+}
+
+model List {
+  id        Int        @id @default(autoincrement())
+  name      String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  items     ListItem[]
+  createdAt DateTime   @default(now())
+}
+
+model Category {
+  id     Int    @id @default(autoincrement())
+  name   String
+  userId Int?
+
+  user  User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items Item[]
+
+  @@unique([name, userId])
+}
+
+model Item {
+  id       Int     @id @default(autoincrement())
+  name     String
+  isGlobal Boolean @default(false)
+  userId   Int?
+
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  favorites   FavoriteItem[]
+  hiddenItems HiddenItem[]
+
+  @@unique([name, categoryId, userId])
+}
+
+model FavoriteItem {
+  id Int @id @default(autoincrement())
+
+  userId Int
+  itemId Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemId])
+}
+
+model ListItem {
+  id            Int     @id @default(autoincrement())
+  name          String
+  quantity      Int?
+  specification String?
+  categoryName  String
+  isFavorite    Boolean @default(false)
+
+  listId Int
+  list   List @relation(fields: [listId], references: [id], onDelete: Cascade)
+}
+
+model HiddenItem {
+  id     Int @id @default(autoincrement())
+  userId Int
+  itemId Int
+
+  user User @relation(fields: [userId], references: [id])
+  item Item @relation(fields: [itemId], references: [id])
+
+  @@unique([userId, itemId])
+}
+
+model SharedList {
+  id         Int      @id @default(autoincrement())
+  name       String
+  senderId   Int
+  receiverId Int
+  status     String   @default("PENDING")
+  createdAt  DateTime @default(now())
+
+  sender   User @relation("SentSharedLists", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedSharedLists", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  items SharedListItem[]
+  reads SharedListRead[]
+
+  messages Message[] @relation("ListMessages")
+}
+
+model SharedListItem {
+  id            Int     @id @default(autoincrement())
+  name          String
+  quantity      Int?
+  specification String?
+  categoryName  String?
+
+  selectedShopId        Int?
+  selectedShopName      String?
+  selectedShopPrice     Float?
+  selectedShopLatitude  Float?
+  selectedShopLongitude Float?
+  selectedShopPhone     String?
+  selectedShopTiming    String?
+  availableQuantity     Int?
+  lineTotal             Float?
+
+  buyingLocationLat     Float?
+  buyingLocationLng     Float?
+  buyingLocationLabel   String?
+
+  deliveryLocationLat   Float?
+  deliveryLocationLng   Float?
+  deliveryLocationLabel String?
+
+  customerOptimizerStopOrder Int?
+  customerOptimizerDone      Boolean   @default(false)
+  customerOptimizerDoneAt    DateTime?
+
+  sharedListId Int
+  sharedList   SharedList @relation(fields: [sharedListId], references: [id], onDelete: Cascade)
+}
+model SharedListRead {
+  id     Int      @id @default(autoincrement())
+  listId Int
+  userId Int
+  readAt DateTime @default(now())
+
+  sharedList SharedList @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, userId])
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  listId    Int
+  senderId  Int
+  text      String
+  status    String   @default("SENT")
+  createdAt DateTime @default(now())
+
+  sender User @relation("UserMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  sharedList SharedList @relation("ListMessages", fields: [listId], references: [id], onDelete: Cascade)
+}
+
+model DownloadedList {
+  id             Int     @id @default(autoincrement())
+  name           String
+  userId         Int
+  originalListId Int?
+  senderName     String?
+
+  senderId     Int?
+  receiverId   Int?
+  receiverType String?
+
+  createdAt DateTime @default(now())
+
+  items DownloadedListItem[]
+}
+
+model DownloadedListItem {
+  id            Int    @id @default(autoincrement())
+  name          String
+  quantity      Int?
+  specification String?
+  categoryName  String?
+  listId        Int
+
+  selectedShopId        Int?
+  selectedShopName      String?
+  selectedShopPrice     Float?
+  selectedShopLatitude  Float?
+  selectedShopLongitude Float?
+  selectedShopPhone     String?
+  selectedShopTiming    String?
+  availableQuantity     Int?
+  lineTotal             Float?
+
+  buyingLocationLat     Float?
+  buyingLocationLng     Float?
+  buyingLocationLabel   String?
+
+  deliveryLocationLat   Float?
+  deliveryLocationLng   Float?
+  deliveryLocationLabel String?
+
+  customerOptimizerStopOrder Int?
+  customerOptimizerDone      Boolean   @default(false)
+  customerOptimizerDoneAt    DateTime?
+
+  list DownloadedList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  shopkeeperOrderNotifications ShopkeeperOrderNotification[]
+}
+
+model RiderRequest {
+  id             Int      @id @default(autoincrement())
+  customerId     Int
+  riderId        Int
+  sourceListId   Int
+  sourceListType String
+  listName       String
+  status         String   @default("PENDING")
+
+  buyingLocationLat     Float?
+  buyingLocationLng     Float?
+  buyingLocationLabel   String?
+  deliveryLocationLat   Float?
+  deliveryLocationLng   Float?
+  deliveryLocationLabel String?
+
+  riderDeliveredAt    DateTime?
+  customerConfirmedAt DateTime?
+  completedAt         DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  customerArchivedAt  DateTime?
+  riderArchivedAt     DateTime?
+
+  customer User  @relation("RiderRequestCustomer", fields: [customerId], references: [id], onDelete: Cascade)
+  rider    Rider @relation(fields: [riderId], references: [id], onDelete: Cascade)
+  items    RiderRequestItem[]
+  messages RiderMessage[]
+
+  @@index([customerId])
+  @@index([riderId])
+  @@index([status])
+}
+
+model RiderRequestItem {
+  id            Int     @id @default(autoincrement())
+  name          String
+  quantity      Int?
+  specification String?
+  categoryName  String?
+
+  selectedShopId        Int?
+  selectedShopName      String?
+  selectedShopPrice     Float?
+  selectedShopLatitude  Float?
+  selectedShopLongitude Float?
+  selectedShopPhone     String?
+  selectedShopTiming    String?
+  availableQuantity     Int?
+  lineTotal             Float?
+
+  riderOptimizerStopOrder Int?
+  riderOptimizerDone      Boolean   @default(false)
+  riderOptimizerDoneAt    DateTime?
+
+  requestId Int
+  request   RiderRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  shopkeeperOrderNotifications ShopkeeperOrderNotification[]
+}
+
+model ShopkeeperOrderNotification {
+  id                 Int      @id @default(autoincrement())
+  shopkeeperId       Int
+  productId          Int?
+  riderRequestId     Int?
+  riderRequestItemId Int?     @unique
+  downloadedListId   Int?
+  downloadedListItemId Int?   @unique
+  productName        String
+  specification      String?
+  quantity           Int
+  shopName           String?
+  riderName          String?
+  message            String
+  status             String   @default("PENDING")
+  respondedAt        DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  shopkeeper       Shopkeeper        @relation(fields: [shopkeeperId], references: [id], onDelete: Cascade)
+  product          Product?          @relation(fields: [productId], references: [id], onDelete: SetNull)
+  riderRequestItem RiderRequestItem? @relation(fields: [riderRequestItemId], references: [id], onDelete: SetNull)
+  downloadedListItem DownloadedListItem? @relation(fields: [downloadedListItemId], references: [id], onDelete: SetNull)
+
+  @@index([shopkeeperId])
+  @@index([status])
+}
+
+model ShopkeeperStockNotification {
+  id           Int      @id @default(autoincrement())
+  shopkeeperId Int
+  productId    Int?
+  productName  String
+  quantity     Int
+  threshold    Int
+  message      String
+  isRead       Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  shopkeeper Shopkeeper @relation(fields: [shopkeeperId], references: [id], onDelete: Cascade)
+  product    Product?   @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([shopkeeperId])
+  @@index([isRead])
+}
+
+model ShopReport {
+  id               Int      @id @default(autoincrement())
+
+  shopkeeperId     Int
+  reporterId       Int
+
+  riderRequestId   Int?
+  downloadedListId Int?
+
+  title            String
+  reason           String?
+  source           String?
+
+  createdAt        DateTime @default(now())
+
+  reporter   User       @relation("ShopReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  shopkeeper Shopkeeper @relation(fields: [shopkeeperId], references: [id], onDelete: Cascade)
+
+  @@index([shopkeeperId])
+  @@index([reporterId])
+  @@index([riderRequestId])
+  @@index([downloadedListId])
+}
+
+model RiderMessage {
+  id        Int      @id @default(autoincrement())
+  requestId Int
+  senderId  Int
+  text      String
+  type      String   @default("TEXT")
+  createdAt DateTime @default(now())
+
+  request RiderRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  sender  User         @relation("RiderMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  riderId Int?
+  rider   Rider? @relation(fields: [riderId], references: [id])
+  @@index([requestId])
+  @@index([senderId])
+}
+
+model Notification {
+  id          Int      @id @default(autoincrement())
+
+  userId      Int
+  senderId    Int?
+  senderName  String?
+  relatedShopkeeperId Int?
+
+  type        String
+  title       String
+  message     String
+
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model AdminNotification {
+  id           Int      @id @default(autoincrement())
+  shopkeeperId Int?
+  type         String
+  title        String
+  message      String
+  isRead       Boolean  @default(false)
+
+  createdAt    DateTime @default(now())
+}

@@ -1,0 +1,78 @@
+# =========================
+# Dependencies
+# =========================
+node_modules/
+**/node_modules/
+
+# =========================
+# Environment Variables
+# =========================
+.env
+.env.*
+**/.env
+**/.env.*
+
+# =========================
+# Logs
+# =========================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =========================
+# Build / Production Files
+# =========================
+dist/
+build/
+.expo/
+.web-build/
+coverage/
+
+# =========================
+# OS Files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# IDE / Editor
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Prisma
+# =========================
+prisma/dev.db
+prisma/*.db
+
+# =========================
+# Expo / React Native
+# =========================
+.expo-shared/
+*.apk
+*.aab
+
+# =========================
+# Sensitive / Seed Files
+# =========================
+createAdmin.js
+createadmin.js
+**/createAdmin.js
+**/createadmin.js
+
+# =========================
+# Temporary Files
+# =========================
+*.tmp
+*.temp
+
+# =========================
+# Runtime Data
+# =========================
+pids
+*.pid
+*.seed
+*.pid.lock
