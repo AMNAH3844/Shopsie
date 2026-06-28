@@ -1,27 +1,82 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URLS } from "../../src/services/apiConfig"; // Adjust the path if necessary
 
 export default function BottomNav() {
   const router = useRouter();
+  const [orderCount, setOrderCount] = useState(0);
+
+  // ================= FETCH ORDER COUNT =================
+  const fetchOrderCount = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) return;
+
+      // Using the exact config key that matches your ShopkeeperOrders screen
+      const res = await fetch(API_URLS.SHOP_ORDER_NOTIFICATION_COUNT, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+      setOrderCount(data.count || 0);
+    } catch (err) {
+      console.log("Order badge error in BottomNav:", err);
+    }
+  };
+
+  // ================= LIVE POLLING INTERVAL =================
+  useEffect(() => {
+    fetchOrderCount();
+
+    const interval = setInterval(() => {
+      fetchOrderCount();
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const items = [
-    { label: "Home", icon: <Ionicons name="home-outline" size={22} color="#fff" />, path: "/shopkeeperDashboard" },
-    { label: "Orders", icon: <Ionicons name="receipt-outline" size={22} color="#fff" />, path: "/shopkeeperDashboard/orders" },
-    { label: "Reports", icon: <MaterialCommunityIcons name="flag-outline" size={22} color="#fff" />, path: "/shopkeeperDashboard/reports" },
-    {
-      label: "Profile",
-      icon: <Ionicons name="person-circle-outline" size={22} color="#fff" />,
-      path: { pathname: "/settings", params: { role: "shopkeeper" } },
+    { 
+      label: "Home", 
+      icon: <Ionicons name="home" size={22} color="white" />, 
+      path: "/shopkeeperDashboard" 
+    },
+    { 
+      label: "Stock", 
+      icon: <MaterialCommunityIcons name="package-variant-closed" size={24} color="white" />, 
+      path: "/shopkeeperDashboard/viewStock" 
+    },
+    { 
+      label: "Orders", 
+      icon: <Ionicons name="receipt" size={24} color="white" />, 
+      path: "/shopkeeperDashboard/orders" 
     },
   ];
 
   return (
     <View style={styles.bottomNav}>
       {items.map((item) => (
-        <TouchableOpacity key={item.label} style={styles.navItem} onPress={() => router.push(item.path)}>
-          {item.icon}
+        <TouchableOpacity 
+          key={item.label} 
+          style={styles.navItem} 
+          onPress={() => router.replace(item.path)}
+        >
+          <View style={{ position: "relative" }}>
+            {item.icon}
+
+            {/* Render Red Badge Count on Orders Icon Only */}
+            {item.label === "Orders" && orderCount > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{orderCount}</Text>
+              </View>
+            )}
+          </View>
+          
           <Text style={styles.navText}>{item.label}</Text>
         </TouchableOpacity>
       ))}
@@ -32,21 +87,45 @@ export default function BottomNav() {
 const styles = StyleSheet.create({
   bottomNav: {
     position: "absolute",
-    left: 16,
-    right: 16,
-    bottom: 14,
-    height: 68,
-    borderRadius: 18,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 70,
     backgroundColor: "#2e4466",
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-around",
-    shadowColor: "#0f172a",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.18,
-    shadowRadius: 16,
-    elevation: 8,
+    alignItems: "center",
+    borderTopWidth: 1,
+    borderTopColor: "#3b557a",
+    zIndex: 10,
   },
-  navItem: { flex: 1, alignItems: "center", justifyContent: "center" },
-  navText: { color: "#fff", fontSize: 11, fontWeight: "800", marginTop: 4 },
+  navItem: { 
+    flex: 1, 
+    justifyContent: "center", 
+    alignItems: "center", 
+    height: "100%" 
+  },
+  navText: { 
+    color: "white", 
+    fontSize: 12, 
+    marginTop: 4, 
+    fontWeight: "500" 
+  },
+  badge: {
+    position: "absolute",
+    top: -6,
+    right: -10,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: "#EF4444",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 3,
+  },
+  badgeText: {
+    color: "#fff",
+    fontSize: 9,
+    fontWeight: "900",
+  },
 });

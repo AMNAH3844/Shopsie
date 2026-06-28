@@ -10,16 +10,16 @@ import {
   ActivityIndicator,
   Modal,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  StatusBar
 } from "react-native";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-
-// const API = "http://172.20.140.250:5000/api/chat";
-// const INBOX_API = "http://172.20.140.250:5000/api/inbox";
 
 const formatCoords = (lat, lng) => {
   if (lat == null || lng == null) return "";
@@ -91,17 +91,6 @@ export default function ChatScreen() {
 
   const insertQuickMessage = (msg) => setText(msg);
 
-  const getPendingShareItems = () => {
-    if (!items || items === "[]" || items === "null") return [];
-    try {
-      const parsed = typeof items === "string" ? JSON.parse(items) : items;
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (e) {
-      console.log("SHARE ITEMS PARSE ERROR:", e.message);
-      return [];
-    }
-  };
-
   useEffect(() => {
     const loadUser = async () => {
       const user = await AsyncStorage.getItem("userData");
@@ -129,8 +118,8 @@ export default function ChatScreen() {
       });
       setMessages(res.data || []);
     } catch (e) {
-console.log("CHAT ERROR Status:", e.response?.status);
-    console.log("CHAT ERROR Data:", e.response?.data);    } finally {
+      console.log("CHAT ERROR:", e.message);
+    } finally {
       if (showLoader) setLoading(false);
     }
   };
@@ -156,40 +145,6 @@ console.log("CHAT ERROR Status:", e.response?.status);
       setText("");
     } catch (e) {
       console.log("SEND ERROR:", e.message);
-    }
-  };
-
-  const shareSelectedList = async () => {
-    const parsedItems = getPendingShareItems();
-
-    if (!parsedItems.length) {
-      triggerToast("Please select a list to share first");
-      return;
-    }
-
-    if (!otherUserId) {
-      triggerToast("Friend not selected");
-      return;
-    }
-
-    try {
-      const token = await AsyncStorage.getItem("token");
-      await axios.post(
-        `${API_URLS.INBOX}/share`,
-        {
-          receiverId: Number(otherUserId),
-          listId: listId ? Number(listId) : undefined,
-          listName: listName || "Shared List",
-          items: parsedItems,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      triggerToast("List shared!");
-      fetchMessages(false);
-    } catch (e) {
-      console.log("SHARE LIST ERROR:", e.response?.data || e.message);
-      triggerToast("Failed to share list");
     }
   };
 
@@ -226,8 +181,6 @@ console.log("CHAT ERROR Status:", e.response?.status);
         setSelectedList(null);
         setSelectedListOwnerId(null);
         triggerToast("This list has already been downloaded!");
-      } else {
-        console.log("DOWNLOAD ERROR:", e.message);
       }
     }
   };
@@ -341,49 +294,86 @@ console.log("CHAT ERROR Status:", e.response?.status);
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#f1f1f1" }}>
+    <View style={styles.mainWrapper}>
+      <StatusBar barStyle="light-content" />
+
+      {/* MATCHING COHESIVE HEADER DESIGN */}
       <LinearGradient colors={["#eef4fe", "#2e4466"]} start={{ x: 1, y: 0 }} end={{ x: 0, y: 0 }} style={styles.header}>
-        <TouchableOpacity onPress={() => router.push("/customerDashboard/inbox")}>
+        <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/customerDashboard/inbox")}>
           <Ionicons name="chevron-back" size={28} color="#eef4fe" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Chat</Text>
-        <View style={{ width: 28 }} />
+        <Text style={styles.headerTitleText}>Chat Room</Text>
+        <View style={{ width: 32 }} />
       </LinearGradient>
 
-      <View style={styles.container}>
-        <FlatList data={messages} keyExtractor={(item) => item.id.toString()} renderItem={renderItem} contentContainerStyle={{ padding: 10 }} showsVerticalScrollIndicator={false} />
-
-        <View style={styles.quickRow}>
-          <FlatList
-            data={quickMessages}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={({ item }) => (
-              <TouchableOpacity style={styles.quickBtn} onPress={() => insertQuickMessage(item)}>
-                <Text style={styles.quickText}>{item}</Text>
-              </TouchableOpacity>
-            )}
+      {/* FIXED STRUCTURE: Behavior handles height shifts across platforms safely without moving navigation bar */}
+      <KeyboardAvoidingView 
+        style={styles.keyboardContainer}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 85 : 0}
+      >
+        <View style={styles.container}>
+          <FlatList 
+            data={messages} 
+            keyExtractor={(item) => item.id.toString()} 
+            renderItem={renderItem} 
+            contentContainerStyle={{ padding: 10, paddingBottom: 10 }} 
+            showsVerticalScrollIndicator={false} 
           />
-        </View>
 
-        <View style={styles.inputRow}>
-          <TouchableOpacity style={styles.shareListBtn} onPress={shareSelectedList}>
-            <Ionicons name="share-social-outline" size={20} color="#2e4466" />
-          </TouchableOpacity>
-          <TextInput value={text} onChangeText={setText} placeholder="Type message..." placeholderTextColor="#999" style={styles.input} />
-          <TouchableOpacity onPress={sendMessage}>
-            <Text style={styles.send}>Send</Text>
-          </TouchableOpacity>
+          {/* Quick replies */}
+          <View style={styles.quickRow}>
+            <FlatList
+              data={quickMessages}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity style={styles.quickBtn} onPress={() => insertQuickMessage(item)}>
+                  <Text style={styles.quickText}>{item}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+
+          {/* Interactive Text Entry Row */}
+          <View style={styles.inputRow}>
+            <TextInput 
+              value={text} 
+              onChangeText={setText} 
+              placeholder="Type message..." 
+              placeholderTextColor="#999" 
+              style={styles.input} 
+            />
+            <TouchableOpacity onPress={sendMessage} style={styles.sendBtn}>
+              <Text style={styles.send}>Send</Text>
+            </TouchableOpacity>
+          </View>
         </View>
+      </KeyboardAvoidingView>
+
+      {/* MATCHING UNIFIED DESIGN BOTTOM NAVIGATION BAR */}
+      <View style={styles.bottomNav}>
+        <TouchableOpacity style={styles.tabItem} onPress={() => router.push("/customerDashboard")}>
+          <Ionicons name="home" size={22} color="white" />
+          <Text style={styles.navText}>Home</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.tabItem} onPress={() => router.push("/customerDashboard/savedlist")}>
+          <MaterialCommunityIcons name="format-list-bulleted" size={22} color="white" />
+          <Text style={styles.navText}>Saved Lists</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.tabItem} onPress={() => router.push("/customerDashboard/inbox")}>
+          <Ionicons name="chatbubble-ellipses-outline" size={22} color="white" />
+          <Text style={styles.navText}>Inbox</Text>
+        </TouchableOpacity>
       </View>
 
+      {/* Modals & Overlays */}
       {selectedList && (
         <View style={styles.modalOverlay}>
           <View style={styles.modalBoxLarge}>
             <View style={styles.modalHeaderRow}>
               <Text style={styles.modalListTitle}>{selectedList.name}</Text>
-
               {selectedListOwnerId !== userId && (
                 <TouchableOpacity style={styles.beautifiedDownloadBtn} onPress={downloadList}>
                   <Ionicons name="download-outline" size={16} color="#fff" style={{ marginRight: 4 }} />
@@ -468,7 +458,7 @@ console.log("CHAT ERROR Status:", e.response?.status);
         <View style={styles.modalOverlay}>
           <View style={styles.modalBox}>
             <TouchableOpacity onPress={() => setDeleteModal(false)} style={styles.closeCornerBtn}>
-              <Text style={styles.closeX}>x</Text>
+              <Text style={styles.closeX}>✕</Text>
             </TouchableOpacity>
             <Text style={[styles.modalTitle, { color: "#d45a3a" }]}>Delete Message</Text>
             <Text style={styles.modalSubtitle}>Do you want to delete this message?</Text>
@@ -494,22 +484,24 @@ console.log("CHAT ERROR Status:", e.response?.status);
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#f1f1f1" },
-  header: { height: 85, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  headerTitle: { flex: 1, textAlign: "center", fontSize: 22, fontWeight: "800", color: "#eef4fe" },
-  container: { flex: 1 },
+  mainWrapper: { flex: 1, backgroundColor: "#2e4466" },
+  center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#ffffff" },
+  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 20, height: 85 },
+  headerTitleText: { fontSize: 22, fontWeight: "700", color: "#2e4466", textAlign: 'center', flex: 1 },
+  keyboardContainer: { flex: 1, backgroundColor: "#ffffff" },
+  container: { flex: 1 }, 
   messageContainer: { flexDirection: "row", marginVertical: 6, alignItems: "flex-end" },
   alignRight: { justifyContent: "flex-end" },
   alignLeft: { justifyContent: "flex-start" },
   bubble: { maxWidth: "78%", borderRadius: 16, paddingHorizontal: 14, paddingVertical: 10 },
   bubbleMe: { backgroundColor: "#2e4466", borderBottomRightRadius: 4 },
-  bubbleOther: { backgroundColor: "#fff", borderBottomLeftRadius: 4 },
+  bubbleOther: { backgroundColor: "#f1f5f9", borderWidth: 1, borderColor: "#cbd5e1", borderBottomLeftRadius: 4 },
   textMe: { color: "#fff", fontSize: 14, lineHeight: 20 },
-  textOther: { color: "#1e293b", fontSize: 14, lineHeight: 20 },
+  textOther: { color: "#0f172a", fontSize: 14, lineHeight: 20, fontWeight: "500" },
   deleteBtn: { marginLeft: 6, padding: 4 },
   listBox: { maxWidth: "86%", borderRadius: 16, padding: 12, elevation: 2 },
   listMe: { backgroundColor: "#2e4466", borderBottomRightRadius: 4 },
-  listOther: { backgroundColor: "#fff", borderBottomLeftRadius: 4 },
+  listOther: { backgroundColor: "#fff", borderBottomLeftRadius: 4, borderWidth: 1, borderColor: "#e2e8f0" },
   listHeaderRow: { flexDirection: "row", alignItems: "center", marginBottom: 6 },
   listTitleMe: { color: "#fff", fontWeight: "800", fontSize: 15, flex: 1 },
   listTitleOther: { color: "#1e3a8a", fontWeight: "800", fontSize: 15, flex: 1 },
@@ -527,20 +519,27 @@ const styles = StyleSheet.create({
   quickRow: { paddingHorizontal: 8, paddingVertical: 8, backgroundColor: "#f8fafc", borderTopWidth: 1, borderTopColor: "#e2e8f0" },
   quickBtn: { backgroundColor: "#eef4fe", borderRadius: 16, paddingHorizontal: 14, paddingVertical: 8, marginRight: 8 },
   quickText: { color: "#2e4466", fontWeight: "700", fontSize: 13 },
-  inputRow: { flexDirection: "row", alignItems: "center", padding: 10, backgroundColor: "#fff", borderTopWidth: 1, borderTopColor: "#e2e8f0" },
-  shareListBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: "#eef4fe", alignItems: "center", justifyContent: "center", marginRight: 8 },
-  input: { flex: 1, backgroundColor: "#f1f5f9", borderRadius: 18, paddingHorizontal: 14, paddingVertical: 10, color: "#1e293b" },
+  inputRow: { flexDirection: "row", alignItems: "center", padding: 12, backgroundColor: "#fff", borderTopWidth: 1, borderTopColor: "#e2e8f0" },
+  input: { flex: 1, backgroundColor: "#f1f5f9", borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10, color: "#1e293b", fontSize: 15 },
+  sendBtn: { paddingVertical: 6, paddingHorizontal: 4 },
   send: { color: "#2e4466", fontWeight: "800", marginLeft: 12, fontSize: 15 },
+  bottomNav: {
+    height: 70,
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    backgroundColor: "#2e4466",
+    shadowColor: "#000",
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 10,
+    paddingBottom: Platform.OS === 'ios' ? 12 : 0,
+  },
+  tabItem: { justifyContent: "center", alignItems: "center", flex: 1, height: "100%" },
+  navText: { color: "white", fontSize: 12, marginTop: 4, textAlign: "center", fontWeight: "500" },
   modalOverlay: { position: "absolute", top: 0, bottom: 0, left: 0, right: 0, backgroundColor: "rgba(15,23,42,0.6)", justifyContent: "center", alignItems: "center", padding: 20 },
-  modalBox: { width: "100%", maxWidth: 420, backgroundColor: "#fff", borderRadius: 20, padding: 22, alignItems: "center" },
-  modalBoxLarge: {
-  width: "100%",
-  maxWidth: 470,
-  maxHeight: "85%",   // ✅ important
-  backgroundColor: "#fff",
-  borderRadius: 20,
-  padding: 16,
-},
+  modalBox: { width: "80%", backgroundColor: "#fff", borderRadius: 22, paddingTop: 15, paddingBottom: 25, paddingHorizontal: 40, alignItems: "center", position: 'relative' },
+  modalBoxLarge: { width: "100%", maxWidth: 470, maxHeight: "85%", backgroundColor: "#fff", borderRadius: 20, padding: 16 },
   modalHeaderRow: { width: "100%", flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
   modalListTitle: { fontWeight: "800", fontSize: 20, color: "#2e4466", flex: 1, marginRight: 10 },
   beautifiedDownloadBtn: { flexDirection: "row", alignItems: "center", backgroundColor: "#10b981", borderRadius: 12, paddingHorizontal: 10, paddingVertical: 8 },
@@ -561,15 +560,15 @@ const styles = StyleSheet.create({
   billValue: { color: "#10b981", fontSize: 17, fontWeight: "900" },
   modalCloseButton: { backgroundColor: "#2e4466", borderRadius: 14, paddingVertical: 12, alignItems: "center", marginTop: 14 },
   modalCloseButtonText: { color: "#fff", fontWeight: "800", fontSize: 14 },
-  warningBox: { position: "absolute", bottom: 20, left: 15, right: 15, backgroundColor: "#e67e22", padding: 14, borderRadius: 14, flexDirection: "row", alignItems: "center", zIndex: 9999 },
-  warningText: { color: "#fff", marginLeft: 10, fontSize: 14, fontWeight: "700", flex: 1 },
-  closeCornerBtn: { position: "absolute", top: 14, right: 18, zIndex: 10 },
-  closeX: { fontSize: 20, color: "#94a3b8", fontWeight: "800" },
-  modalTitle: { fontSize: 19, fontWeight: "800", color: "#1e293b", marginTop: 14 },
-  modalSubtitle: { fontSize: 14, color: "#64748b", marginTop: 10, marginBottom: 24, textAlign: "center", lineHeight: 20 },
+  warningBox: { position: "absolute", bottom: 100, left: 20, right: 20, backgroundColor: "#e67e22", padding: 12, borderRadius: 12, flexDirection: "row", alignItems: "center", zIndex: 999, elevation: 5 },
+  warningText: { color: "#fff", marginLeft: 10, fontSize: 14, fontWeight: "600" },
+  closeCornerBtn: { position: 'absolute', top: 15, right: 20, zIndex: 10, padding: 5 },
+  closeX: { fontSize: 22, color: "#94a3b8", fontWeight: "bold" },
+  modalTitle: { fontSize: 20, fontWeight: "700", color: "#111", marginTop: 18 },
+  modalSubtitle: { fontSize: 14, color: "#555", marginTop: 12, marginBottom: 30, textAlign: 'center' },
   shareButtonsRow: { width: "100%", flexDirection: "row", justifyContent: "space-between" },
-  friendBtn: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: "center", marginRight: 6 },
-  riderBtn: { flex: 1, backgroundColor: "#2e4466", paddingVertical: 12, borderRadius: 12, alignItems: "center", marginLeft: 6 },
-  friendBtnText: { fontWeight: "800", fontSize: 14 },
-  riderBtnText: { color: "#fff", fontWeight: "800", fontSize: 14 },
+  friendBtn: { flex: 1, backgroundColor: "#e5e5e5", paddingVertical: 15, borderRadius: 14, alignItems: "center", marginRight: 10 },
+  riderBtn: { flex: 1, backgroundColor: "#314a73", paddingVertical: 15, borderRadius: 14, alignItems: "center", marginLeft: 10 },
+  friendBtnText: { color: "#333", fontWeight: "700", fontSize: 15 },
+  riderBtnText: { color: "#fff", fontWeight: "700", fontSize: 15 },
 });

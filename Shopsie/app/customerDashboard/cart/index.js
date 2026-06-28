@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   TextInput,
   Alert,
+  KeyboardAvoidingView,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -27,7 +28,7 @@ const API_BASE = API_URLS?.ROUTE_OPTIMIZE;
 const DEFAULT_LAT = 31.5204;
 const DEFAULT_LNG = 74.3587;
 const SEARCH_RADIUS_KM = 10;
-const DELIVERY_RATE_PER_KM = 80;
+const DELIVERY_RATE_PER_KM = 50;
 
 const normalizeSpec = (value) => {
   const spec = value?.toString().trim();
@@ -267,27 +268,6 @@ export default function Cart() {
     setLocationModalVisible(true);
   };
 
-  // const searchLocation = async () => {
-  //   const query = locationSearch.trim();
-  //   if (!query) return triggerWarning("Type a location name first.");
-
-  //   try {
-  //     const res = await fetch(
-  //       `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`
-  //     );
-  //     const data = await res.json();
-
-  //     if (!data?.length) return triggerWarning("No matching location found.");
-
-  //     setActiveLocation({
-  //       lat: Number(data[0].lat),
-  //       lng: Number(data[0].lon),
-  //       label: data[0].display_name || query,
-  //     });
-  //   } catch (e) {
-  //     triggerWarning("Could not search location.");
-  //   }
-  // };
   const searchLocation = async () => {
   const query = locationSearch.trim();
 
@@ -297,10 +277,14 @@ export default function Cart() {
 
   try {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(
-        query
-      )}`
-    );
+  `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`,
+  {
+    headers: {
+      Accept: "application/json",
+      "User-Agent": "ShopsieApp/1.0",
+    },
+  }
+);
 
     const data = await res.json();
 
@@ -1018,28 +1002,41 @@ document.addEventListener("message", function(e) {
 
             {selectedCartItems.map((item, index) => (
               <View key={item.id || index} style={styles.cartItemRow}>
-                <View style={styles.compactItemHeader}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.itemName}>{item.name}</Text>
-                    <View style={styles.itemChipRow}>
-                      <Text style={styles.softChip}>{item.categoryName}</Text>
-                      <Text style={styles.softChip}>Qty {item.quantity}</Text>
-                      <Text style={styles.softChip}>Spec {item.specification}</Text>
-                    </View>
-                  </View>
-                  <TouchableOpacity style={styles.smallDetailsBtn} onPress={() => openItemDetails(item)}>
-                    <Text style={styles.smallDetailsText}>Details</Text>
-                  </TouchableOpacity>
-                </View>
-                {item.selectedShopId ? (
-                  <View style={styles.selectedShopPillRow}>
-                    <Text style={styles.selectedShopPill}>{item.selectedShopName}</Text>
-                    <Text style={styles.pricePill}>Rs. {item.lineTotal}</Text>
-                  </View>
-                ) : (
-                  <Text style={styles.notSelectedText}>No shop selected yet</Text>
-                )}
-              </View>
+  {/* Item Title */}
+  <Text style={styles.itemName}>{item.name}</Text>
+
+  {/* Category */}
+  <View style={styles.itemDetailRow}>
+    <Ionicons name="pricetag-outline" size={14} color="#1e293b" style={styles.detailIcon} />
+    <Text style={styles.detailText}>{item.categoryName}</Text>
+  </View>
+
+  {/* Quantity */}
+  <View style={styles.itemDetailRow}>
+    <Ionicons name="cube-outline" size={14} color="#1e293b" style={styles.detailIcon} />
+    <Text style={styles.detailText}>Qty: {item.quantity}</Text>
+  </View>
+
+  {/* Specification */}
+  <View style={styles.itemDetailRow}>
+    <Ionicons name="list-outline" size={14} color="#1e293b" style={styles.detailIcon} />
+    <Text style={styles.detailText}>Spec: {item.specification || 'None'}</Text>
+  </View>
+
+  {/* Dynamic Footer Status */}
+  {item.selectedShopId ? (
+    <View style={styles.shopStatusBlock}>
+      <View style={styles.checkIconWrapper}>
+        <Ionicons name="checkbox" size={16} color="#10b981" />
+      </View>
+      <View style={styles.shopInfoColumn}>
+        <Text style={styles.shopNameText}>{item.selectedShopName}</Text>
+      </View>
+    </View>
+  ) : (
+    <Text style={styles.notSelectedText}>No shop selected yet</Text>
+  )}
+</View>
             ))}
 
             {selectedCount > 0 && (
@@ -1064,21 +1061,49 @@ document.addEventListener("message", function(e) {
                   <View style={styles.compactItemHeader}>
                     <View style={{ flex: 1 }}>
                       <Text style={styles.itemName}>{item.name}</Text>
-                      <View style={styles.itemChipRow}>
-                        <Text style={styles.softChip}>{item.categoryName}</Text>
-                        <Text style={styles.softChip}>Qty {item.quantity}</Text>
-                        <Text style={styles.softChip}>Spec {item.specification}</Text>
-                      </View>
+                      <View style={styles.finalItemDetails}>
+  {/* Category */}
+  <View style={styles.itemDetailRow}>
+    <Ionicons
+      name="pricetag-outline"
+      size={14}
+      color="#1e293b"
+      style={styles.detailIcon}
+    />
+    <Text style={styles.itemDetailText}>{item.categoryName}</Text>
+  </View>
+
+  {/* Quantity */}
+  <View style={styles.itemDetailRow}>
+    <Ionicons
+      name="cube-outline"
+      size={14}
+      color="#1e293b"
+      style={styles.detailIcon}
+    />
+    <Text style={styles.itemDetailText}>Qty: {item.quantity}</Text>
+  </View>
+
+  {/* Specification */}
+  <View style={styles.itemDetailRow}>
+    <Ionicons
+      name="list-outline"
+      size={14}
+      color="#1e293b"
+      style={styles.detailIcon}
+    />
+    <Text style={styles.itemDetailText}>
+      Spec: {item.specification || "None"}
+    </Text>
+  </View>
+</View>
                     </View>
-                    <TouchableOpacity style={styles.smallDetailsBtn} onPress={() => openItemDetails(item)}>
-                      <Text style={styles.smallDetailsText}>Details</Text>
-                    </TouchableOpacity>
+                    
                   </View>
                   {item.selectedShopId ? (
                     <View style={styles.finalShopLine}>
                       <View style={{ flex: 1 }}>
                         <Text style={styles.selectedShopText}>{item.selectedShopName}</Text>
-                        <Text style={styles.metaText}>Available {item.availableQuantity} of {item.quantity}</Text>
                       </View>
                       <Text style={styles.priceText}>Rs. {item.lineTotal}</Text>
                     </View>
@@ -1169,9 +1194,22 @@ document.addEventListener("message", function(e) {
         </TouchableOpacity>
       </View>
 
-      <Modal visible={locationModalVisible} transparent animationType="slide" onRequestClose={() => setLocationModalVisible(false)}>
-        <View style={styles.fullModalOverlay}>
-          <View style={styles.locationModalBox}>
+      <Modal
+  visible={locationModalVisible}
+  transparent
+  animationType="slide"
+  onRequestClose={() => setLocationModalVisible(false)}
+>
+  <KeyboardAvoidingView
+  behavior={Platform.OS === "ios" ? "padding" : undefined}
+  style={{ flex: 1 }}
+>
+    <View style={styles.fullModalOverlay}>
+      <View style={styles.locationModalBox}>
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
             <View style={styles.modalHeaderRow}>
               <Text style={styles.modalTitle}>{activeLocationTitle}</Text>
               <TouchableOpacity onPress={() => setLocationModalVisible(false)}>
@@ -1214,9 +1252,11 @@ document.addEventListener("message", function(e) {
             <TouchableOpacity style={styles.primaryBtn} onPress={confirmLocation}>
               <Text style={styles.primaryBtnText}>{activeLocationChosen ? "Update Location" : "Done"}</Text>
             </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+                  </ScrollView>
+      </View>
+    </View>
+  </KeyboardAvoidingView>
+</Modal>
 
       <Modal visible={shopsMapModalVisible} transparent animationType="slide" onRequestClose={() => setShopsMapModalVisible(false)}>
         <View style={styles.fullModalOverlay}>
@@ -1300,7 +1340,6 @@ document.addEventListener("message", function(e) {
                               <Text style={styles.shopName}>{option.shopName} {index === 0 && <Text style={styles.cheapestText}>(Cheapest)</Text>}</Text>
                               {alreadySelected && <Text style={styles.autoSelectedText}>Selected for this item</Text>}
                               <Text style={styles.comparisonMetaText}>Specs: {option.specs || "None"}</Text>
-                              <Text style={styles.comparisonMetaText}>Available: {option.availableQuantity} of {item.requestedQuantity}</Text>
                             </View>
                             <View style={styles.optionActionColumn}>
                               <TouchableOpacity
@@ -1363,9 +1402,9 @@ document.addEventListener("message", function(e) {
                     <>
                       <Text style={styles.summaryShopText}>{item.selectedShopName}</Text>
                       <Text style={styles.summaryMeta}>Price: Rs. {item.selectedShopPrice} | Total: Rs. {item.lineTotal}</Text>
-                      <Text style={styles.summaryMeta}>{item.selectedShopStatusText}</Text>
+                      {/* <Text style={styles.summaryMeta}>{item.selectedShopStatusText}</Text>
                       <Text style={styles.summaryMeta}>Shop Location: {item.selectedShopLatitude}, {item.selectedShopLongitude}</Text>
-                      <Text style={styles.summaryMeta}>Buying Area: {item.buyingLocationLabel}</Text>
+                      <Text style={styles.summaryMeta}>Buying Area: {item.buyingLocationLabel}</Text> */}
                     </>
                   ) : (
                     <Text style={styles.summaryPendingText}>No shop selected for this item yet.</Text>
@@ -1609,128 +1648,895 @@ document.addEventListener("message", function(e) {
 }
 
 const styles = StyleSheet.create({
-  mainContainer: { flex: 1, backgroundColor: "#f8fafc" },
-  centered: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#f8fafc" },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 20, height: 85 },
-  headerTitleText: { fontSize: 22, fontWeight: "700", color: "#2e4466", textAlign: "center", flex: 1 },
-  scrollContent: { padding: 14, paddingBottom: 110 },
-  sectionCard: { backgroundColor: "#fff", borderRadius: 24, padding: 24, marginBottom: 24, elevation: 2, shadowColor: "#000", shadowOpacity: 0.06, shadowRadius: 10 },
-  locationCard: { marginTop: 10 },
-  sectionHeaderRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
-  sectionTitle: { fontSize: 17, fontWeight: "800", color: "#1e293b", marginBottom: 12 },
-  countBadge: { backgroundColor: "#eef4fe", color: "#2e4466", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10, fontSize: 12, fontWeight: "800" },
-  locationBox: { flexDirection: "row", alignItems: "center", backgroundColor: "#f8fafc", borderRadius: 14, padding: 12, borderWidth: 1, borderColor: "#e2e8f0" },
-  locationText: { fontSize: 14, color: "#334155", fontWeight: "700" },
-  coordsText: { fontSize: 12, color: "#64748b", marginTop: 4 },
-  primaryBtn: { minHeight: 48, borderRadius: 14, backgroundColor: "#2e4466", flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: 10, paddingHorizontal: 12 },
-  primaryBtnText: { color: "#fff", fontSize: 15, fontWeight: "800", marginLeft: 8 },
-  secondaryBtn: { minHeight: 48, borderRadius: 14, backgroundColor: "#eef4fe", borderWidth: 1, borderColor: "#b9d5ff", flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: 10, paddingHorizontal: 12 },
-  secondaryBtnText: { color: "#2e4466", fontSize: 15, fontWeight: "800", marginLeft: 8 },
-  finalizeBtn: { minHeight: 48, borderRadius: 14, backgroundColor: "#10b981", flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: 14 },
-  cartItemRow: { paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: "#f1f5f9" },
-  itemName: { fontSize: 15, color: "#1e293b", fontWeight: "800" },
-  finalActionColumn: { alignItems: "flex-end", justifyContent: "flex-start", marginLeft: 12, minWidth: 56 },
-  removePlainBtn: { paddingHorizontal: 4, paddingVertical: 0, marginBottom: 18 },
-  removePlainText: { color: "#d45a3a", fontSize: 18, lineHeight: 20, fontWeight: "900" },
-  metaText: { fontSize: 12, color: "#64748b", marginTop: 3, lineHeight: 17 },
-  openShopText: { color: "#047857", fontWeight: "900" },
-  closedShopText: { color: "#b91c1c", fontWeight: "900" },
-  selectedShopText: { fontSize: 12, color: "#10b981", marginTop: 5, fontWeight: "800" },
-  locationDetailText: { fontSize: 12, color: "#334155", marginTop: 5, lineHeight: 17, fontWeight: "800" },
-  notSelectedText: { fontSize: 12, color: "#d45a3a", marginTop: 5, fontWeight: "700" },
-  shopName: { fontSize: 16, color: "#1e293b", fontWeight: "800" },
-  selectionSummaryBtn: { flexDirection: "row", alignItems: "center", backgroundColor: "#eef4fe", borderWidth: 1, borderColor: "#b9d5ff", borderRadius: 12, paddingHorizontal: 10, paddingVertical: 8, marginHorizontal: 8 },
-  selectionSummaryText: { color: "#2e4466", fontSize: 13, fontWeight: "900", marginLeft: 5 },
-  comparisonHeading: { fontSize: 22, color: "#1e293b", fontWeight: "900", marginBottom: 16 },
-  categoryFilterRow: { paddingBottom: 16 },
-  categoryFilterPill: { backgroundColor: "#f1f5f9", borderWidth: 1, borderColor: "#dbe5f1", borderRadius: 24, paddingHorizontal: 22, paddingVertical: 13, marginRight: 12 },
-  activeCategoryFilterPill: { backgroundColor: "#2e4466", borderColor: "#2e4466" },
-  categoryFilterText: { color: "#64748b", fontSize: 13, fontWeight: "900" },
-  activeCategoryFilterText: { color: "#ffffff" },
-  comparisonSubHeading: { fontSize: 12, color: "#64748b", fontWeight: "700", marginBottom: 12 },
-  comparisonBlock: { borderBottomWidth: 1, borderBottomColor: "#e8edf5", paddingBottom: 18, marginBottom: 24 },
-  comparisonItemHeader: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 },
-  comparisonItemName: { fontSize: 20, color: "#1e293b", fontWeight: "900" },
-  categoryPill: { backgroundColor: "#eef4fe", color: "#2e4466", fontSize: 12, fontWeight: "800", paddingHorizontal: 12, paddingVertical: 7, borderRadius: 12, overflow: "hidden", marginLeft: 8 },
-  comparisonOption: { flexDirection: "row", alignItems: "center", backgroundColor: "#f1f5fb", borderRadius: 16, paddingHorizontal: 16, paddingVertical: 18, borderWidth: 1.5, borderColor: "#2e4466", marginTop: 9 },
-  activeComparisonOption: { backgroundColor: "#edf3fc", borderColor: "#2e4466" },
-  comparisonOptionText: { flex: 1, marginLeft: 12, paddingRight: 8 },
-  comparisonMetaText: { fontSize: 15, color: "#64748b", marginTop: 4, lineHeight: 21 },
-  optionActionColumn: { alignItems: "flex-end", justifyContent: "space-between", minHeight: 74, marginLeft: 8 },
-  shopDetailsBtn: { backgroundColor: "#eef4fe", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 7 },
-  shopDetailsText: { color: "#2563eb", fontSize: 13, fontWeight: "900" },
-  comparisonPrice: { color: "#2e4466", fontSize: 20, fontWeight: "900", marginTop: 12 },
-  radioCircle: { width: 24, height: 24, borderRadius: 12, borderWidth: 3, borderColor: "#2e4466", alignItems: "center", justifyContent: "center" },
-  radioDot: { width: 11, height: 11, borderRadius: 5.5, backgroundColor: "#2e4466" },
-  cheapestText: { color: "#10b981", fontSize: 12, fontWeight: "900" },
-  autoSelectedText: { color: "#047857", fontSize: 12, fontWeight: "900", marginTop: 3 },
-  finalRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: "#f1f5f9" },
-  priceText: { fontSize: 14, color: "#2e4466", fontWeight: "800", marginLeft: 8 },
-  totalRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 16, paddingTop: 12, borderTopWidth: 1, borderTopColor: "#e2e8f0" },
-  totalLabel: { fontSize: 16, color: "#1e293b", fontWeight: "800" },
-  totalPrice: { fontSize: 18, color: "#10b981", fontWeight: "900" },
-  billSummaryCard: { backgroundColor: "#f8fafc", borderWidth: 1, borderColor: "#dbe5f1", borderRadius: 18, padding: 16, marginTop: 18 },
-  billSummaryTitle: { fontSize: 18, color: "#1e293b", fontWeight: "900", marginBottom: 12 },
-  billLine: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 7 },
-  billLabel: { color: "#64748b", fontSize: 13, fontWeight: "800", flex: 1, paddingRight: 12 },
-  billValue: { color: "#2e4466", fontSize: 14, fontWeight: "900" },
-  grandTotalRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 10, paddingTop: 12, borderTopWidth: 1, borderTopColor: "#dbe5f1" },
-  grandTotalLabel: { color: "#1e293b", fontSize: 17, fontWeight: "900" },
-  grandTotalPrice: { color: "#10b981", fontSize: 22, fontWeight: "900" },
-  shareRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 18 },
-  shareBtn: { flexDirection: "row", alignItems: "center", paddingVertical: 12, paddingHorizontal: 10, borderRadius: 14, width: "48%", justifyContent: "center" },
-  shareFriendBtn: { backgroundColor: "#eef4fe", borderWidth: 1, borderColor: "#b9d5ff" },
-  shareRiderBtn: { backgroundColor: "#2e4466" },
-  shareFriendText: { fontSize: 13, color: "#2e4466", marginLeft: 6, fontWeight: "800" },
-  shareRiderText: { fontSize: 13, color: "#fff", marginLeft: 6, fontWeight: "800" },
-  bottomNav: { position: "absolute", bottom: 0, left: 0, right: 0, height: 75, flexDirection: "row", justifyContent: "space-around", alignItems: "center", backgroundColor: "#2e4466", elevation: 10 },
-  tabItem: { justifyContent: "center", alignItems: "center" },
-  navText: { color: "white", fontSize: 12, marginTop: 4, fontWeight: "500" },
-  fullModalOverlay: { flex: 1, backgroundColor: "rgba(15,23,42,0.65)", justifyContent: "center", padding: 14 },
-  locationModalBox: { backgroundColor: "#fff", borderRadius: 18, padding: 14, height: "92%" },
-  shopMapModalBox: { backgroundColor: "#fff", borderRadius: 18, padding: 14, height: "94%" },
-  modalHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
-  searchRow: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
-  locationInput: { flex: 1, height: 46, borderWidth: 1, borderColor: "#cbd5e1", borderRadius: 12, paddingHorizontal: 12, color: "#1e293b", backgroundColor: "#f8fafc" },
-  searchBtn: { width: 46, height: 46, borderRadius: 12, backgroundColor: "#2e4466", alignItems: "center", justifyContent: "center", marginLeft: 8 },
-  mapBox: { flex: 1, minHeight: 210, maxHeight: 300, borderRadius: 16, overflow: "hidden", backgroundColor: "#e2e8f0", marginBottom: 8 },
-  shopMapBox: { height: 175, borderRadius: 16, overflow: "hidden", backgroundColor: "#e2e8f0", marginBottom: 10 },
-  shopSideBox: { flex: 1, width: "100%" },
-  map: { flex: 1 },
-  modalOverlay: { flex: 1, backgroundColor: "rgba(15,23,42,0.6)", justifyContent: "center", alignItems: "center", padding: 20 },
-  modalBox: { width: "100%", maxWidth: 450, backgroundColor: "#fff", borderRadius: 20, padding: 22 },
-  modalBoxLarge: { width: "100%", maxWidth: 470, backgroundColor: "#fff", borderRadius: 20, padding: 18 },
-  modalTitle: { fontSize: 18, fontWeight: "900", color: "#1e293b" },
-  modalSubtitle: { fontSize: 14, color: "#64748b", marginTop: 10, marginBottom: 20, textAlign: "center" },
-  closeCornerBtn: { position: "absolute", top: 14, right: 18, zIndex: 5 },
-  closeX: { fontSize: 20, color: "#94a3b8", fontWeight: "800" },
-  modalButtonsRow: { flexDirection: "row", justifyContent: "space-between" },
-  cancelBtn: { flex: 1, backgroundColor: "#f1f5f9", paddingVertical: 12, borderRadius: 12, alignItems: "center", marginRight: 6 },
-  confirmBtn: { flex: 1, backgroundColor: "#2e4466", paddingVertical: 12, borderRadius: 12, alignItems: "center", marginLeft: 6 },
-  confirmBtnFull: { width: "100%", backgroundColor: "#2e4466", paddingVertical: 13, borderRadius: 12, alignItems: "center", marginTop: 6 },
-  cancelBtnText: { color: "#475569", fontWeight: "800" },
-  confirmBtnText: { color: "#fff", fontWeight: "800" },
-  detailsList: { width: "100%", marginTop: 16, marginBottom: 12 },
-  detailRow: { flexDirection: "row", alignItems: "flex-start", backgroundColor: "#f8fafc", borderRadius: 14, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: "#e2e8f0" },
-  detailTextBox: { flex: 1, marginLeft: 10 },
-  detailLabel: { color: "#64748b", fontSize: 12, fontWeight: "800", marginBottom: 3 },
-  detailValue: { color: "#1e293b", fontSize: 14, fontWeight: "800", lineHeight: 20 },
-  warningBox: { position: "absolute", bottom: 95, left: 15, right: 15, backgroundColor: "#e67e22", padding: 14, borderRadius: 14, flexDirection: "row", alignItems: "center", zIndex: 9999 },
-  warningText: { color: "#fff", marginLeft: 10, fontSize: 14, fontWeight: "700", flex: 1 },
-  loaderText: { fontSize: 13, color: "#64748b", marginTop: 10, fontWeight: "600" },
-  shopItemChoice: { flexDirection: "row", alignItems: "center", backgroundColor: "#f8fafc", borderRadius: 14, padding: 12, borderWidth: 1, borderColor: "#e2e8f0", marginBottom: 10 },
-  activeShopItemChoice: { borderColor: "#10b981", backgroundColor: "#ecfdf5" },
-  choiceStatus: { marginLeft: 10 },
-  emptyText: { textAlign: "center", color: "#94a3b8", paddingVertical: 18 },
-  summaryListBox: { width: "100%", maxHeight: 430 },
-  summaryItemRow: { backgroundColor: "#f8fafc", borderRadius: 14, borderWidth: 1, borderColor: "#e2e8f0", padding: 12, marginBottom: 10 },
-  summaryItemSelected: { backgroundColor: "#ecfdf5", borderColor: "#10b981" },
-  summaryItemHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 4 },
-  summaryItemName: { color: "#1e293b", fontSize: 15, fontWeight: "900" },
-  summaryMeta: { color: "#64748b", fontSize: 12, marginTop: 3, lineHeight: 17 },
-  summaryShopText: { color: "#10b981", fontSize: 13, fontWeight: "900", marginTop: 5 },
-  summaryPendingText: { color: "#d45a3a", fontSize: 12, fontWeight: "800", marginTop: 5 },
-  summaryStatusPill: { overflow: "hidden", borderRadius: 10, paddingHorizontal: 9, paddingVertical: 4, fontSize: 11, fontWeight: "900", marginLeft: 8 },
-  summarySelectedPill: { backgroundColor: "#d1fae5", color: "#047857" },
-  summaryPendingPill: { backgroundColor: "#fee2e2", color: "#b91c1c" },
+  /* -------------------- MAIN CONTAINER & HEADERS -------------------- */
+  mainContainer: { 
+    flex: 1, 
+    backgroundColor: "#f8fafc" 
+  },
+  centered: { 
+    flex: 1, 
+    justifyContent: "center", 
+    alignItems: "center", 
+    backgroundColor: "#f8fafc" 
+  },
+  header: { 
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    alignItems: "center", 
+    paddingHorizontal: 20, 
+    height: 85 
+  },
+  headerTitleText: { 
+    fontSize: 22, 
+    fontWeight: "700", 
+    color: "#2e4466", 
+    textAlign: "center", 
+    flex: 1 
+  },
+  scrollContent: { 
+    padding: 12, 
+    paddingBottom: 75 
+  },
+
+  /* -------------------- SECTION TITLE -------------------- */
+  sectionHeader: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#2e4466",
+    marginTop: 25,
+    marginBottom: 12,
+    marginHorizontal: 20,
+    letterSpacing: 0.5,
+    borderLeftWidth: 5,
+    borderLeftColor: "#4CAF50", 
+    paddingLeft: 10,
+  }, 
+
+  /* -------------------- CARDS & CONTAINERS -------------------- */
+  sectionCard: { 
+    backgroundColor: "#fff", 
+    borderRadius: 16, 
+    padding: 16, 
+    marginBottom: 16, 
+    elevation: 2, 
+    shadowColor: "#000", 
+    shadowOpacity: 0.06, 
+    shadowRadius: 6 
+  },
+  locationCard: { 
+    marginTop: 8 
+  },
+  sectionHeaderRow: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    justifyContent: "space-between", 
+    marginBottom: 8 
+  },
+  sectionTitle: { 
+    fontSize: 17, 
+    fontWeight: "700", 
+    color: "#1e293b", 
+    marginBottom: 8 
+  },
+  countBadge: { 
+    backgroundColor: "#eef4fe", 
+    color: "#2e4466", 
+    paddingHorizontal: 8, 
+    paddingVertical: 3, 
+    borderRadius: 8, 
+    fontSize: 13, 
+    fontWeight: "500" 
+  },
+  locationBox: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    backgroundColor: "#f8fafc", 
+    borderRadius: 10, 
+    padding: 10, 
+    borderWidth: 1, 
+    borderColor: "#e2e8f0" 
+  },
+  locationText: { 
+    fontSize: 14, 
+    color: "#334155", 
+    fontWeight: "500" 
+  },
+  coordsText: { 
+    fontSize: 13, 
+    color: "#64748b", 
+    marginTop: 2, 
+    fontWeight: "500" 
+  },
+
+  /* -------------------- PRIMARY & SECONDARY INTERACTION BUTTONS -------------------- */
+  primaryBtn: { 
+    minHeight: 42, 
+    borderRadius: 14, 
+    backgroundColor: "#314a73", 
+    flexDirection: "row", 
+    alignItems: "center", 
+    justifyContent: "center", 
+    marginTop: 8, 
+    paddingHorizontal: 12 
+  },
+  primaryBtnText: { 
+    color: "#fff", 
+    fontSize: 14, 
+    fontWeight: "700", 
+    marginLeft: 6 
+  },
+  secondaryBtn: { 
+    minHeight: 42, 
+    borderRadius: 14, 
+    backgroundColor: "#eef4fe", 
+    borderWidth: 1, 
+    borderColor: "#b9d5ff", 
+    flexDirection: "row", 
+    alignItems: "center", 
+    justifyContent: "center", 
+    marginTop: 8, 
+    paddingHorizontal: 12 
+  },
+  secondaryBtnText: { 
+    color: "#2e4466", 
+    fontSize: 14, 
+    fontWeight: "700", 
+    marginLeft: 6 
+  },
+  finalizeBtn: { 
+    minHeight: 44, 
+    borderRadius: 14, 
+    backgroundColor: "#10b981", 
+    flexDirection: "row", 
+    alignItems: "center", 
+    justifyContent: "center", 
+    marginTop: 10 
+  },
+
+  /* -------------------- CART ITEM CONFIGURATION LAYOUTS -------------------- */
+  cartItemRow: { 
+    paddingTop: 14, 
+    backgroundColor: '#ffffff', 
+    borderBottomWidth: 1, 
+    borderBottomColor: '#f1f5f9' 
+  },
+  itemName: { 
+    fontSize: 18, 
+    fontWeight: '700', 
+    color: '#0a2540', 
+    marginBottom: 10 
+  },
+  itemDetailRow: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    marginVertical: 4 
+  },
+  detailIcon: { 
+    marginRight: 12, 
+    width: 20, 
+    textAlign: 'center' 
+  },
+  detailText: { 
+    fontSize: 14, 
+    color: '#1e293b' 
+  },
+  shopStatusBlock: { 
+    flexDirection: 'row', 
+    alignItems: 'flex-start', 
+    marginTop: 8 
+  },
+  checkIconWrapper: { 
+    marginRight: 12, 
+    width: 20, 
+    alignItems: 'center', 
+    paddingTop: 3 
+  },
+  shopInfoColumn: { 
+    flexDirection: 'column', 
+    paddingBottom: 10 
+  },
+  shopNameText: { 
+    fontSize: 14, 
+    color: '#1e293b', 
+    lineHeight: 22 
+  },
+  notSelectedText: { 
+    fontSize: 14, 
+    fontWeight: '700', 
+    color: '#d94432', 
+    marginTop: 10, 
+    paddingBottom: 10 
+  },
+
+  /* -------------------- SHOP SELECTOR & COMPARISON LAYOUTS -------------------- */
+  finalActionColumn: { 
+    alignItems: "flex-end", 
+    justifyContent: "flex-start", 
+    marginHorizontal: 12, 
+    minWidth: 50 
+  },
+  removePlainBtn: { 
+    paddingHorizontal: 4, 
+    paddingVertical: 0, 
+    marginBottom: 12 
+  },
+  removePlainText: { 
+    color: "#d45a3a", 
+    fontSize: 20, 
+    lineHeight: 18, 
+    fontWeight: "700" 
+  },
+  metaText: { 
+    fontSize: 11, 
+    color: "#64748b", 
+    marginTop: 2, 
+    lineHeight: 15, 
+    fontWeight: "500" 
+  },
+  openShopText: { 
+    color: "#047857", 
+    fontWeight: "500" 
+  },
+  closedShopText: { 
+    color: "#b91c1c", 
+    fontWeight: "500" 
+  },
+  locationDetailText: { 
+    fontSize: 13, 
+    color: "#334155", 
+    marginTop: 4, 
+    lineHeight: 15, 
+    fontWeight: "500" 
+  },
+  shopName: { 
+    fontSize: 14, 
+    color: "#1e293b", 
+    fontWeight: "700" 
+  },
+  selectionSummaryBtn: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    backgroundColor: "#eef4fe", 
+    borderWidth: 1, 
+    borderColor: "#b9d5ff", 
+    borderRadius: 10, 
+    paddingHorizontal: 8, 
+    paddingVertical: 6, 
+    marginHorizontal: 6 
+  },
+  selectionSummaryText: { 
+    color: "#2e4466", 
+    fontSize: 13, 
+    fontWeight: "500", 
+    marginLeft: 4 
+  },
+  comparisonHeading: { 
+    fontSize: 18, 
+    color: "#1e293b", 
+    fontWeight: "700", 
+    marginBottom: 12 
+  },
+  categoryFilterRow: { 
+    paddingBottom: 12 
+  },
+  categoryFilterPill: { 
+    backgroundColor: "#f1f5f9", 
+    borderWidth: 1, 
+    borderColor: "#dbe5f1", 
+    borderRadius: 20, 
+    paddingHorizontal: 16, 
+    paddingVertical: 8, 
+    marginRight: 8 
+  },
+  activeCategoryFilterPill: { 
+    backgroundColor: "#2e4466", 
+    borderColor: "#2e4466" 
+  },
+  categoryFilterText: { 
+    color: "#64748b", 
+    fontSize: 12, 
+    fontWeight: "500" 
+  },
+  activeCategoryFilterText: { 
+    color: "#ffffff" 
+  },
+  comparisonSubHeading: { 
+    fontSize: 13, 
+    color: "#64748b", 
+    fontWeight: "500", 
+    marginBottom: 8 
+  },
+  comparisonBlock: { 
+    borderBottomWidth: 1, 
+    borderBottomColor: "#e8edf5", 
+    paddingBottom: 12, 
+    marginBottom: 16 
+  },
+  comparisonItemHeader: { 
+    flexDirection: "row", 
+    alignItems: "flex-start", 
+    justifyContent: "space-between", 
+    marginBottom: 8 
+  },
+  comparisonItemName: { 
+    fontSize: 16, 
+    color: "#1e293b", 
+    fontWeight: "700" 
+  },
+  categoryPill: { 
+    backgroundColor: "#eef4fe", 
+    color: "#2e4466", 
+    fontSize: 12, 
+    fontWeight: "500", 
+    paddingHorizontal: 8, 
+    paddingVertical: 4, 
+    borderRadius: 8, 
+    overflow: "hidden", 
+    marginLeft: 6 
+  },
+  comparisonOption: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    backgroundColor: "#f1f5fb", 
+    borderRadius: 12, 
+    paddingHorizontal: 12, 
+    paddingVertical: 12, 
+    borderWidth: 1.5, 
+    borderColor: "#2e4466", 
+    marginTop: 6 
+  },
+  activeComparisonOption: { 
+    backgroundColor: "#edf3fc", 
+    borderColor: "#2e4466" 
+  },
+  comparisonOptionText: { 
+    flex: 1, 
+    marginLeft: 10, 
+    paddingRight: 6 
+  },
+  comparisonMetaText: { 
+    fontSize: 13, 
+    color: "#64748b", 
+    marginTop: 2, 
+    lineHeight: 18, 
+    fontWeight: "500" 
+  },
+  optionActionColumn: { 
+    alignItems: "flex-end", 
+    justifyContent: "space-between", 
+    minHeight: 60, 
+    marginLeft: 6 
+  },
+  shopDetailsBtn: { 
+    backgroundColor: "#eef4fe", 
+    borderRadius: 8, 
+    paddingHorizontal: 10, 
+    paddingVertical: 5 
+  },
+  shopDetailsText: { 
+    color: "#2563eb", 
+    fontSize: 12, 
+    fontWeight: "500" 
+  },
+  comparisonPrice: { 
+    color: "#2e4466", 
+    fontSize: 16, 
+    fontWeight: "700", 
+    marginTop: 6 
+  },
+  radioCircle: { 
+    width: 20, height: 20, 
+    borderRadius: 10, 
+    borderWidth: 2.5, 
+    borderColor: "#2e4466", 
+    alignItems: "center", 
+    justifyContent: "center" 
+  },
+  radioDot: { 
+    width: 9, 
+    height: 9, 
+    borderRadius: 4.5, 
+    backgroundColor: "#2e4466" 
+  },
+  cheapestText: { 
+    color: "#10b981", 
+    fontSize: 13, 
+    fontWeight: "500" 
+  },
+  autoSelectedText: { 
+    color: "#047857", 
+    fontSize: 13, 
+    fontWeight: "500", 
+    marginTop: 2 
+  },
+
+  /* -------------------- FINALIZED CART LOGISTICS SECTIONS -------------------- */
+  finalRow: { 
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    paddingVertical: 10, 
+    borderBottomWidth: 1, 
+    borderBottomColor: "#f1f5f9" 
+  },
+  finalItemDetails: { 
+    marginTop: 6 
+  },
+  itemDetailText: { 
+    fontSize: 14, 
+    color: "#1e293b", 
+    fontWeight: "500" 
+  },
+  finalShopLine: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    justifyContent: "space-between", 
+    marginTop: 10, 
+    backgroundColor: "#f8fafc", 
+    padding: 10, 
+    borderRadius: 10, 
+    maxWidth: '70%' 
+  },
+  selectedShopText: { 
+    fontSize: 14, 
+    color: "#10b981", 
+    fontWeight: "700" 
+  },
+  priceText: { 
+    fontSize: 16, 
+    fontWeight: "700", 
+    color: "#2e4466" 
+  },
+  totalRow: { 
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    alignItems: "center", 
+    marginTop: 12, 
+    paddingTop: 10, 
+    borderTopWidth: 1, 
+    borderTopColor: "#e2e8f0" 
+  },
+  totalLabel: { 
+    fontSize: 14, 
+    color: "#1e293b", 
+    fontWeight: "700" 
+  },
+  totalPrice: { 
+    fontSize: 16, 
+    color: "#10b981", 
+    fontWeight: "700" 
+  },
+
+  /* -------------------- BILL SUMMARY CARD -------------------- */
+  billSummaryCard: { 
+    backgroundColor: "#f8fafc", 
+    borderWidth: 1, 
+    borderColor: "#dbe5f1", 
+    borderRadius: 14, 
+    padding: 12, 
+    marginTop: 14 
+  },
+  billSummaryTitle: { 
+    fontSize: 15, 
+    color: "#1e293b", 
+    fontWeight: "700", 
+    marginBottom: 8 
+  },
+  billLine: { 
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    alignItems: "center", 
+    paddingVertical: 5 
+  },
+  billLabel: { 
+    color: "#64748b", 
+    fontSize: 14, 
+    fontWeight: "500", 
+    flex: 1, 
+    paddingRight: 10 
+  },
+  billValue: { 
+    color: "#2e4466", 
+    fontSize: 14, 
+    fontWeight: "500" 
+  },
+  grandTotalRow: { 
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    alignItems: "center", 
+    marginTop: 8, 
+    paddingTop: 10, 
+    borderTopWidth: 1, 
+    borderTopColor: "#dbe5f1" 
+  },
+  grandTotalLabel: { 
+    color: "#1e293b", 
+    fontSize: 15, 
+    fontWeight: "700" 
+  },
+  grandTotalPrice: { 
+    color: "#10b981", 
+    fontSize: 18, 
+    fontWeight: "700" 
+  },
+
+  /* -------------------- SHARE BUTTON ROW LAYOUTS -------------------- */
+  shareRow: { 
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    marginTop: 14 
+  },
+  shareBtn: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    paddingVertical: 14, 
+    paddingHorizontal: 8, 
+    borderRadius: 14, 
+    width: "48%", 
+    justifyContent: "center" 
+  },
+  shareFriendBtn: { 
+    backgroundColor: "#e5e5e5" 
+  },
+  shareRiderBtn: { 
+    backgroundColor: "#314a73" 
+  },
+  shareFriendText: { 
+    fontSize: 15, 
+    color: "#333", 
+    marginLeft: 4, 
+    fontWeight: "700" 
+  },
+  shareRiderText: { 
+    fontSize: 15, 
+    color: "#fff", 
+    marginLeft: 4, 
+    fontWeight: "700" 
+  },
+
+  /* -------------------- TAB FOOTER WRAPPERS -------------------- */
+  bottomNav: { 
+    position: "absolute", 
+    bottom: 0, 
+    left: 0, 
+    right: 0, 
+    height: 75, 
+    flexDirection: "row", 
+    justifyContent: "space-around", 
+    alignItems: "center", 
+    backgroundColor: "#2e4466", 
+    elevation: 10 
+  },
+  tabItem: { 
+    justifyContent: "center", 
+    alignItems: "center" 
+  },
+  navText: { 
+    color: "white", 
+    fontSize: 12, 
+    marginTop: 4, 
+    fontWeight: "500" 
+  },
+
+  /* -------------------- FULL MODAL OVERLAYS & STRUCTURAL MAP BOXES -------------------- */
+  fullModalOverlay: {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+  paddingHorizontal: 10,
+  paddingTop: 20,
+  backgroundColor: "rgba(15,23,42,0.45)",
+},
+ locationModalBox: {
+  width: "90%",
+  maxHeight: "85%",
+  backgroundColor: "#fff",
+  borderRadius: 24,
+  padding: 13,
+  alignSelf: "center",
+},
+  shopMapModalBox: {
+  width: "96%",
+  height: "92%",
+  backgroundColor: "#fff",
+  borderRadius: 24,
+  padding: 16,
+},
+ searchRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 12,
+},
+locationInput: {
+  flex: 1,
+  height: 52,
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: "#dbe4f0",
+  borderRadius: 14,
+  paddingHorizontal: 14,
+  fontSize: 15,
+  color: "#1e293b",
+  marginRight: 10,
+},
+searchBtn: {
+  width: 56,
+  height: 56,
+  borderRadius: 16,
+  backgroundColor: "#2e4466",
+  justifyContent: "center",
+  alignItems: "center",
+},
+ mapBox: {
+  width: "100%",
+  height: Platform.OS === "web" ? 350 : 220,
+  borderRadius: 14,
+  overflow: "hidden",
+  marginTop: 10,
+  marginBottom: 10,
+  borderWidth: 1,
+  borderColor: "#e2e8f0",
+},
+ shopMapBox: {
+  width: "100%",
+  height: 260,
+  borderRadius: 16,
+  overflow: "hidden",
+  marginBottom: 12,
+},
+  shopSideBox: { 
+    flex: 1, 
+    width: "100%" 
+  },
+  map: { 
+    flex: 1 
+  },
+
+  /* -------------------- REFACTORED COMPACT SPECIFIC MODALS -------------------- */
+  modalOverlay: { 
+    flex: 1, 
+    backgroundColor: "rgba(0,0,0,0.45)", 
+    justifyContent: "center", 
+    alignItems: "center", 
+    paddingHorizontal: 15 
+  },
+  modalBox: { 
+    width: "85%", 
+    backgroundColor: "#fff", 
+    borderRadius: 22, 
+    paddingTop: 15, 
+    paddingBottom: 25, 
+    paddingHorizontal: 30, 
+    alignItems: "center", 
+    position: 'relative' 
+  },
+  modalBoxLarge: { 
+    width: "85%", 
+    backgroundColor: "#fff", 
+    borderRadius: 22, 
+    paddingTop: 15, 
+    paddingBottom: 25, 
+    paddingHorizontal: 30, 
+    alignItems: "center", 
+    position: 'relative' 
+  },
+  modalHeaderRow: { 
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    alignItems: "center", 
+    marginBottom: 10,
+    width: "100%"
+  },
+  modalTitle: { 
+    fontSize: 20, 
+    fontWeight: "700", 
+    color: "#111", 
+    marginTop: 18 
+  },
+  modalSubtitle: { 
+    fontSize: 14, 
+    color: "#555", 
+    marginTop: 12, 
+    marginBottom: 30, 
+    textAlign: 'center', 
+    lineHeight: 20 
+  },
+  closeCornerBtn: { 
+    position: 'absolute', 
+    top: 15, 
+    right: 20, 
+    zIndex: 10, 
+    padding: 5 
+  },
+  closeX: { 
+    fontSize: 22, 
+    color: "#94a3b8", 
+    fontWeight: "bold" 
+  },
+  modalButtonsRow: { 
+    width: "100%", 
+    flexDirection: "row", 
+    justifyContent: "space-between" 
+  },
+  cancelBtn: { 
+    flex: 1, 
+    backgroundColor: "#e5e5e5", 
+    paddingVertical: 14, 
+    borderRadius: 14, 
+    alignItems: "center", 
+    marginRight: 8 
+  },
+  confirmBtn: { 
+    flex: 1, 
+    backgroundColor: "#314a73", 
+    paddingVertical: 14, 
+    borderRadius: 14, 
+    alignItems: "center", 
+    marginLeft: 8 
+  },
+  confirmBtnFull: { 
+    width: "100%", 
+    backgroundColor: "#314a73", 
+    paddingVertical: 14, 
+    borderRadius: 14, 
+    alignItems: "center", 
+    marginTop: 15 
+  },
+  cancelBtnText: { 
+    color: "#333", 
+    fontWeight: "700", 
+    fontSize: 15 
+  },
+  confirmBtnText: { 
+    color: "#fff", 
+    fontWeight: "700", 
+    fontSize: 15 
+  },
+
+  /* -------------------- FLOATING NOTIFICATIONS & DETAIL VIEWS -------------------- */
+  detailsList: { 
+    width: "100%", 
+    marginTop: 12, 
+    marginBottom: 8 
+  },
+  detailRow: { 
+    flexDirection: "row", 
+    alignItems: "flex-start", 
+    backgroundColor: "#f8fafc", 
+    borderRadius: 10, 
+    padding: 10, 
+    marginBottom: 8, 
+    borderWidth: 1, 
+    borderColor: "#e2e8f0" 
+  },
+  detailTextBox: { 
+    flex: 1, 
+    marginLeft: 8 
+  },
+  detailLabel: { 
+    color: "#64748b", 
+    fontSize: 12, 
+    fontWeight: "500", 
+    marginBottom: 2 
+  },
+  detailValue: { 
+    color: "#1e293b", 
+    fontSize: 13, 
+    fontWeight: "500", 
+    lineHeight: 18 
+  },
+  warningBox: { 
+    position: 'absolute', 
+    bottom: 100, 
+    left: 20, 
+    right: 20, 
+    backgroundColor: '#e67e22', 
+    padding: 14, 
+    borderRadius: 14, 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    zIndex: 9999, 
+    elevation: 6, 
+    shadowColor: "#000", 
+    shadowOpacity: 0.3, 
+    shadowRadius: 5 
+  },
+  warningText: { 
+    color: '#fff', 
+    marginLeft: 10, 
+    fontSize: 14, 
+    fontWeight: '600', 
+    flex: 1 
+  },
+  loaderText: { 
+    fontSize: 12, 
+    color: "#64748b", 
+    marginTop: 8, 
+    fontWeight: "500" 
+  },
+  shopItemChoice: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    backgroundColor: "#f8fafc", 
+    borderRadius: 10, 
+    padding: 10, 
+    borderWidth: 1, 
+    borderColor: "#e2e8f0", 
+    marginBottom: 8 
+  },
+  activeShopItemChoice: { 
+    borderColor: "#10b981", 
+    backgroundColor: "#ecfdf5" 
+  },
+  choiceStatus: { 
+    marginLeft: 8 
+  },
+  emptyText: { 
+    textAlign: "center", 
+    color: "#94a3b8", 
+    paddingVertical: 14, 
+    fontWeight: "500" 
+  },
+  summaryListBox: { 
+    width: "100%", 
+    maxHeight: 380 
+  },
+  summaryItemRow: { 
+    backgroundColor: "#f8fafc", 
+    borderRadius: 10, 
+    borderWidth: 1, 
+    borderColor: "#e2e8f0", 
+    padding: 10, 
+    marginBottom: 8 
+  },
+  summaryItemSelected: { 
+    backgroundColor: "#ecfdf5", 
+    borderColor: "#10b981" 
+  },
+  summaryItemHeader: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    justifyContent: "space-between", 
+    marginBottom: 2 
+  },
+  summaryItemName: { 
+    color: "#1e293b", 
+    fontSize: 14, 
+    fontWeight: "700" 
+  },
+  summaryMeta: { 
+    color: "#64748b", 
+    fontSize: 12, 
+    marginTop: 2, 
+    lineHeight: 15, 
+    fontWeight: "500" 
+  },
+  summaryShopText: { 
+    color: "#10b981", 
+    fontSize: 12, 
+    fontWeight: "500", 
+    marginTop: 4 
+  },
+  summaryPendingText: { 
+    color: "#d45a3a", 
+    fontSize: 12, 
+    fontWeight: "500", 
+    marginTop: 4 
+  },
+  summaryStatusPill: { 
+    overflow: "hidden", 
+    borderRadius: 8, 
+    paddingHorizontal: 8, 
+    paddingVertical: 3, 
+    fontSize: 10, 
+    fontWeight: "500", 
+    marginLeft: 6 
+  },
+  summarySelectedPill: { 
+    backgroundColor: "#d1fae5", 
+    color: "#047857" 
+  },
+  summaryPendingPill: { 
+    backgroundColor: "#fee2e2", 
+    color: "#b91c1c" 
+  }
 });

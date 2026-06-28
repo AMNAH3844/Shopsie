@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Platform, Modal, Pressable } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Platform, Modal, Pressable, StatusBar } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { WebView } from "react-native-webview";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -21,10 +21,10 @@ export default function OptimizeRoute() {
   const [categories, setCategories] = useState(["All"]);
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-const [routeOverview, setRouteOverview] = useState({
-  totalDistance: "0 km",
-  travelTime: "0 mins"
-});
+  const [routeOverview, setRouteOverview] = useState({
+    totalDistance: "0 km",
+    travelTime: "0 mins"
+  });
   const [instructions, setInstructions] = useState([]);
   const [waypoints, setWaypoints] = useState([]);
   const [shopGroupedSummary, setShopGroupedSummary] = useState([]);
@@ -82,8 +82,8 @@ const [routeOverview, setRouteOverview] = useState({
       }
 
       const response = await axios.post(
-  `${API_URLS.ROUTE_OPTIMIZE}/optimize`,
-  { listId: Number(listId), userLat, userLng, isDownloaded: isDownloaded },
+        `${API_URLS.ROUTE_OPTIMIZE}/optimize`,
+        { listId: Number(listId), userLat, userLng, isDownloaded: isDownloaded },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -113,20 +113,20 @@ const [routeOverview, setRouteOverview] = useState({
   };
 
   const getDist = (la1, lo1, la2, lo2) => {
-  const R = 6371; // Earth radius in KM
+    const R = 6371; // Earth radius in KM
 
-  const dLat = ((la2 - la1) * Math.PI) / 180;
-  const dLon = ((lo2 - lo1) * Math.PI) / 180;
+    const dLat = ((la2 - la1) * Math.PI) / 180;
+    const dLon = ((lo2 - lo1) * Math.PI) / 180;
 
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((la1 * Math.PI) / 180) *
-      Math.cos((la2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((la1 * Math.PI) / 180) *
+        Math.cos((la2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
 
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-};
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  };
 
   const permute = (arr) => {
     if (arr.length === 0) return [[]];
@@ -258,7 +258,8 @@ const [routeOverview, setRouteOverview] = useState({
         id: counter,
         icon: "storefront-outline",
         text: `Go to Stop ${letter}: ${nextStop.shopName}`,
-detail: `Pick up: ${namesOnly.join(", ")} (${segmentDistance.toFixed(1)} km away)`,      });
+        detail: `Pick up: ${namesOnly.join(", ")} (${segmentDistance.toFixed(1)} km away)`,
+      });
       counter++;
     });
 
@@ -272,9 +273,9 @@ detail: `Pick up: ${namesOnly.join(", ")} (${segmentDistance.toFixed(1)} km away
     setWaypoints(computedWaypoints);
     setInstructions(computedInstructions);
     setRouteOverview({
-  totalDistance: `${minTotalDistance.toFixed(1)} km`,
-  travelTime: `${Math.round((minTotalDistance / 35) * 60) + (bestSequence.length * 4)} mins`,
-});
+      totalDistance: `${minTotalDistance.toFixed(1)} km`,
+      travelTime: `${Math.round((minTotalDistance / 35) * 60) + (bestSequence.length * 4)} mins`,
+    });
   };
 
   const handleSelectShop = (itemKey, shopId) => {
@@ -368,12 +369,22 @@ detail: `Pick up: ${namesOnly.join(", ")} (${segmentDistance.toFixed(1)} km away
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={["#eef4fe", "#2e4466"]} start={{ x: 1, y: 0 }} end={{ x: 0, y: 0 }} style={styles.header}>
-        <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/customerDashboard")} style={styles.backButtonContainer}>
+      <StatusBar barStyle="light-content" />
+
+      {/* MATCHED GRADIENT HEADER */}
+      <LinearGradient
+        colors={["#eef4fe", "#2e4466"]}
+        start={{ x: 1, y: 0 }}
+        end={{ x: 0, y: 0 }}
+        style={styles.header}
+      >
+        <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/customerDashboard")}>
           <Ionicons name="chevron-back" size={28} color="#eef4fe" />
         </TouchableOpacity>
+
         <Text style={styles.headerTitleText}>Optimize Route</Text>
-        <View style={styles.headerSpacer} />
+
+        <View style={{ width: 28 }} />
       </LinearGradient>
 
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
@@ -544,6 +555,7 @@ detail: `Pick up: ${namesOnly.join(", ")} (${segmentDistance.toFixed(1)} km away
         </View>
       </ScrollView>
 
+      {/* MODAL OVERLAY VIEW */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -583,15 +595,18 @@ detail: `Pick up: ${namesOnly.join(", ")} (${segmentDistance.toFixed(1)} km away
         </View>
       </Modal>
 
+      {/* SYNCHRONIZED FIXED BOTTOM NAVBAR */}
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.tabItem} onPress={() => router.replace("/customerDashboard")}>
+        <TouchableOpacity style={styles.tabItem} onPress={() => router.push("/customerDashboard")}>
           <Ionicons name="home" size={22} color="white" />
           <Text style={styles.navText}>Home</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem} onPress={() => router.replace("/customerDashboard/savedlist")}>
+
+        <TouchableOpacity style={styles.tabItem} onPress={() => router.push("/customerDashboard/savedlist")}>
           <MaterialCommunityIcons name="format-list-bulleted" size={22} color="white" />
           <Text style={styles.navText}>Saved Lists</Text>
         </TouchableOpacity>
+
         <TouchableOpacity style={styles.tabItem} onPress={() => router.push("/customerDashboard/inbox")}>
           <Ionicons name="chatbubble-ellipses-outline" size={22} color="white" />
           <Text style={styles.navText}>Inbox</Text>
@@ -602,17 +617,24 @@ detail: `Pick up: ${namesOnly.join(", ")} (${segmentDistance.toFixed(1)} km away
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f8fafc" },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    height: Platform.OS === "ios" ? 105 : 85,
-    paddingTop: Platform.OS === "ios" ? 35 : 0,
+  container: { flex: 1, backgroundColor: "#ffffff" },
+  
+  /* MATCHED HEADER STYLING */
+  header: { 
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    alignItems: "center", 
+    paddingHorizontal: 20, 
+    height: 85 
   },
-  backButtonContainer: { width: 40, alignItems: "flex-start", zIndex: 10 },
-  headerSpacer: { width: 40 },
-  headerTitleText: { fontSize: 22, fontWeight: "700", color: "#eef4fe", textAlign: "center", flex: 1 },
+  headerTitleText: { 
+    fontSize: 22, 
+    fontWeight: "700", 
+    color: "#2e4466", 
+    textAlign: 'center', 
+    flex: 1 
+  },
+
   scrollContainer: { padding: 16, paddingTop: 25, paddingBottom: 100 },
   mapCard: { width: "100%", height: 250, borderRadius: 24, overflow: "hidden", backgroundColor: "#e2e8f0", elevation: 3, marginBottom: 16 },
   map: { flex: 1 },
@@ -643,9 +665,7 @@ const styles = StyleSheet.create({
   instructionTextContent: { flex: 1, marginLeft: 12 },
   instructionMainText: { fontSize: 14, fontWeight: "500", color: "#334155" },
   instructionSubText: { fontSize: 12, color: "#94a3b8", marginTop: 2 },
-  bottomNav: { position: "absolute", bottom: 0, left: 0, right: 0, height: 75, flexDirection: "row", justifyContent: "space-around", alignItems: "center", backgroundColor: "#2e4466", elevation: 10 },
-  tabItem: { justifyContent: "center", alignItems: "center" },
-  navText: { color: "white", fontSize: 12, marginTop: 4, fontWeight: "500" },
+  
   groupedShopContainer: { marginBottom: 14, backgroundColor: "#F8FAFC", borderRadius: 14, borderWidth: 1, borderColor: "#E2E8F0", padding: 12 },
   groupedShopHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderBottomWidth: 1, borderBottomColor: "#E2E8F0", paddingBottom: 8, marginBottom: 8 },
   groupedShopName: { fontSize: 14, fontWeight: "700", color: "#1E293B", flex: 1, paddingRight: 8 },
@@ -663,4 +683,32 @@ const styles = StyleSheet.create({
   infoValue: { fontSize: 14, color: "#334155", fontWeight: "500", lineHeight: 20 },
   modalCloseButton: { backgroundColor: "#2e4466", borderRadius: 14, paddingVertical: 12, alignItems: "center", marginTop: 8 },
   modalCloseButtonText: { color: "white", fontWeight: "700", fontSize: 14 },
+
+  /* MATCHED BOTTOM NAVIGATION STYLING */
+  bottomNav: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 70,
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    backgroundColor: "#2e4466",
+    shadowColor: "#000",
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 10,
+  },
+  tabItem: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  navText: {
+    color: "white",
+    fontSize: 12,
+    marginTop: 4,
+    textAlign: "center",
+    fontWeight: "500",
+  }
 });

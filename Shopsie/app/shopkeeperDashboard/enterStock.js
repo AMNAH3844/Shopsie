@@ -1,21 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { API_URLS } from '../../src/services/apiConfig';
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
   StyleSheet,
   ScrollView,
   Platform,
   StatusBar,
+  KeyboardAvoidingView,
+  ActivityIndicator,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import BottomNav from "./BottomNav.js"; 
 
 export default function EnterStock() {
   const router = useRouter();
@@ -26,16 +26,70 @@ export default function EnterStock() {
   const [quantity, setQuantity] = useState("");
   const [threshold, setThreshold] = useState(""); 
   const [specification, setSpecification] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // const API_URL = "http://172.20.140.250:5000/api/shopkeeper";
+  // ─── TRANSIENT WARNING NOTIFICATION STATE ───────────────────
+  const [warningMessage, setWarningMessage] = useState("");
+  const warningTimerRef = useRef(null);
+
+  const triggerWarningNotification = (msg) => {
+    if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+    setWarningMessage(msg);
+    warningTimerRef.current = setTimeout(() => {
+      setWarningMessage("");
+    }, 4500); 
+  };
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+    };
+  }, []);
+
+  // Helper sanitizers to reject negative values instantly during typing
+  const handlePriceChange = (text) => {
+    // Allows only positive numbers and a single decimal point
+    const sanitized = text.replace(/[^0-9.]/g, "");
+    setName(name); // just keeping consistency
+    setPrice(sanitized);
+  };
+
+  const handleIntegerChange = (text, setterFn) => {
+    // Allows only absolute positive whole numbers (integers)
+    const sanitized = text.replace(/[^0-9]/g, "");
+    setterFn(sanitized);
+  };
 
   const handleAdd = async () => {
-    if (!name || !price || !quantity || !threshold || !specification) {
-      Alert.alert("Error", "Please complete all fields.");
+    // 1. Basic empty field validation
+    if (!name.trim() || !price || !quantity || !threshold || !specification.trim()) {
+      triggerWarningNotification("Warning: Please complete all fields.");
+      return;
+    }
+
+    const numericPrice = Number(price);
+    const numericQuantity = Number(quantity);
+    const numericThreshold = Number(threshold);
+
+    // 2. Strict numerical validation boundary checks
+    if (isNaN(numericPrice) || numericPrice <= 0.9) {
+      triggerWarningNotification("Warning: Price must be a valid number greater than 0.");
+      return;
+    }
+
+    if (isNaN(numericQuantity) || numericQuantity <= 0) {
+      triggerWarningNotification("Warning: Stock quantity cannot be negative.");
+      return;
+    }
+
+    if (isNaN(numericThreshold) || numericThreshold <= 0) {
+      triggerWarningNotification("Warning: Alert threshold limit cannot be negative.");
       return;
     }
 
     try {
+      setIsSubmitting(true);
       const token = await AsyncStorage.getItem("token");
 
       const res = await fetch(API_URLS.SHOP_ADD_PRODUCT, {
@@ -45,29 +99,31 @@ export default function EnterStock() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          name,
-          price: Number(price),
-          quantity: Number(quantity),
-          threshold: Number(threshold), 
-          specification, 
+          name: name.trim(),
+          price: numericPrice,
+          quantity: numericQuantity,
+          threshold: numericThreshold, 
+          specification: specification.trim(), 
         }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        Alert.alert("Error", data.message || "Failed to add product");
+        triggerWarningNotification(data.message || "Warning: Failed to add product");
         return;
       }
 
-      Alert.alert("Success", "Product Added");
+      triggerWarningNotification("Success: Product Added to Stock Records!");
       setName("");
       setPrice("");
       setQuantity("");
       setThreshold(""); 
       setSpecification("");
     } catch (error) {
-      Alert.alert("Error", "Server error");
+      triggerWarningNotification("Warning: Internal application server error.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -93,102 +149,150 @@ export default function EnterStock() {
         <View style={{ width: 28 }} />
       </LinearGradient>
 
-      {/* SCROLLABLE FORM BODY */}
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={localStyles.scrollContainer}>
-        <View style={localStyles.contentBody}>
-          
-          <Text style={localStyles.sectionHeading}>Product Details</Text>
-          <View style={localStyles.card}>
+      {/* KEYBOARD AVOIDING RUNTIME WRAPPER */}
+      <KeyboardAvoidingView 
+        style={localStyles.flexContainer} 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
+      >
+        {/* SCROLLABLE FORM BODY */}
+        <ScrollView 
+          showsVerticalScrollIndicator={false} 
+          contentContainerStyle={localStyles.scrollContainer}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={localStyles.contentBody}>
             
-            {/* Product Name Input */}
-            <Text style={localStyles.fieldLabel}>Product Name</Text>
-            <View style={localStyles.inputWrapper}>
-              <Ionicons name="cube-outline" size={20} color="#64748B" style={localStyles.inputIcon} />
-              <TextInput
-                placeholder="Product Name"
-                placeholderTextColor="#94A3B8"
-                value={name}
-                onChangeText={setName}
-                style={localStyles.baseInputOverride}
-              />
+            <Text style={localStyles.sectionHeading}>Product Details</Text>
+            <View style={localStyles.card}>
+              
+              {/* Product Name Input */}
+              <Text style={localStyles.fieldLabel}>Product Name</Text>
+              <View style={localStyles.inputWrapper}>
+                <Ionicons name="cube-outline" size={20} color="#64748B" style={localStyles.inputIcon} />
+                <TextInput
+                  placeholder="Product Name"
+                  placeholderTextColor="#94A3B8"
+                  value={name}
+                  onChangeText={setName}
+                  style={localStyles.baseInputOverride}
+                />
+              </View>
+
+              {/* Price Input */}
+              <Text style={localStyles.fieldLabel}>Price</Text>
+              <View style={localStyles.inputWrapper}>
+                <Ionicons name="pricetag-outline" size={20} color="#64748B" style={localStyles.inputIcon} />
+                <TextInput
+                  placeholder="0.00"
+                  keyboardType="decimal-pad"
+                  placeholderTextColor="#94A3B8"
+                  value={price}
+                  onChangeText={handlePriceChange}
+                  style={localStyles.baseInputOverride}
+                />
+              </View>
+
+              {/* Quantity Input */}
+              <Text style={localStyles.fieldLabel}>Quantity</Text>
+              <View style={localStyles.inputWrapper}>
+                <MaterialCommunityIcons name="numeric" size={20} color="#64748B" style={localStyles.inputIcon} />
+                <TextInput
+                  placeholder="0"
+                  keyboardType="number-pad"
+                  placeholderTextColor="#94A3B8"
+                  value={quantity}
+                  onChangeText={(txt) => handleIntegerChange(txt, setQuantity)}
+                  style={localStyles.baseInputOverride}
+                />
+              </View>
+
+              {/* Threshold Input Field */}
+              <Text style={localStyles.fieldLabel}>Alert Threshold Limit</Text>
+              <View style={localStyles.inputWrapper}>
+                <Ionicons name="speedometer-outline" size={20} color="#64748B" style={localStyles.inputIcon} />
+                <TextInput
+                  placeholder="0"
+                  keyboardType="number-pad"
+                  placeholderTextColor="#94A3B8"
+                  value={threshold}
+                  onChangeText={(txt) => handleIntegerChange(txt, setThreshold)}
+                  style={localStyles.baseInputOverride}
+                />
+              </View>
+
+              {/* Specification Input */}
+              <Text style={localStyles.fieldLabel}>Specification</Text>
+              <View style={[localStyles.inputWrapper, localStyles.textAreaWrapper]}>
+                <TextInput
+                  placeholder="Enter item specifications..."
+                  placeholderTextColor="#94A3B8"
+                  value={specification}
+                  onChangeText={setSpecification}
+                  multiline={true}
+                  numberOfLines={4}
+                  style={[localStyles.baseInputOverride, localStyles.textAreaInput]}
+                />
+              </View>
+
             </View>
 
-            {/* Price Input */}
-            <Text style={localStyles.fieldLabel}>Price</Text>
-            <View style={localStyles.inputWrapper}>
-              <Ionicons name="pricetag-outline" size={20} color="#64748B" style={localStyles.inputIcon} />
-              <TextInput
-                placeholder="Price"
-                keyboardType="numeric"
-                placeholderTextColor="#94A3B8"
-                value={price}
-                onChangeText={setPrice}
-                style={localStyles.baseInputOverride}
-              />
-            </View>
-
-            {/* Quantity Input */}
-            <Text style={localStyles.fieldLabel}>Quantity</Text>
-            <View style={localStyles.inputWrapper}>
-              <MaterialCommunityIcons name="numeric" size={20} color="#64748B" style={localStyles.inputIcon} />
-              <TextInput
-                placeholder="Quantity"
-                keyboardType="numeric"
-                placeholderTextColor="#94A3B8"
-                value={quantity}
-                onChangeText={setQuantity}
-                style={localStyles.baseInputOverride}
-              />
-            </View>
-
-            {/* Threshold Input Field */}
-            <Text style={localStyles.fieldLabel}>Alert Threshold Limit</Text>
-            <View style={localStyles.inputWrapper}>
-              <Ionicons name="speedometer-outline" size={20} color="#64748B" style={localStyles.inputIcon} />
-              <TextInput
-                placeholder="Alert Line Quantity Threshold"
-                keyboardType="numeric"
-                placeholderTextColor="#94A3B8"
-                value={threshold}
-                onChangeText={setThreshold}
-                style={localStyles.baseInputOverride}
-              />
-            </View>
-
-            {/* Specification Input */}
-            <Text style={localStyles.fieldLabel}>Specification</Text>
-            <View style={[localStyles.inputWrapper, localStyles.textAreaWrapper]}>
-              <TextInput
-                placeholder="Enter item specifications..."
-                placeholderTextColor="#94A3B8"
-                value={specification}
-                onChangeText={setSpecification}
-                multiline={true}
-                numberOfLines={4}
-                style={[localStyles.baseInputOverride, localStyles.textAreaInput]}
-              />
-            </View>
+            {/* Action Save Button */}
+            <TouchableOpacity 
+              style={localStyles.fullEditButton} 
+              onPress={handleAdd} 
+              activeOpacity={0.8}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <>
+                  <Ionicons name="add-circle-outline" size={20} color="white" style={{ marginRight: 8 }} />
+                  <Text style={localStyles.fullEditButtonText}>Add Product</Text>
+                </>
+              )}
+            </TouchableOpacity>
 
           </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
-          {/* Action Save Button */}
-          <TouchableOpacity style={localStyles.fullEditButton} onPress={handleAdd} activeOpacity={0.8}>
-            <Ionicons name="add-circle-outline" size={20} color="white" style={{ marginRight: 8 }} />
-            <Text style={localStyles.fullEditButtonText}>Add Product</Text>
-          </TouchableOpacity>
-
+      {/* DYNAMIC ORANGE/SUCCESS TRANSIENT BANNER LAYER */}
+      {warningMessage ? (
+        <View style={localStyles.warningBox}>
+          <Ionicons 
+            name={warningMessage.startsWith("Success") ? "checkmark-circle-outline" : "warning-outline"} 
+            size={22} 
+            color="#fff" 
+          />
+          <Text style={localStyles.warningText}>{warningMessage}</Text>
         </View>
-      </ScrollView>
+      ) : null}
 
-      {/* EXACT FOOTER NAVIGATION */}
-      <BottomNav />
+      {/* FIXED BOTTOM NAVIGATION BAR */}
+      <View style={localStyles.bottomNav}>
+        <TouchableOpacity style={localStyles.tabItem} onPress={() => router.replace("/shopkeeperDashboard")}>
+          <Ionicons name="home" size={22} color="white" />
+          <Text style={localStyles.navText}>Home</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={localStyles.tabItem} onPress={() => router.push("/shopkeeperDashboard/viewStock")}>
+          <MaterialCommunityIcons name="package-variant-closed" size={24} color="white" />
+          <Text style={localStyles.navText}>Stock</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={localStyles.tabItem} onPress={() => router.push("/shopkeeperDashboard/orders")}>
+          <Ionicons name="receipt" size={24} color="white" />
+          <Text style={localStyles.navText}>Orders</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 const localStyles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: '#F8FAFC' },
-  scrollContainer: { padding: 0, paddingBottom: 100 }, 
+  flexContainer: { flex: 1 },
+  scrollContainer: { paddingVertical: 12, paddingBottom: 50 }, 
   contentBody: { paddingHorizontal: 20 },
   
   gradientHeader: {
@@ -201,18 +305,53 @@ const localStyles = StyleSheet.create({
     elevation: 3
   },
   headerCenterContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  headerTitleText: { fontSize: 20, fontWeight: '700', color: '#2e4466', textAlign: 'center', letterSpacing: -0.3 },
+  headerTitleText: { fontSize: 20, fontWeight: '700', color: '#2e4466', textAlign: 'center' },
   
   sectionHeading: { fontSize: 16, fontWeight: '700', color: '#1E293B', marginTop: 22, marginBottom: 6 },
   card: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 16, marginTop: 5, marginBottom: 5, shadowColor: '#475569', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.12, shadowRadius: 12, elevation: 4 },
   fieldLabel: { fontSize: 13, fontWeight: '700', color: '#334155', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 },
   inputWrapper: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: '#CBD5E1', borderRadius: 12, marginBottom: 16, paddingHorizontal: 12, backgroundColor: '#FFFFFF' },
   inputIcon: { marginRight: 8 },
-  baseInputOverride: { flex: 1, borderWidth: 0, height: 48, paddingLeft: 0, margin: 0, marginBottom: 0, backgroundColor: 'transparent', fontSize: 15, color: '#0F172A', ...Platform.select({ web: { outlineStyle: 'none' } }) },
+  baseInputOverride: { flex: 1, height: 48, fontSize: 15, color: '#0F172A', ...Platform.select({ web: { outlineStyle: 'none' } }) },
   
   textAreaWrapper: { alignItems: 'flex-start', paddingVertical: 10 },
   textAreaInput: { height: 80, textAlignVertical: 'top' },
 
-  fullEditButton: { width: '100%', flexDirection: 'row', backgroundColor: '#22C55E', borderRadius: 14, height: 52, alignItems: 'center', justifyContent: 'center', marginTop: 25, shadowColor: '#22C55E', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 8, elevation: 4 },
+  fullEditButton: { width: '100%', flexDirection: 'row', backgroundColor: '#22C55E', borderRadius: 14, height: 52, alignItems: 'center', justifyContent: 'center', marginTop: 25 },
   fullEditButtonText: { color: 'white', fontWeight: '700', fontSize: 15 },
+
+  bottomNav: { 
+    position: 'absolute', 
+    bottom: 0, 
+    left: 0, 
+    right: 0, 
+    height: 70, 
+    backgroundColor: '#2e4466', 
+    flexDirection: 'row', 
+    justifyContent: 'space-around', 
+    alignItems: 'center', 
+    borderTopWidth: 1, 
+    borderTopColor: '#3b557a',
+    zIndex: 10 
+  },
+  tabItem: { flex: 1, justifyContent: "center", alignItems: "center", height: '100%' },
+  navText: { color: 'white', fontSize: 12, marginTop: 4, fontWeight: '500' },
+
+  warningBox: {
+    position: 'absolute',
+    bottom: 85, 
+    left: 20,
+    right: 20,
+    backgroundColor: '#e67e22',
+    padding: 14,
+    borderRadius: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    zIndex: 9999,
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+  },
+  warningText: { color: '#fff', marginLeft: 10, fontSize: 14, fontWeight: '600', flex: 1 },
 });

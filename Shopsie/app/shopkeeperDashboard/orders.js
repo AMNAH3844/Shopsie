@@ -1,14 +1,14 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useRef, useEffect } from "react";
 import { API_URLS } from '../../src/services/apiConfig';
 import {
   View,
   Text,
   FlatList,
   TouchableOpacity,
-  Alert,
   StyleSheet,
   ActivityIndicator,
   StatusBar,
+  Modal,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -16,14 +16,65 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import BottomNav from "./BottomNav.js";
 
-// const API_URL = "http://172.20.140.250:5000/api/shopkeeper";
-
 export default function ShopkeeperOrders() {
   const router = useRouter();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState(null);
+  const [orderCount, setOrderCount] = useState(0); 
 
+  // ─── ACTION CONFIRMATION MODAL STATES ───────────────────────
+  const [actionModalVisible, setActionModalVisible] = useState(false);
+  const [pendingAction, setPendingAction] = useState({ id: null, type: "", productName: "" });
+
+  // ─── TRANSIENT WARNING NOTIFICATION STATE ───────────────────
+  const [warningMessage, setWarningMessage] = useState("");
+  const warningTimerRef = useRef(null);
+
+  const triggerWarningNotification = (msg) => {
+    if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+    setWarningMessage(msg);
+    warningTimerRef.current = setTimeout(() => {
+      setWarningMessage("");
+    }, 4500); 
+  };
+
+  useEffect(() => {
+    return () => {
+      if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+    };
+  }, []);
+
+  // ================= FETCH ORDER COUNT METRIC =================
+  const fetchOrderCount = useCallback(async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const res = await fetch(API_URLS.SHOP_ORDER_NOTIFICATION_COUNT, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setOrderCount(data.count || 0);
+    } catch (error) {
+      console.log("Order count fetching error:", error);
+      console.log("ORDER COUNT RESPONSE:", data);
+    }
+  }, []);
+
+  // ================= CLEAR ORDERS BADGE METRIC =================
+  const markOrderNotificationsAsRead = useCallback(async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      await fetch(API_URLS.SHOP_ORDER_NOTIFICATIONS_READ_ALL, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setOrderCount(0);
+    } catch (error) {
+      console.log("Mark orders read error:", error);
+    }
+  }, []);
+
+  // ================= FETCH ORDERS =================
   const fetchOrders = useCallback(async () => {
     try {
       const token = await AsyncStorage.getItem("token");
@@ -33,20 +84,45 @@ export default function ShopkeeperOrders() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to load orders");
       setOrders(Array.isArray(data) ? data : []);
+      
+      // Auto-clear notification counter when orders are actively loaded/viewed
+      markOrderNotificationsAsRead();
     } catch (error) {
-      Alert.alert("Error", error.message || "Could not fetch orders");
+      triggerWarningNotification(error.message || "Warning: Could not fetch orders");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [markOrderNotificationsAsRead]);
 
+  // Handle initialization and page pull triggers
   useFocusEffect(
     useCallback(() => {
       fetchOrders();
-    }, [fetchOrders])
+      fetchOrderCount();
+    }, [fetchOrders, fetchOrderCount])
   );
 
-  const respondToOrder = async (id, action) => {
+  // Dynamic 3-second live updates polling interval loop background task tracker
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!actionModalVisible) {
+        fetchOrderCount();
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [actionModalVisible, fetchOrderCount]);
+
+  // ================= INTERACTION MODAL INTERCEPTORS =================
+  const openActionConfirmation = (id, type, productName) => {
+    setPendingAction({ id, type, productName });
+    setActionModalVisible(true);
+  };
+
+  const executeOrderResponse = async () => {
+    const { id, type } = pendingAction;
+    setActionModalVisible(false);
+
     try {
       setSavingId(id);
       const token = await AsyncStorage.getItem("token");
@@ -54,17 +130,17 @@ export default function ShopkeeperOrders() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          "Authorization": `Bearer ${token}`,
         },
-        body: JSON.stringify({ action }),
+        body: JSON.stringify({ action: type }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Could not update order");
 
       setOrders((prev) => prev.map((order) => (order.id === id ? data : order)));
-      Alert.alert("Success", action === "approve" ? "Stock updated." : "Purchase rejected.");
+      triggerWarningNotification(type === "approve" ? "Success: Stock updated." : "Success: Purchase rejected.");
     } catch (error) {
-      Alert.alert("Error", error.message || "Could not update order");
+      triggerWarningNotification(error.message || "Warning: Operation failed");
     } finally {
       setSavingId(null);
     }
@@ -107,16 +183,18 @@ export default function ShopkeeperOrders() {
           <View style={localStyles.actionRow}>
             <TouchableOpacity
               style={[localStyles.actionButton, localStyles.approveButton]}
-              onPress={() => respondToOrder(item.id, "approve")}
+              onPress={() => openActionConfirmation(item.id, "approve", item.productName)}
               disabled={savingId === item.id}
+              activeOpacity={0.8}
             >
               <Ionicons name="checkmark" size={20} color="#fff" />
               <Text style={localStyles.actionText}>Approve</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[localStyles.actionButton, localStyles.rejectButton]}
-              onPress={() => respondToOrder(item.id, "reject")}
+              onPress={() => openActionConfirmation(item.id, "reject", item.productName)}
               disabled={savingId === item.id}
+              activeOpacity={0.7}
             >
               <Ionicons name="close" size={20} color="#fff" />
               <Text style={localStyles.actionText}>Reject</Text>
@@ -130,6 +208,7 @@ export default function ShopkeeperOrders() {
   return (
     <View style={localStyles.mainContainer}>
       <StatusBar barStyle="light-content" />
+      
       <LinearGradient
         colors={["#eef4fe", "#2e4466"]}
         start={{ x: 1, y: 0 }}
@@ -142,8 +221,30 @@ export default function ShopkeeperOrders() {
         <View style={localStyles.headerCenterContainer}>
           <Text style={localStyles.headerTitleText}>Orders</Text>
         </View>
-        <TouchableOpacity onPress={fetchOrders}>
-          <Ionicons name="refresh" size={24} color="#2e4466" />
+        <TouchableOpacity onPress={fetchOrders} style={{ position: "relative" }}>
+          <Ionicons name="refresh" size={24} color="#eef4fe" />
+          
+          {/* LIVE COUNT BADGE ICON ROW WRAPPER */}
+          {orderCount > 0 && (
+            <View
+              style={{
+                position: "absolute",
+                top: -6,
+                right: -8,
+                minWidth: 16,
+                height: 16,
+                borderRadius: 8,
+                backgroundColor: "#EF4444",
+                alignItems: "center",
+                justifyContent: "center",
+                paddingHorizontal: 3,
+              }}
+            >
+              <Text style={{ color: "#fff", fontSize: 9, fontWeight: "900" }}>
+                {orderCount}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
       </LinearGradient>
 
@@ -163,6 +264,62 @@ export default function ShopkeeperOrders() {
         />
       )}
 
+      {/* UNIFIED INTERACTION CONFIRMATION MODAL OVERLAY */}
+      <Modal
+        animationType="fade"
+        transparent
+        visible={actionModalVisible}
+        onRequestClose={() => setActionModalVisible(false)}
+      >
+        <View style={localStyles.modalOverlay}>
+          <View style={localStyles.modalBox}>
+            <TouchableOpacity onPress={() => setActionModalVisible(false)} style={localStyles.closeCornerBtn}>
+              <Text style={localStyles.closeX}>✕</Text>
+            </TouchableOpacity>
+
+            <Text style={[
+              localStyles.modalTitle, 
+              { color: '#2e4466' }
+            ]}>
+              {pendingAction.type === "approve" ? "Approve Purchase" : "Reject Purchase"}
+            </Text>
+            <Text style={localStyles.modalSubtitle}>
+              Are you sure you want to {pendingAction.type} the incoming stock transaction for "{pendingAction.productName}"?
+            </Text>
+            
+            <View style={localStyles.modalButtonsRow}>
+              <TouchableOpacity 
+                style={[localStyles.modalBtn, { backgroundColor: '#E2E8F0' }]} 
+                onPress={() => setActionModalVisible(false)}
+              >
+                <Text style={[localStyles.modalBtnText, { color: '#334155' }]}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[
+                  localStyles.modalBtn, 
+                  { backgroundColor: pendingAction.type === "approve" ? '#22C55E' : '#EF4444' }
+                ]} 
+                onPress={executeOrderResponse}
+              >
+                <Text style={[localStyles.modalBtnText, { color: '#fff' }]}>Confirm</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* TRANSIENT BANNER LAYER */}
+      {warningMessage ? (
+        <View style={localStyles.warningBox}>
+          <Ionicons 
+            name={warningMessage.startsWith("Success") ? "checkmark-circle-outline" : "warning-outline"} 
+            size={22} 
+            color="#fff" 
+          />
+          <Text style={localStyles.warningText}>{warningMessage}</Text>
+        </View>
+      ) : null}
+
       <BottomNav />
     </View>
   );
@@ -171,7 +328,7 @@ export default function ShopkeeperOrders() {
 const localStyles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: "#F8FAFC" },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  scrollContainer: { paddingHorizontal: 20, paddingBottom: 100 },
+  scrollContainer: { paddingHorizontal: 20, paddingBottom: 110 }, 
   gradientHeader: {
     flexDirection: "row",
     alignItems: "center",
@@ -212,4 +369,17 @@ const localStyles = StyleSheet.create({
   rejectButton: { backgroundColor: "#EF4444" },
   actionText: { color: "#fff", fontWeight: "800", marginLeft: 6 },
   emptyText: { textAlign: "center", color: "#94A3B8", marginTop: 40, fontWeight: "700" },
+
+  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center" },
+  modalBox: { width: "85%", backgroundColor: "#fff", borderRadius: 20, paddingTop: 20, paddingBottom: 24, paddingHorizontal: 24, alignItems: "center", position: 'relative', elevation: 10 },
+  closeCornerBtn: { position: 'absolute', top: 16, right: 20, zIndex: 10, padding: 4 },
+  closeX: { fontSize: 20, color: "#94A3B8", fontWeight: "bold" },
+  modalTitle: { fontSize: 19, fontWeight: "700", marginTop: 10 },
+  modalSubtitle: { fontSize: 14, color: "#475569", marginTop: 12, marginBottom: 24, textAlign: 'center', lineHeight: 20 },
+  modalButtonsRow: { width: "100%", flexDirection: "row", justifyContent: "space-between", gap: 12 },
+  modalBtn: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: "center" },
+  modalBtnText: { fontWeight: '700', fontSize: 15 },
+
+  warningBox: { position: 'absolute', bottom: 85, left: 20, right: 20, backgroundColor: '#e67e22', padding: 14, borderRadius: 14, flexDirection: 'row', alignItems: 'center', zIndex: 9999, elevation: 6 },
+  warningText: { color: '#fff', marginLeft: 10, fontSize: 14, fontWeight: '600', flex: 1 },
 });

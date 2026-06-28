@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { API_URLS } from '../../src/services/apiConfig';
 import {
   View,
@@ -6,28 +6,53 @@ import {
   FlatList,
   TextInput,
   TouchableOpacity,
-  Alert,
   StyleSheet,
   Platform,
   StatusBar,
+  ActivityIndicator,
+  Modal,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import BottomNav from "./BottomNav.js";
 
 export default function UpdateStock() {
   const router = useRouter();
   const [products, setProducts] = useState([]);
   const [updates, setUpdates] = useState({});
   const [search, setSearch] = useState("");
+  const [isFetching, setIsFetching] = useState(false);
 
-  // const API_URL = "http://172.20.140.250:5000/api/shopkeeper";
+  // ─── MODAL STATES ──────────────────────────────────────────
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState({ id: null, name: "" });
+
+  // ─── TRANSIENT WARNING NOTIFICATION STATE ───────────────────
+  const [warningMessage, setWarningMessage] = useState("");
+  const warningTimerRef = useRef(null);
+
+  const triggerWarningNotification = (msg) => {
+    if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+    setWarningMessage(msg);
+    warningTimerRef.current = setTimeout(() => {
+      setWarningMessage("");
+    }, 4500); 
+  };
+
+  useEffect(() => {
+    return () => {
+      if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+    };
+  }, []);
 
   // ================= FETCH PRODUCTS =================
   const fetchProducts = async () => {
     try {
+      setIsFetching(true);
       const token = await AsyncStorage.getItem("token");
 
       const res = await fetch(API_URLS.GET_PRODUCTS, {
@@ -35,10 +60,12 @@ export default function UpdateStock() {
       });
 
       const data = await res.json();
-      setProducts(data);
+      setProducts(Array.isArray(data) ? data : []);
     } catch (error) {
       console.log(error);
-      Alert.alert("Error", "Failed to fetch products");
+      triggerWarningNotification("Warning: Failed to fetch products");
+    } finally {
+      setIsFetching(false);
     }
   };
 
@@ -46,17 +73,56 @@ export default function UpdateStock() {
     fetchProducts();
   }, []);
 
+  // ================= SANITIZED INPUT FILTERS =================
+  const handlePriceInputChange = (text, itemId) => {
+    const sanitized = text.replace(/[^0-9.]/g, "");
+    setUpdates({
+      ...updates,
+      [itemId]: { ...updates[itemId], price: sanitized },
+    });
+  };
+
+  const handleQuantityInputChange = (text, itemId) => {
+    const sanitized = text.replace(/[^0-9]/g, "");
+    setUpdates({
+      ...updates,
+      [itemId]: { ...updates[itemId], quantity: sanitized },
+    });
+  };
+
   // ================= UPDATE PRODUCT =================
   const updateProduct = async (id) => {
     const token = await AsyncStorage.getItem("token");
     const body = {};
 
-    if (updates[id]?.price) body.price = updates[id].price;
-    if (updates[id]?.quantity) body.quantity = updates[id].quantity;
-    if (updates[id]?.specification) body.specification = updates[id].specification;
+    const rawPrice = updates[id]?.price;
+    const rawQuantity = updates[id]?.quantity;
+    const rawSpec = updates[id]?.specification;
+
+    if (rawPrice !== undefined && rawPrice !== "") {
+      const numericPrice = Number(rawPrice);
+      if (isNaN(numericPrice) || numericPrice <= 0) {
+        triggerWarningNotification("Warning: Price must be greater than 0.");
+        return;
+      }
+      body.price = numericPrice;
+    }
+
+    if (rawQuantity !== undefined && rawQuantity !== "") {
+      const numericQuantity = Number(rawQuantity);
+      if (isNaN(numericQuantity) || numericQuantity < 0) {
+        triggerWarningNotification("Warning: Quantity cannot be negative.");
+        return;
+      }
+      body.quantity = numericQuantity;
+    }
+
+    if (rawSpec !== undefined && rawSpec.trim() !== "") {
+      body.specification = rawSpec.trim();
+    }
 
     if (Object.keys(body).length === 0) {
-      Alert.alert("Info", "Enter at least one field to update");
+      triggerWarningNotification("Warning: Enter at least one field to update");
       return;
     }
 
@@ -78,40 +144,32 @@ export default function UpdateStock() {
         );
 
         setUpdates({ ...updates, [id]: {} });
-
-        Alert.alert("Success", "Product updated successfully");
+        triggerWarningNotification("Success: Product updated successfully");
+        Keyboard.dismiss();
       } else {
         const data = await res.json();
-        Alert.alert("Error", data.message || "Failed to update");
+        triggerWarningNotification(data.message || "Warning: Failed to update");
       }
     } catch (error) {
       console.log(error);
-      Alert.alert("Error", "Update failed");
+      triggerWarningNotification("Warning: Update operation failed.");
     }
   };
 
-  // ================= DELETE PRODUCT =================
-  const deleteProduct = async (id) => {
-    const confirmDelete =
-      Platform.OS === "web"
-        ? window.confirm("Are you sure you want to delete this product?")
-        : await new Promise((resolve) => {
-            Alert.alert(
-              "Confirm Delete",
-              "Are you sure you want to delete this product?",
-              [
-                { text: "Cancel", onPress: () => resolve(false) },
-                { text: "Delete", style: "destructive", onPress: () => resolve(true) },
-              ]
-            );
-          });
+  // ================= DELETE INTERACTION TRIGGER =================
+  const openDeleteConfirmation = (id, name) => {
+    setSelectedProduct({ id, name });
+    setDeleteModalVisible(true);
+  };
 
-    if (!confirmDelete) return;
+  const executeDeleteProduct = async () => {
+    const targetId = selectedProduct.id;
+    setDeleteModalVisible(false);
 
     try {
       const token = await AsyncStorage.getItem("token");
 
-      const res = await fetch(`${API_URLS.DELETE_PRODUCT}/${id}`, {
+      const res = await fetch(`${API_URLS.DELETE_PRODUCT}/${targetId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -119,161 +177,226 @@ export default function UpdateStock() {
       });
 
       if (res.ok) {
-        setProducts((prev) =>
-          prev.filter((p) => p.id !== Number(id))
-        );
-
-        Alert.alert("Success", "Product deleted successfully");
+        setProducts((prev) => prev.filter((p) => p.id !== Number(targetId)));
+        triggerWarningNotification("Success: Product deleted successfully");
       } else {
         const data = await res.json();
-        Alert.alert("Error", data.message || "Delete failed");
+        triggerWarningNotification(data.message || "Warning: Delete failed");
       }
     } catch (error) {
       console.log(error);
-      Alert.alert("Error", "Delete failed");
+      triggerWarningNotification("Warning: Delete operation failed.");
     }
   };
 
   // ================= SEARCH FILTER =================
   const filteredProducts = products.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase())
+    p.name?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <View style={localStyles.mainContainer}>
       <StatusBar barStyle="light-content" />
 
-      {/* EXACT HEADER IMPLEMENTATION */}
-      <LinearGradient 
-        colors={["#eef4fe", "#2e4466"]} 
-        start={{ x: 1, y: 0 }} 
-        end={{ x: 0, y: 0 }} 
-        style={localStyles.gradientHeader}
+      {/* FIXED STRUCTURE: Keyboard avoiding handles inner inputs, navbar sits cleanly beneath outside it */}
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/shopkeeperDashboard")}>
-          <Ionicons name="chevron-back" size={28} color="#eef4fe" />
-        </TouchableOpacity>
-        <View style={localStyles.headerCenterContainer}>
-          <Text style={localStyles.headerTitleText}>
-            Update Stock
-          </Text>
-        </View>
-        <View style={{ width: 28 }} />
-      </LinearGradient>
-
-      {/* SEARCH AND FILTER SECTION CONTAINER */}
-      <View style={localStyles.searchSectionWrapper}>
-        <View style={localStyles.searchBarContainer}>
-          <Ionicons name="search-outline" size={20} color="#64748B" style={localStyles.inputIcon} />
-          <TextInput
-            placeholder="Search product by name..."
-            placeholderTextColor="#94A3B8"
-            value={search}
-            onChangeText={setSearch}
-            style={localStyles.baseInputOverride}
-          />
-          {search.length > 0 && (
-            <TouchableOpacity onPress={() => setSearch("")}>
-              <Ionicons name="close-circle" size={18} color="#94A3B8" />
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-
-      {/* PRODUCT LIST ENGINE */}
-      <FlatList
-        data={filteredProducts}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={localStyles.scrollContainer}
-        showsVerticalScrollIndicator={false}
-        ListHeaderComponent={<Text style={localStyles.sectionHeading}>Inventory Items</Text>}
-        renderItem={({ item }) => (
-          <View style={localStyles.card}>
-            <Text style={localStyles.productTitle}>{item.name}</Text>
-
-            {/* Price Row Input field */}
-            <Text style={localStyles.fieldLabel}>Price</Text>
-            <View style={localStyles.inputWrapper}>
-              <Ionicons name="pricetag-outline" size={18} color="#64748B" style={localStyles.inputIcon} />
-              <TextInput
-                placeholder={`Current: ${item.price}`}
-                placeholderTextColor="#94A3B8"
-                keyboardType="numeric"
-                style={localStyles.baseInputOverride}
-                onChangeText={(t) =>
-                  setUpdates({
-                    ...updates,
-                    [item.id]: { ...updates[item.id], price: t },
-                  })
-                }
-                value={updates[item.id]?.price || ""}
-              />
-            </View>
-
-            {/* Quantity Row Input field */}
-            <Text style={localStyles.fieldLabel}>Quantity</Text>
-            <View style={localStyles.inputWrapper}>
-              <MaterialCommunityIcons name="numeric" size={18} color="#64748B" style={localStyles.inputIcon} />
-              <TextInput
-                placeholder={`Current: ${item.quantity}`}
-                placeholderTextColor="#94A3B8"
-                keyboardType="numeric"
-                style={localStyles.baseInputOverride}
-                onChangeText={(t) =>
-                  setUpdates({
-                    ...updates,
-                    [item.id]: { ...updates[item.id], quantity: t },
-                  })
-                }
-                value={updates[item.id]?.quantity || ""}
-              />
-            </View>
-
-            {/* Specification Row Input field */}
-            <Text style={localStyles.fieldLabel}>Specification</Text>
-            <View style={[localStyles.inputWrapper, localStyles.textAreaWrapper]}>
-              <TextInput
-                placeholder={`Current: ${item.specification || "-"}`}
-                placeholderTextColor="#94A3B8"
-                style={[localStyles.baseInputOverride, localStyles.textAreaInput]}
-                multiline={true}
-                numberOfLines={3}
-                onChangeText={(t) =>
-                  setUpdates({
-                    ...updates,
-                    [item.id]: { ...updates[item.id], specification: t },
-                  })
-                }
-                value={updates[item.id]?.specification || ""}
-              />
-            </View>
-
-            {/* ACTION ROW UTILITY BUTTONS */}
-            <View style={localStyles.actionRow}>
-              <TouchableOpacity
-                style={[localStyles.actionButtonHalf, localStyles.saveButtonColor]}
-                onPress={() => updateProduct(item.id)}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="checkmark-circle-outline" size={18} color="white" style={{ marginRight: 4 }} />
-                <Text style={localStyles.actionButtonText}>Update</Text>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={{ flex: 1 }}>
+            
+            {/* EXACT HEADER IMPLEMENTATION */}
+            <LinearGradient 
+              colors={["#eef4fe", "#2e4466"]} 
+              start={{ x: 1, y: 0 }} 
+              end={{ x: 0, y: 0 }} 
+              style={localStyles.gradientHeader}
+            >
+              <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/shopkeeperDashboard")}>
+                <Ionicons name="chevron-back" size={28} color="#eef4fe" />
               </TouchableOpacity>
+              <View style={localStyles.headerCenterContainer}>
+                <Text style={localStyles.headerTitleText}>
+                  Update Stock
+                </Text>
+              </View>
+              <View style={{ width: 28 }} />
+            </LinearGradient>
 
-              <TouchableOpacity
-                style={[localStyles.actionButtonHalf, localStyles.cancelButtonColor]}
-                onPress={() => deleteProduct(item.id)}
-                activeOpacity={0.7}
+            {/* SEARCH BAR CONTAINER */}
+            <View style={localStyles.searchSectionWrapper}>
+              <View style={localStyles.searchBarContainer}>
+                <Ionicons name="search-outline" size={20} color="#64748B" style={localStyles.inputIcon} />
+                <TextInput
+                  placeholder="Search product by name..."
+                  placeholderTextColor="#94A3B8"
+                  value={search}
+                  onChangeText={setSearch}
+                  style={localStyles.baseInputOverride}
+                />
+                {search.length > 0 && (
+                  <TouchableOpacity onPress={() => setSearch("")}>
+                    <Ionicons name="close-circle" size={18} color="#94A3B8" />
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+
+            {/* PRODUCT LIST ENGINE */}
+            {isFetching ? (
+              <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                <ActivityIndicator size="large" color="#2e4466" />
+              </View>
+            ) : (
+              <FlatList
+                data={filteredProducts}
+                keyExtractor={(item) => item.id.toString()}
+                contentContainerStyle={localStyles.scrollContainer}
+                showsVerticalScrollIndicator={false}
+                ListHeaderComponent={<Text style={localStyles.sectionHeading}>Inventory Items</Text>}
+                renderItem={({ item }) => (
+                  <View style={localStyles.card}>
+                    <Text style={localStyles.productTitle}>{item.name}</Text>
+
+                    {/* Price Row */}
+                    <Text style={localStyles.fieldLabel}>Price</Text>
+                    <View style={localStyles.inputWrapper}>
+                      <Ionicons name="pricetag-outline" size={18} color="#64748B" style={localStyles.inputIcon} />
+                      <TextInput
+                        placeholder={`Current: Rs ${item.price}`}
+                        placeholderTextColor="#94A3B8"
+                        keyboardType="decimal-pad"
+                        style={localStyles.baseInputOverride}
+                        onChangeText={(t) => handlePriceInputChange(t, item.id)}
+                        value={updates[item.id]?.price || ""}
+                      />
+                    </View>
+
+                    {/* Quantity Row */}
+                    <Text style={localStyles.fieldLabel}>Quantity</Text>
+                    <View style={localStyles.inputWrapper}>
+                      <MaterialCommunityIcons name="numeric" size={18} color="#64748B" style={localStyles.inputIcon} />
+                      <TextInput
+                        placeholder={`Current: ${item.quantity}`}
+                        placeholderTextColor="#94A3B8"
+                        keyboardType="number-pad"
+                        style={localStyles.baseInputOverride}
+                        onChangeText={(t) => handleQuantityInputChange(t, item.id)}
+                        value={updates[item.id]?.quantity || ""}
+                      />
+                    </View>
+
+                    {/* Specification Row */}
+                    <Text style={localStyles.fieldLabel}>Specification</Text>
+                    <View style={[localStyles.inputWrapper, localStyles.textAreaWrapper]}>
+                      <TextInput
+                        placeholder={`Current: ${item.specification || "-"}`}
+                        placeholderTextColor="#94A3B8"
+                        style={[localStyles.baseInputOverride, localStyles.textAreaInput]}
+                        multiline={true}
+                        numberOfLines={3}
+                        onChangeText={(t) =>
+                          setUpdates({
+                            ...updates,
+                            [item.id]: { ...updates[item.id], specification: t },
+                          })
+                        }
+                        value={updates[item.id]?.specification || ""}
+                      />
+                    </View>
+
+                    {/* ACTION ROW UTILITY BUTTONS */}
+                    <View style={localStyles.actionRow}>
+                      <TouchableOpacity
+                        style={[localStyles.actionButtonHalf, localStyles.saveButtonColor]}
+                        onPress={() => updateProduct(item.id)}
+                        activeOpacity={0.8}
+                      >
+                        <Ionicons name="checkmark-circle-outline" size={18} color="white" style={{ marginRight: 4 }} />
+                        <Text style={localStyles.actionButtonText}>Update</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={[localStyles.actionButtonHalf, localStyles.cancelButtonColor]}
+                        onPress={() => openDeleteConfirmation(item.id, item.name)}
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons name="trash-outline" size={18} color="white" style={{ marginRight: 4 }} />
+                        <Text style={localStyles.actionButtonText}>Delete</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+              />
+            )}
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+
+      {/* UNIFIED DESIGN DELETE MODAL OVERLAY */}
+      <Modal
+        animationType="fade"
+        transparent
+        visible={deleteModalVisible}
+        onRequestClose={() => setDeleteModalVisible(false)}
+      >
+        <View style={localStyles.modalOverlay}>
+          <View style={localStyles.modalBox}>
+            <TouchableOpacity onPress={() => setDeleteModalVisible(false)} style={localStyles.closeCornerBtn}>
+              <Text style={localStyles.closeX}>✕</Text>
+            </TouchableOpacity>
+
+            <Text style={[localStyles.modalTitle, { color: '#EF4444' }]}>Delete Product</Text>
+            <Text style={localStyles.modalSubtitle}>
+              Are you sure you want to permanently remove "{selectedProduct.name}" from stock records?
+            </Text>
+            
+            <View style={localStyles.modalButtonsRow}>
+              <TouchableOpacity 
+                style={[localStyles.modalBtn, { backgroundColor: '#E2E8F0' }]} 
+                onPress={() => setDeleteModalVisible(false)}
               >
-                <Ionicons name="trash-outline" size={18} color="white" style={{ marginRight: 4 }} />
-                <Text style={localStyles.actionButtonText}>Delete</Text>
+                <Text style={[localStyles.modalBtnText, { color: '#334155' }]}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[localStyles.modalBtn, { backgroundColor: '#EF4444' }]} 
+                onPress={executeDeleteProduct}
+              >
+                <Text style={[localStyles.modalBtnText, { color: '#fff' }]}>Delete</Text>
               </TouchableOpacity>
             </View>
           </View>
-        )}
-      />
+        </View>
+      </Modal>
 
-      {/* EXACT FOOTER NAVIGATION */}
-      <BottomNav />
+      {/* TRANSIENT BANNER LAYER */}
+      {warningMessage ? (
+        <View style={localStyles.warningBox}>
+          <Ionicons 
+            name={warningMessage.startsWith("Success") ? "checkmark-circle-outline" : "warning-outline"} 
+            size={22} 
+            color="#fff" 
+          />
+          <Text style={localStyles.warningText}>{warningMessage}</Text>
+        </View>
+      ) : null}
+
+      {/* INLINE BOTTOM NAVIGATION (Now extracted outside KeyboardAvoidingView) */}
+      <View style={localStyles.bottomNav}>
+        <TouchableOpacity style={localStyles.tabItem} onPress={() => router.replace("/shopkeeperDashboard")}>
+          <Ionicons name="home" size={22} color="white" />
+          <Text style={localStyles.navText}>Home</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={localStyles.tabItem} onPress={() => router.push("/shopkeeperDashboard/viewStock")}>
+          <MaterialCommunityIcons name="package-variant-closed" size={24} color="white" />
+          <Text style={localStyles.navText}>Stock</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={localStyles.tabItem} onPress={() => router.push("/shopkeeperDashboard/orders")}>
+          <Ionicons name="receipt" size={24} color="white" />
+          <Text style={localStyles.navText}>Orders</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -281,7 +404,7 @@ export default function UpdateStock() {
 const localStyles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: '#F8FAFC' },
   searchSectionWrapper: { paddingHorizontal: 20, marginTop: 16 },
-  scrollContainer: { paddingHorizontal: 20, paddingBottom: 100 },
+  scrollContainer: { paddingHorizontal: 20, paddingBottom: 30 },
   
   gradientHeader: {
     flexDirection: 'row',
@@ -293,22 +416,18 @@ const localStyles = StyleSheet.create({
     elevation: 3
   },
   headerCenterContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  headerTitleText: { fontSize: 20, fontWeight: '700', color: '#2e4466', textAlign: 'center', letterSpacing: -0.3 },
+  headerTitleText: { fontSize: 20, fontWeight: '700', color: '#2e4466', textAlign: 'center' },
   
   searchBarContainer: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: '#CBD5E1', borderRadius: 14, paddingHorizontal: 14, backgroundColor: '#FFFFFF', height: 50 },
   inputIcon: { marginRight: 8 },
-  baseInputOverride: { flex: 1, borderWidth: 0, height: '100%', paddingLeft: 0, margin: 0, backgroundColor: 'transparent', fontSize: 14, color: '#0F172A', ...Platform.select({ web: { outlineStyle: 'none' } }) },
+  baseInputOverride: { flex: 1, height: '100%', fontSize: 14, color: '#0F172A', ...Platform.select({ web: { outlineStyle: 'none' } }) },
   
   sectionHeading: { fontSize: 16, fontWeight: '700', color: '#1E293B', marginTop: 14, marginBottom: 6 },
-  
   card: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 16, marginTop: 6, marginBottom: 12, shadowColor: '#475569', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.12, shadowRadius: 12, elevation: 4 },
   productTitle: { fontSize: 17, fontWeight: '700', color: '#0F172A', marginBottom: 12 },
   fieldLabel: { fontSize: 11, fontWeight: '700', color: '#475569', marginBottom: 5, textTransform: 'uppercase', letterSpacing: 0.5 },
   
   inputWrapper: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: '#E2E8F0', borderRadius: 10, marginBottom: 12, paddingHorizontal: 12, backgroundColor: '#FAFAFA', height: 44 },
-  inputIcon: { marginRight: 6 },
-  baseInputOverride: { flex: 1, borderWidth: 0, height: '100%', paddingLeft: 0, margin: 0, backgroundColor: 'transparent', fontSize: 14, color: '#0F172A', ...Platform.select({ web: { outlineStyle: 'none' } }) },
-  
   textAreaWrapper: { alignItems: 'flex-start', paddingVertical: 8, height: 68 },
   textAreaInput: { textAlignVertical: 'top' },
 
@@ -317,4 +436,22 @@ const localStyles = StyleSheet.create({
   cancelButtonColor: { backgroundColor: '#EF4444' },
   saveButtonColor: { backgroundColor: '#22C55E' },
   actionButtonText: { color: 'white', fontWeight: '700', fontSize: 14 },
+
+  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center" },
+  modalBox: { width: "85%", backgroundColor: "#fff", borderRadius: 20, paddingTop: 20, paddingBottom: 24, paddingHorizontal: 24, alignItems: "center", position: 'relative', elevation: 10 },
+  closeCornerBtn: { position: 'absolute', top: 16, right: 20, zIndex: 10, padding: 4 },
+  closeX: { fontSize: 20, color: "#94A3B8", fontWeight: "bold" },
+  modalTitle: { fontSize: 19, fontWeight: "700", marginTop: 10 },
+  modalSubtitle: { fontSize: 14, color: "#475569", marginTop: 12, marginBottom: 24, textAlign: 'center', lineHeight: 20 },
+  modalButtonsRow: { width: "100%", flexDirection: "row", justifyContent: "space-between", gap: 12 },
+  modalBtn: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: "center" },
+  modalBtnText: { fontWeight: '700', fontSize: 15 },
+
+  // Will now remain fixed directly behind or under the keyboard window viewport bounds
+  bottomNav: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 70, backgroundColor: '#2e4466', flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', borderTopWidth: 1, borderTopColor: '#3b557a', zIndex: 10 },
+  tabItem: { flex: 1, justifyContent: "center", alignItems: "center", height: '100%' },
+  navText: { color: 'white', fontSize: 12, marginTop: 4, fontWeight: '500' },
+
+  warningBox: { position: 'absolute', bottom: 85, left: 20, right: 20, backgroundColor: '#e67e22', padding: 14, borderRadius: 14, flexDirection: 'row', alignItems: 'center', zIndex: 9999, elevation: 6 },
+  warningText: { color: '#fff', marginLeft: 10, fontSize: 14, fontWeight: '600', flex: 1 },
 });

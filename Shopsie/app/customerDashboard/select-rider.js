@@ -9,14 +9,13 @@ import {
   ActivityIndicator,
   Alert,
   Modal,
+  StatusBar,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-
-// const API_BASE = "http://172.20.140.250:5000/api";
 
 const firstParam = (value, fallback = "") => {
   if (Array.isArray(value)) return value[0] ?? fallback;
@@ -219,14 +218,19 @@ export default function CustomerSelectRider() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: "#ffffff" }]}>
+      <StatusBar barStyle="light-content" />
+      
+      {/* ================= EXACT UNIFIED HEADER ================= */}
       <LinearGradient
         colors={["#eef4fe", "#2e4466"]}
         start={{ x: 1, y: 0 }}
         end={{ x: 0, y: 0 }}
         style={styles.header}
       >
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity 
+          onPress={() => router.canGoBack() ? router.back() : router.replace("/customerDashboard")}
+        >
           <Ionicons name="chevron-back" size={28} color="#eef4fe" />
         </TouchableOpacity>
 
@@ -288,6 +292,7 @@ export default function CustomerSelectRider() {
         />
       )}
 
+      {/* CONFIRMATION MODAL */}
       <Modal
         visible={confirmVisible}
         transparent
@@ -299,18 +304,24 @@ export default function CustomerSelectRider() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalBox}>
-            <View style={styles.modalIconCircle}>
-              <MaterialCommunityIcons name="bicycle" size={40} color="#2e4466" />
-            </View>
-
+            <TouchableOpacity
+              onPress={() => {
+                setConfirmVisible(false);
+                setSelectedRider(null);
+              }}
+              style={styles.closeCornerBtn}
+            >
+              <Text style={styles.closeX}>✕</Text>
+            </TouchableOpacity>
+            
             <Text style={styles.modalTitle}>Share List?</Text>
 
             <Text style={styles.modalBody}>
-              Do you want to share{"\n"}
+              Do you want to share{" "}
               <Text style={styles.boldText}>
                 "{listName || "this list"}"
-              </Text>
-              {"\n"}with rider{" "}
+              </Text>{" "}
+              with rider{" "}
               <Text style={styles.boldText}>{selectedRider?.name}</Text>?
             </Text>
 
@@ -346,18 +357,34 @@ export default function CustomerSelectRider() {
                   color="#fff"
                   style={{ marginRight: 6 }}
                 />
-                <Text style={styles.yesBtnText}>Yes, Share</Text>
+                <Text style={styles.yesBtnText}>Yes</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
+
+      {/* ================= EXACT UNIFIED BOTTOM NAVIGATION ================= */}
+      <View style={styles.bottomNav}>
+        <TouchableOpacity style={styles.tabItem} onPress={() => router.push("/customerDashboard")}>
+          <Ionicons name="home" size={22} color="white" />
+          <Text style={styles.navText}>Home</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.tabItem} onPress={() => router.push("/customerDashboard/savedlist")}>
+          <MaterialCommunityIcons name="format-list-bulleted" size={22} color="white" />
+          <Text style={styles.navText}>Saved Lists</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.tabItem} onPress={() => router.push("/customerDashboard/inbox")}>
+          <Ionicons name="chatbubble-ellipses-outline" size={22} color="white" />
+          <Text style={styles.navText}>Inbox</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f8fafc" },
+  container: { flex: 1, backgroundColor: "#ffffff" },
   header: {
     height: 85,
     paddingHorizontal: 20,
@@ -370,7 +397,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#2e4466",
     fontSize: 22,
-    fontWeight: "800",
+    fontWeight: "700",
   },
   centered: {
     flex: 1,
@@ -379,7 +406,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   loadingText: { color: "#64748b", fontSize: 14 },
-  list: { padding: 16, paddingBottom: 100 },
+  list: { padding: 16, paddingBottom: 110 },
   infoCard: {
     backgroundColor: "#fff",
     borderRadius: 18,
@@ -486,50 +513,43 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(15,23,42,0.55)",
-    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.45)",
     justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 15,
   },
   modalBox: {
+    width: "80%",
     backgroundColor: "#fff",
-    borderRadius: 24,
-    padding: 28,
-    width: "82%",
+    borderRadius: 22,
+    paddingTop: 15,
+    paddingBottom: 25,
+    paddingHorizontal: 40,
     alignItems: "center",
-    elevation: 12,
-  },
-  modalIconCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: "#eef4fe",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 14,
+    position: "relative",
   },
   modalTitle: {
-    color: "#1e293b",
     fontSize: 20,
-    fontWeight: "900",
-    marginBottom: 8,
-    textAlign: "center",
+    fontWeight: "700",
+    color: "#111",
+    marginTop: 18,
   },
   modalBody: {
-    color: "#64748b",
     fontSize: 14,
+    color: "#555",
+    marginTop: 12,
+    marginBottom: 20,
     textAlign: "center",
-    lineHeight: 24,
-    marginBottom: 14,
   },
   boldText: { color: "#2e4466", fontWeight: "900" },
   advanceBox: {
     width: "100%",
-    backgroundColor: "#f8fafc",
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
+    backgroundColor: "#f7f9fc",
     borderRadius: 14,
     padding: 12,
-    marginBottom: 18,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#e1e8ee",
   },
   advanceText: { color: "#334155", fontSize: 12, fontWeight: "700", marginTop: 2 },
   advanceWarning: { color: "#b91c1c", fontSize: 12, fontWeight: "900", lineHeight: 18, marginTop: 8 },
@@ -537,23 +557,69 @@ const styles = StyleSheet.create({
   modalBtnRow: { flexDirection: "row", gap: 12, width: "100%" },
   noBtn: {
     flex: 1,
-    height: 48,
+    backgroundColor: "#e5e5e5",
+    paddingVertical: 15,
     borderRadius: 14,
-    backgroundColor: "#f1f5f9",
     alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
+    marginRight: 10,
   },
-  noBtnText: { color: "#64748b", fontSize: 15, fontWeight: "800" },
+  noBtnText: {
+    color: "#333",
+    fontWeight: "700",
+    fontSize: 15,
+  },
   yesBtn: {
     flex: 1,
-    height: 48,
+    backgroundColor: "#314a73",
+    paddingVertical: 15,
     borderRadius: 14,
-    backgroundColor: "#2e4466",
     alignItems: "center",
-    justifyContent: "center",
+    marginLeft: 10,
     flexDirection: "row",
+    justifyContent: "center",
   },
-  yesBtnText: { color: "#fff", fontSize: 15, fontWeight: "800" },
+  yesBtnText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 15,
+  },
+  closeCornerBtn: {
+    position: "absolute",
+    top: 15,
+    right: 20,
+    zIndex: 10,
+    padding: 5,
+  },
+  closeX: {
+    fontSize: 22,
+    color: "#94a3b8",
+    fontWeight: "bold",
+  },
+  bottomNav: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 70,
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    backgroundColor: "#2e4466",
+    shadowColor: "#000",
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 10,
+    zIndex: 999,
+  },
+  tabItem: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  navText: {
+    color: "white",
+    fontSize: 12,
+    marginTop: 4,
+    textAlign: "center",
+    fontWeight: "500",
+  }
 });

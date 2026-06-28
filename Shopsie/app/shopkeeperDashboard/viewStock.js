@@ -22,8 +22,6 @@ export default function ViewStock() {
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
 
-  // const API_URL = "http://172.20.140.250:5000/api/shopkeeper";
-
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -32,7 +30,7 @@ export default function ViewStock() {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        setProducts(data);
+        setProducts(Array.isArray(data) ? data : []);
       } catch (err) {
         Alert.alert("Error", "Failed to fetch products");
       }
@@ -42,14 +40,14 @@ export default function ViewStock() {
   }, []);
 
   const filteredProducts = products.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase())
+    p.name?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <View style={localStyles.mainContainer}>
       <StatusBar barStyle="light-content" />
 
-      {/* EXACT HEADER IMPLEMENTATION */}
+      {/* EXACT FIXED HEADER IMPLEMENTATION */}
       <LinearGradient 
         colors={["#eef4fe", "#2e4466"]} 
         start={{ x: 1, y: 0 }} 
@@ -151,7 +149,9 @@ export default function ViewStock() {
 const localStyles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: '#F8FAFC' },
   searchSectionWrapper: { paddingHorizontal: 20, marginTop: 16 },
-  scrollContainer: { paddingHorizontal: 20, paddingBottom: 100 },
+  
+  // ADJUSTED: Increased bottom padding from 100 to 110 to clear the absolute BottomNav cleanly
+  scrollContainer: { paddingHorizontal: 20, paddingBottom: 110 },
   
   gradientHeader: {
     flexDirection: 'row',
@@ -183,7 +183,9 @@ const localStyles = StyleSheet.create({
   stockBadgeText: { fontSize: 12, fontWeight: '700' },
 
   infoGrid: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#FAFAFA', padding: 12, borderRadius: 12, borderWidth: 1, borderColor: '#F1F5F9', marginBottom: 12 },
-  infoColumn: { flex: 1, alignItems: 'center' },
+  
+  // ADJUSTED: Changed center to left/start alignment to create a unified design system look with the update page
+  infoColumn: { flex: 1, alignItems: 'flex-start', paddingLeft: 4 },
   fieldLabel: { fontSize: 10, fontWeight: '700', color: '#64748B', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
   infoValue: { fontSize: 14, fontWeight: '700', color: '#1E293B' },
 
