@@ -15,6 +15,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import BottomNav from "./BottomNav.js";
+import { BackHandler } from "react-native";
 
 export default function ShopkeeperOrders() {
   const router = useRouter();
@@ -56,7 +57,6 @@ export default function ShopkeeperOrders() {
       setOrderCount(data.count || 0);
     } catch (error) {
       console.log("Order count fetching error:", error);
-      console.log("ORDER COUNT RESPONSE:", data);
     }
   }, []);
 
@@ -74,6 +74,19 @@ export default function ShopkeeperOrders() {
     }
   }, []);
 
+  useEffect(() => {
+  const backAction = () => {
+    router.replace("/shopkeeperDashboard");
+    return true;
+  };
+
+  const backHandler = BackHandler.addEventListener(
+    "hardwareBackPress",
+    backAction
+  );
+
+  return () => backHandler.remove();
+}, []);
   // ================= FETCH ORDERS =================
   const fetchOrders = useCallback(async () => {
     try {
@@ -215,37 +228,22 @@ export default function ShopkeeperOrders() {
         end={{ x: 0, y: 0 }}
         style={localStyles.gradientHeader}
       >
-        <TouchableOpacity onPress={() => (router.canGoBack() ? router.back() : router.replace("/shopkeeperDashboard"))}>
-          <Ionicons name="chevron-back" size={28} color="#eef4fe" />
-        </TouchableOpacity>
+        <TouchableOpacity
+  onPress={() => router.replace("/shopkeeperDashboard")}
+>
+  <Ionicons name="chevron-back" size={28} color="#eef4fe" />
+</TouchableOpacity>
         <View style={localStyles.headerCenterContainer}>
           <Text style={localStyles.headerTitleText}>Orders</Text>
         </View>
-        <TouchableOpacity onPress={fetchOrders} style={{ position: "relative" }}>
-          <Ionicons name="refresh" size={24} color="#eef4fe" />
-          
-          {/* LIVE COUNT BADGE ICON ROW WRAPPER */}
-          {orderCount > 0 && (
-            <View
-              style={{
-                position: "absolute",
-                top: -6,
-                right: -8,
-                minWidth: 16,
-                height: 16,
-                borderRadius: 8,
-                backgroundColor: "#EF4444",
-                alignItems: "center",
-                justifyContent: "center",
-                paddingHorizontal: 3,
-              }}
-            >
-              <Text style={{ color: "#fff", fontSize: 9, fontWeight: "900" }}>
-                {orderCount}
-              </Text>
-            </View>
-          )}
-        </TouchableOpacity>
+        <TouchableOpacity onPress={fetchOrders}   style={{ paddingRight: 10 }}
+>
+  <Ionicons
+    name="refresh"
+    size={24}
+    color="#2e4466"
+  />
+</TouchableOpacity>
       </LinearGradient>
 
       {loading ? (

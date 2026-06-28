@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { API_URLS } from '../../src/services/apiConfig';
 import {
   View,
@@ -6,13 +6,13 @@ import {
   TouchableOpacity,
   TextInput,
   Image,
-  Alert,
   ScrollView,
   StyleSheet,
   Modal,
   KeyboardAvoidingView,
   Platform,
   Dimensions,
+  StatusBar,
 } from "react-native";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -34,8 +34,27 @@ export default function Settings() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // DELETE ACCOUNT MODAL STATE
+  // MODAL STATES
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+
+  // ─── TRANSIENT WARNING STATUS BANNER STATE ─────────
+  const [warningMessage, setWarningMessage] = useState("");
+  const warningTimerRef = useRef(null);
+
+  const triggerWarningNotification = (msg) => {
+    if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+    setWarningMessage(msg);
+    warningTimerRef.current = setTimeout(() => {
+      setWarningMessage("");
+    }, 4500); 
+  };
+
+  useEffect(() => {
+    return () => {
+      if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const loadData = async () => {
@@ -47,7 +66,11 @@ export default function Settings() {
 
   const openUpdateModal = (field) => {
     setActiveField(field);
-    if (field !== "password") setNewValueInput(userData[field] || "");
+    if (field !== "password") {
+      setNewValueInput(userData[field] || "");
+    } else {
+      setNewValueInput("");
+    }
     setUsernameStatus(null);
     setCurrentPassword("");
     setNewPassword("");
@@ -58,6 +81,10 @@ export default function Settings() {
   const checkUsername = async (value) => {
     setNewValueInput(value);
     if (activeField !== "username") return;
+    if (!value.trim()) {
+      setUsernameStatus(null);
+      return;
+    }
 
     try {
       const res = await fetch(`${API_URLS.CHECK_USERNAME}?username=${value}`);
@@ -71,6 +98,18 @@ export default function Settings() {
   const handleFinalUpdate = async () => {
     if (activeField === "password") return handlePasswordUpdate();
 
+    if (!newValueInput.trim()) {
+      return triggerWarningNotification(`Warning: ${activeField.charAt(0).toUpperCase() + activeField.slice(1)} field cannot be empty.`);
+    }
+
+    if (newValueInput.trim() === userData[activeField]) {
+      return triggerWarningNotification(`Warning: New value is identical to current ${activeField}.`);
+    }
+
+    if (activeField === "username" && usernameStatus === "taken") {
+      return triggerWarningNotification("Warning: Username is already taken.");
+    }
+
     try {
       const token = await AsyncStorage.getItem("token");
       const res = await fetch(API_URLS.SETTINGS_UPDATE, {
@@ -82,30 +121,36 @@ export default function Settings() {
         body: JSON.stringify({
           userId: userData.id,
           field: activeField,
-          value: newValueInput,
+          value: newValueInput.trim(),
         }),
       });
 
       const data = await res.json();
-      if (!res.ok) return Alert.alert("Error", data.error);
+      if (!res.ok) return triggerWarningNotification(data.error || "Update failed");
 
-      const updated = { ...userData, [activeField]: newValueInput };
+      const updated = { ...userData, [activeField]: newValueInput.trim() };
       setUserData(updated);
       await AsyncStorage.setItem("userData", JSON.stringify(updated));
 
       setModalVisible(false);
-      Alert.alert("Success", "Updated successfully");
+      triggerWarningNotification("Success: Profile updated successfully!");
     } catch {
-      Alert.alert("Error", "Update failed");
+      triggerWarningNotification("Error: Profile attribute update failed");
     }
   };
 
   const handlePasswordUpdate = async () => {
-    if (!currentPassword || !newPassword || !confirmPassword)
-      return Alert.alert("Error", "All fields required");
+    if (!currentPassword.trim() || !newPassword.trim() || !confirmPassword.trim()) {
+      return triggerWarningNotification("Warning: All password input boxes are required.");
+    }
 
-    if (newPassword !== confirmPassword)
-      return Alert.alert("Error", "Passwords do not match");
+    if (currentPassword === newPassword) {
+      return triggerWarningNotification("Warning: New password cannot be the same as your current password.");
+    }
+
+    if (newPassword !== confirmPassword) {
+      return triggerWarningNotification("Warning: New and Confirm passwords do not match.");
+    }
 
     try {
       const token = await AsyncStorage.getItem("token");
@@ -124,12 +169,12 @@ export default function Settings() {
       });
 
       const data = await res.json();
-      if (!res.ok) return Alert.alert("Error", data.error);
+      if (!res.ok) return triggerWarningNotification(data.error || "Password change failed");
 
       setModalVisible(false);
-      Alert.alert("Success", "Password updated successfully");
+      triggerWarningNotification("Success: Password securely updated.");
     } catch {
-      Alert.alert("Error", "Password update failed");
+      triggerWarningNotification("Error: Exception tracking password configuration update.");
     }
   };
 
@@ -166,19 +211,19 @@ export default function Settings() {
       if (res.ok) {
         setUserData(data.user);
         await AsyncStorage.setItem("userData", JSON.stringify(data.user));
-        Alert.alert("Success", "Profile picture updated!");
+        triggerWarningNotification("Success: Profile picture updated!");
       } else {
-        Alert.alert("Error", data.error || "Upload failed");
+        triggerWarningNotification(data.error || "Upload failed");
       }
     } catch (err) {
       console.error("Upload Error:", err);
-      Alert.alert("Error", "Upload failed");
+      triggerWarningNotification("Error: File upload task failed");
     }
   };
 
   const pickImage = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) return Alert.alert("Permission denied");
+    if (!permission.granted) return triggerWarningNotification("Warning: Media library permissions denied");
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -190,7 +235,8 @@ export default function Settings() {
     if (!result.canceled) await uploadImageToBackend(result.assets[0].uri);
   };
 
-  const handleLogout = async () => {
+  const handleLogoutConfirm = async () => {
+    setLogoutModalVisible(false);
     await AsyncStorage.clear();
     router.replace("/signin");
   };
@@ -213,13 +259,13 @@ export default function Settings() {
       });
 
       const data = await res.json();
-      if (!res.ok) return Alert.alert("Error", data.error);
+      if (!res.ok) return triggerWarningNotification(data.error || "Failed to remove item layout");
 
       await AsyncStorage.clear();
       setDeleteModalVisible(false);
       router.replace("/signin");
     } catch {
-      Alert.alert("Error", "Failed to delete account");
+      triggerWarningNotification("Error: Critical failure clearing credentials identity");
     }
   };
 
@@ -244,6 +290,7 @@ export default function Settings() {
 
   return (
     <View style={styles.scrollContainer}>
+      <StatusBar barStyle="dark-content" />
       <ScrollView 
         style={styles.screenScroll} 
         contentContainerStyle={styles.screenContent}
@@ -288,7 +335,7 @@ export default function Settings() {
 
         {/* Bottom Action Flow */}
         <View style={{ marginTop: 16 }}>
-          <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+          <TouchableOpacity style={styles.logoutBtn} onPress={() => setLogoutModalVisible(true)}>
             <Text style={styles.logoutBtnText}>Logout</Text>
           </TouchableOpacity>
 
@@ -309,8 +356,8 @@ export default function Settings() {
         </View>
       </ScrollView>
 
-      {/* UPDATE MODAL (EXACT DASHBOARD MODAL STYLE) */}
-      <Modal visible={modalVisible} transparent animationType="fade">
+      {/* UPDATE MODAL */}
+      <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={() => setModalVisible(false)}>
         <View style={localStyles.modalOverlay}>
           <KeyboardAvoidingView 
             behavior={Platform.OS === "ios" ? "padding" : "height"} 
@@ -360,6 +407,7 @@ export default function Settings() {
                   value={newValueInput}
                   onChangeText={checkUsername}
                   placeholderTextColor="#94a3b8"
+                  autoCapitalize="none"
                 />
 
                 {activeField === "username" && usernameStatus && (
@@ -381,7 +429,7 @@ export default function Settings() {
                 <Text style={localStyles.modalBtnText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity 
-                style={[localStyles.modalBtn, { backgroundColor: "#16a34a" }]} // Color updated to Green
+                style={[localStyles.modalBtn, { backgroundColor: "#16a34a" }]} 
                 onPress={handleFinalUpdate}
               >
                 <Text style={localStyles.modalBtnText}>Save</Text>
@@ -391,8 +439,40 @@ export default function Settings() {
         </View>
       </Modal>
 
-      {/* DELETE CONFIRM MODAL (EXACT DASHBOARD MODAL STYLE) */}
-      <Modal visible={deleteModalVisible} transparent animationType="fade">
+      {/* LOGOUT CONFIRM MODAL */}
+      <Modal visible={logoutModalVisible} transparent animationType="fade" onRequestClose={() => setLogoutModalVisible(false)}>
+        <View style={localStyles.modalOverlay}>
+          <View style={localStyles.modalBox}>
+            <TouchableOpacity onPress={() => setLogoutModalVisible(false)} style={localStyles.closeCornerBtn}>
+              <Text style={localStyles.closeX}>✕</Text>
+            </TouchableOpacity>
+
+            <Text style={localStyles.modalTitle}>Logout?</Text>
+            <Text style={localStyles.modalSubtitle}>
+              Are you sure you want to securely log out of your session?
+            </Text>
+
+            <View style={localStyles.shareButtonsRow}>
+              <TouchableOpacity
+                onPress={() => setLogoutModalVisible(false)}
+                style={[localStyles.modalBtn, { backgroundColor: "#f06543", marginRight: 10 }]}
+              >
+                <Text style={localStyles.modalBtnText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleLogoutConfirm}
+                style={[localStyles.modalBtn, { backgroundColor: "#2e4466" }]}
+              >
+                <Text style={localStyles.modalBtnText}>Logout</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* DELETE CONFIRM MODAL */}
+      <Modal visible={deleteModalVisible} transparent animationType="fade" onRequestClose={() => setDeleteModalVisible(false)}>
         <View style={localStyles.modalOverlay}>
           <View style={localStyles.modalBox}>
             <TouchableOpacity onPress={() => setDeleteModalVisible(false)} style={localStyles.closeCornerBtn}>
@@ -422,12 +502,23 @@ export default function Settings() {
           </View>
         </View>
       </Modal>
+
+      {/* FLOATING TRANSIENT NOTIFICATION LAYER */}
+      {warningMessage ? (
+        <View style={localStyles.warningBox}>
+          <Ionicons 
+            name={warningMessage.startsWith("Success") ? "checkmark-circle-outline" : "warning-outline"} 
+            size={22} 
+            color="#fff" 
+          />
+          <Text style={localStyles.warningText}>{warningMessage}</Text>
+        </View>
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  /* ---------------- ROOT & CONTAINER ---------------- */
   scrollContainer: {
     flex: 1,
     backgroundColor: "#f7f9fc",
@@ -439,7 +530,7 @@ const styles = StyleSheet.create({
   },
   screenContent: {
     paddingTop: 2,
-    paddingBottom: 20,
+    paddingBottom: 40,
   },
   headerContainer: {
     flexDirection: "row",
@@ -466,8 +557,6 @@ const styles = StyleSheet.create({
     color: "#64748b",
     fontWeight: "500",
   },
-
-  /* ---------------- AVATAR SECTION ---------------- */
   avatarWrapper: { 
     alignItems: "center", 
     marginBottom: 20,
@@ -503,10 +592,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderWidth: 2,
     borderColor: "#ffffff",
-    shadowColor: "#16a34a",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
     elevation: 3,
   },
   addBtnText: { 
@@ -527,8 +612,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     marginTop: 2,
   },
-
-  /* ---------------- RENDER FIELDS ---------------- */
   card: {
     backgroundColor: "#ffffff",
     paddingHorizontal: 16,
@@ -540,10 +623,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    shadowColor: "#2e4466",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
     elevation: 2,
   },
   fieldInfo: {
@@ -575,8 +654,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "700",
   },
-
-  /* ---------------- INPUTS & ACTIONS ---------------- */
   input: {
     width: "100%",
     borderWidth: 1,
@@ -594,10 +671,6 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: "center",
     backgroundColor: "#2e4466", 
-    shadowColor: "#2e4466",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
     elevation: 3,
   },
   logoutBtnText: {
@@ -612,10 +685,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: 10,
-    shadowColor: "#b91c1c",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
     elevation: 3,
   },
   deleteBtnText: {
@@ -634,8 +703,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     textAlign: "center",
   },
-
-  /* ---------------- USERNAME VERIFICATION STATES ---------------- */
   messageText: {
     width: "100%",
     textAlign: "center",
@@ -657,7 +724,6 @@ const styles = StyleSheet.create({
   }
 });
 
-// ================= EXACT DASHBOARD COPIED MODAL CSS =================
 const localStyles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
@@ -715,14 +781,35 @@ const localStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: 'center',
     elevation: 2,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
   },
   modalBtnText: {
     color: "#fff",
     fontWeight: "700",
     fontSize: 14,
     textAlign: "center"
-  }
+  },
+  warningBox: { 
+    position: 'absolute', 
+    bottom: 30, 
+    left: 20, 
+    right: 20, 
+    backgroundColor: '#E67E22', 
+    padding: 14, 
+    borderRadius: 14, 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    zIndex: 9999, 
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+  },
+  warningText: { 
+    color: '#fff', 
+    marginLeft: 10, 
+    fontSize: 14, 
+    fontWeight: '600', 
+    flex: 1 
+  },
 });
