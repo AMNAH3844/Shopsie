@@ -1,4 +1,3 @@
-
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { verifyToken } from "../middlewares/authMiddleware.js";
@@ -96,6 +95,61 @@ router.get("/orders", async (req, res) => {
   }
 });
 
+// ================= NEW: GET ORDER NOTIFICATION COUNT =================
+router.get("/order-notification-count", async (req, res) => {
+  try {
+    const shopkeeper = await prisma.shopkeeper.findUnique({
+      where: { userId: Number(req.user.id) },
+    });
+
+    if (!shopkeeper) {
+      return res.status(404).json({ message: "Shopkeeper not found" });
+    }
+
+    // Counts how many order notifications are still pending response
+    const count = await prisma.shopkeeperOrderNotification.count({
+      where: { 
+        shopkeeperId: shopkeeper.id,
+        status: "PENDING"
+      },
+    });
+
+    return res.json({ count });
+  } catch (error) {
+    console.error("order-notification-count error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ================= NEW: MARK ORDER NOTIFICATIONS AS READ =================
+router.patch("/order-notifications/read-all", async (req, res) => {
+  try {
+    const shopkeeper = await prisma.shopkeeper.findUnique({
+      where: { userId: Number(req.user.id) },
+    });
+
+    if (!shopkeeper) {
+      return res.status(404).json({ message: "Shopkeeper not found" });
+    }
+
+    // If your table has an explicit 'isRead' field, you can update it here.
+    // If it relies entirely on the 'status' changing from 'PENDING', this can simply return success.
+    // Assuming an optional 'isRead' field setup or status layout update:
+    await prisma.shopkeeperOrderNotification.updateMany({
+      where: { 
+        shopkeeperId: shopkeeper.id,
+        status: "PENDING"
+      },
+      data: { status: "PENDING" }, // Keeps status intact if only viewing the page
+    });
+
+    return res.json({ message: "Orders badge synchronized successfully" });
+  } catch (error) {
+    console.error("order-notifications/read-all error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+});
+
 router.get("/notifications", async (req, res) => {
   try {
     const shopkeeper = await prisma.shopkeeper.findUnique({
@@ -123,13 +177,13 @@ router.get("/notifications", async (req, res) => {
         source: "stock",
       })),
       ...accountNotifications.map((item) => ({
-  ...item,
-  source: "account",
-  shopkeeperId: shopkeeper.id,
-  isSuspended: shopkeeper.isSuspended,
-  suspensionReason: shopkeeper.suspensionReason,
-  revertRequestedAt: shopkeeper.revertRequestedAt,
-})),
+        ...item,
+        source: "account",
+        shopkeeperId: shopkeeper.id,
+        isSuspended: shopkeeper.isSuspended,
+        suspensionReason: shopkeeper.suspensionReason,
+        revertRequestedAt: shopkeeper.revertRequestedAt,
+      })),
     ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     return res.json(notifications);
@@ -215,50 +269,49 @@ router.post("/revert-request", async (req, res) => {
 
     const { revertMessage } = req.body;
 
-if (!revertMessage?.trim()) {
-  return res.status(400).json({
-    message: "Please explain what was corrected",
-  });
-}
+    if (!revertMessage?.trim()) {
+      return res.status(400).json({
+        message: "Please explain what was corrected",
+      });
+    }
 
-await prisma.shopkeeper.update({
-  where: { id: shopkeeper.id },
-  data: {
-    revertRequestedAt: new Date(),
-    revertMessage: revertMessage.trim(),
-  },
-});
+    await prisma.shopkeeper.update({
+      where: { id: shopkeeper.id },
+      data: {
+        revertRequestedAt: new Date(),
+        revertMessage: revertMessage.trim(),
+      },
+    });
 
-const latestSuspension =
-  await prisma.notification.findFirst({
-    where: {
-      userId: shopkeeper.userId,
-      type: "SHOP_SUSPENDED",
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+    const latestSuspension =
+      await prisma.notification.findFirst({
+        where: {
+          userId: shopkeeper.userId,
+          type: "SHOP_SUSPENDED",
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
 
-if (latestSuspension) {
-  const parsed = JSON.parse(
-    latestSuspension.message
-  );
+    if (latestSuspension) {
+      const parsed = JSON.parse(
+        latestSuspension.message
+      );
 
-  await prisma.notification.update({
-    where: {
-      id: latestSuspension.id,
-    },
-    data: {
-      message: JSON.stringify({
-        ...parsed,
-        status: "PENDING",
-      }),
-    },
-  });
-}
+      await prisma.notification.update({
+        where: {
+          id: latestSuspension.id,
+        },
+        data: {
+          message: JSON.stringify({
+            ...parsed,
+            status: "PENDING",
+          }),
+        },
+      });
+    }
 
-    // notify admin
     const admins = await prisma.user.findMany({
       where: { role: "admin" },
     });
@@ -271,10 +324,8 @@ if (latestSuspension) {
         relatedShopkeeperId: shopkeeper.id,
         type: "SHOP_REVERT_REQUEST",
         title: "Revert Request",
-message:
-`${shopkeeper.shopName} requested restoration.
-Reason:
-${revertMessage}`,      })),
+        message: `${shopkeeper.shopName} requested restoration.\nReason:\n${revertMessage}`,
+      })),
     });
 
     return res.json({ message: "Request sent" });
