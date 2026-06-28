@@ -1,7 +1,6 @@
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { API_URLS } from '../../src/services/apiConfig';
-import { useState, useRef } from "react"; 
 import {
   ScrollView,
   View,
@@ -10,8 +9,10 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Platform,
-  Animated
+  Animated,
+  KeyboardAvoidingView
 } from "react-native";
+import React, { useState, useRef } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import styles from "../styles/Authstyle";
 
@@ -171,10 +172,25 @@ if (signUpData.password !== signUpData.confirmPassword) {
       setLoading(false);
     }
   };
-
   return (
-    <View style={{ flex: 1 }}>
-      <ScrollView style={styles.scrollContainer} contentContainerStyle={{ flexGrow: 1 }}>
+ <View style={{ flex: 1 }}>
+  <KeyboardAvoidingView
+    style={{ flex: 1 }}
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
+  >
+    <ScrollView
+      style={styles.scrollContainer}
+      contentContainerStyle={{
+        flexGrow: 1,
+        paddingBottom: 40,
+      }}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
+
+
+
         <View style={styles.container}>
           <View style={[styles.header, styles.riderHeader]}>
             <Text style={[styles.logo]}>🛍️</Text>
@@ -268,9 +284,9 @@ if (signUpData.password !== signUpData.confirmPassword) {
             </TouchableOpacity>
           </View>
         </View>
-      </ScrollView>
+            </ScrollView>
+    </KeyboardAvoidingView>
 
-      {/* ⚠️ ORANGE TOAST MODAL SYSTEM NOTIFICATION BAR */}
       {alertVisible && (
         <Animated.View style={[customStyles.orangeToastContainer, { opacity: fadeAnim }]}>
           <Ionicons name="alert-circle" size={20} color="white" />
@@ -283,6 +299,7 @@ if (signUpData.password !== signUpData.confirmPassword) {
 
 // 🎨 IN-LINE STYLES SHEET FOR ERROR OVERLAYS
 const customStyles = {
+  
   orangeToastContainer: {
     position: "absolute",
     bottom: 50,

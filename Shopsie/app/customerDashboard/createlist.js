@@ -10,7 +10,10 @@ import {
   Animated,
   Easing,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
+
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
@@ -435,8 +438,16 @@ export default function CreateList() {
     );
   };
 
-  return (
-    <View style={styles.container}>
+return (
+  <View style={{ flex: 1 }}>
+
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
+    >
+      <View style={styles.container}>
+
       {/* 1. FIXED HEADER */}
       <LinearGradient colors={["#eef4fe", "#2e4466"]} start={{ x: 1, y: 0 }} end={{ x: 0, y: 0 }} style={styles.header}>
         <TouchableOpacity 
@@ -479,7 +490,7 @@ export default function CreateList() {
         data={listItems}
         keyExtractor={(item, index) => item.id?.toString() || index.toString()}
         renderItem={renderItem}
-        contentContainerStyle={{ paddingBottom: 100 }} 
+        contentContainerStyle={{ paddingBottom: 220 }} 
         keyboardShouldPersistTaps="handled"
 
         ListHeaderComponent={
@@ -564,16 +575,7 @@ export default function CreateList() {
         }
       />
 
-      {/* 3. STICKY BOTTOM BUTTONS */}
-      <View style={styles.footerContainer}>
-        <TouchableOpacity style={styles.saveBtn} onPress={saveList}>
-          <Text style={styles.buttonText}>Save for Later</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.finalizeBtn} onPress={finalizeList}>
-          <Text style={styles.buttonText}>Finalize & Share</Text>
-        </TouchableOpacity>
-      </View>
-
+    
       {/* 4. OVERLAY PANELS */}
       
       {/* DATABASE PANEL */}
@@ -775,7 +777,20 @@ export default function CreateList() {
           </View>
         </View>
       </Modal>
+      </View>
+    </KeyboardAvoidingView>
 
+   
+     <View style={styles.footerContainer}>
+      <TouchableOpacity style={styles.saveBtn} onPress={saveList}>
+        <Text style={styles.buttonText}>Save for Later</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.finalizeBtn} onPress={finalizeList}>
+        <Text style={styles.buttonText}>Finalize & Share</Text>
+      </TouchableOpacity>
     </View>
-  );
+
+  </View>
+);
 }

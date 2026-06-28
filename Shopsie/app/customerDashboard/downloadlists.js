@@ -8,7 +8,8 @@ import {
   StyleSheet,
   Modal,
   TextInput,
-  StatusBar
+  StatusBar,
+  ScrollView
 } from "react-native";
 
 import axios from "axios";
@@ -22,6 +23,7 @@ import {
 } from "expo-router";
 
 export default function DownloadLists() {
+  const [detailsModal, setDetailsModal] = useState(false);
   const router = useRouter();
   const { flow = "normal", source = "normal" } = useLocalSearchParams();
   const isRequestRiderFlow = flow === "request_rider" || source === "riderDirect";
@@ -242,9 +244,19 @@ export default function DownloadLists() {
         renderItem={({ item }) => (
           <View style={styles.listCard}>
             {/* Left Circle Icon */}
-            <View style={styles.listIconContainer}>
-              <Ionicons name="list" size={20} color="#4b5b78" />
-            </View>
+           <TouchableOpacity
+  style={styles.listIconContainer}
+  onPress={() => {
+    setSelectedList(item);
+    setDetailsModal(true);
+  }}
+>
+  <Ionicons
+    name="list"
+    size={20}
+    color="#4b5b78"
+  />
+</TouchableOpacity>
 
             {/* List Name */}
             <Text style={styles.listName}>{item.name}</Text>
@@ -308,8 +320,108 @@ export default function DownloadLists() {
         )}
       />
 
-      {/* DECISION OVERLAY MODALS */}
+      {/* DECISION OVERLAY details  MODALS */}
+      <Modal visible={detailsModal} transparent animationType="fade">
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalBoxLarge}>
 
+      <View style={styles.modalHeaderRow}>
+        <Text style={styles.modalListTitle}>
+          {selectedList?.name}
+        </Text>
+      </View>
+
+      <View style={styles.locationSummary}>
+        <Text style={styles.locationTitle}>
+          Buying Location
+        </Text>
+
+        <Text style={styles.locationText}>
+          {selectedList?.items?.[0]?.buyingLocationLabel || "Not Available"}
+        </Text>
+
+        <Text
+          style={[
+            styles.locationTitle,
+            { marginTop: 10 }
+          ]}
+        >
+          Delivery Location
+        </Text>
+
+        <Text style={styles.locationText}>
+          {selectedList?.items?.[0]?.deliveryLocationLabel || "Not Available"}
+        </Text>
+      </View>
+
+      <ScrollView
+        style={{ width: "100%", maxHeight: 430 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {(selectedList?.items || []).map((i, idx) => (
+          <View key={idx} style={styles.modalItemBlock}>
+
+            <Text style={styles.modalCategory}>
+              {i.categoryName || "Category"}
+            </Text>
+
+            <Text style={styles.modalItemName}>
+              {i.name}
+            </Text>
+
+            <Text style={styles.modalMeta}>
+              Qty: {i.quantity}
+            </Text>
+
+            <Text style={styles.modalMeta}>
+              Spec: {i.specification || "None"}
+            </Text>
+
+            <Text style={styles.modalShop}>
+              Shop: {i.selectedShopName || "Not Selected"}
+            </Text>
+
+            <Text style={styles.modalMeta}>
+              Price: Rs. {i.selectedShopPrice || 0}
+            </Text>
+
+            <Text style={styles.modalTotal}>
+              Line Total: Rs. {i.lineTotal || 0}
+            </Text>
+
+          </View>
+        ))}
+      </ScrollView>
+
+      <View style={styles.billRow}>
+        <Text style={styles.billLabel}>
+          Total Bill
+        </Text>
+
+        <Text style={styles.billValue}>
+          Rs. {(selectedList?.items || []).reduce(
+            (sum, x) => sum + Number(x.lineTotal || 0),
+            0
+          )}
+        </Text>
+      </View>
+
+      <TouchableOpacity
+        style={styles.modalCloseButton}
+        onPress={() => {
+          setDetailsModal(false);
+          setSelectedList(null);
+        }}
+      >
+        <Text style={styles.modalCloseButtonText}>
+          Close
+        </Text>
+      </TouchableOpacity>
+
+    </View>
+  </View>
+</Modal>
+ 
       {/* SHARE MODAL */}
       <Modal visible={shareModal} transparent animationType="fade">
         <View style={styles.overlay}>
@@ -616,6 +728,139 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 15,
   },
+  modalOverlay: {
+  position: "absolute",
+  top: 0,
+  bottom: 0,
+  left: 0,
+  right: 0,
+  backgroundColor: "rgba(15,23,42,0.6)",
+  justifyContent: "center",
+  alignItems: "center",
+  padding: 20,
+},
+
+modalBoxLarge: {
+  width: "100%",
+  maxWidth: 470,
+  maxHeight: "85%",
+  backgroundColor: "#fff",
+  borderRadius: 20,
+  padding: 16,
+},
+
+modalHeaderRow: {
+  width: "100%",
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: 12,
+},
+
+modalListTitle: {
+  fontWeight: "800",
+  fontSize: 20,
+  color: "#2e4466",
+  flex: 1,
+},
+
+locationSummary: {
+  width: "100%",
+  backgroundColor: "#f8fafc",
+  borderRadius: 12,
+  borderWidth: 1,
+  borderColor: "#e2e8f0",
+  padding: 10,
+  marginBottom: 10,
+},
+
+locationTitle: {
+  color: "#2e4466",
+  fontSize: 13,
+  fontWeight: "900",
+},
+
+locationText: {
+  color: "#475569",
+  fontSize: 12,
+  marginTop: 3,
+},
+
+modalItemBlock: {
+  paddingVertical: 10,
+  borderBottomWidth: 1,
+  borderBottomColor: "#f1f5f9",
+},
+
+modalCategory: {
+  color: "#2e4466",
+  fontSize: 14,
+  fontWeight: "800",
+},
+
+modalItemName: {
+  color: "#334155",
+  fontSize: 14,
+  fontWeight: "700",
+  marginTop: 4,
+},
+
+modalMeta: {
+  color: "#64748b",
+  marginTop: 3,
+  fontSize: 12,
+},
+
+modalShop: {
+  color: "#10b981",
+  marginTop: 3,
+  fontSize: 12,
+  fontWeight: "800",
+},
+
+modalTotal: {
+  color: "#10b981",
+  marginTop: 3,
+  fontSize: 12,
+  fontWeight: "800",
+},
+
+billRow: {
+  width: "100%",
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  paddingTop: 12,
+  marginTop: 8,
+  borderTopWidth: 1,
+  borderTopColor: "#e2e8f0",
+},
+
+billLabel: {
+  color: "#1e293b",
+  fontSize: 15,
+  fontWeight: "900",
+},
+
+billValue: {
+  color: "#10b981",
+  fontSize: 17,
+  fontWeight: "900",
+},
+
+modalCloseButton: {
+  backgroundColor: "#2e4466",
+  borderRadius: 14,
+  paddingVertical: 12,
+  alignItems: "center",
+  marginTop: 14,
+},
+
+modalCloseButtonText: {
+  color: "#fff",
+  fontWeight: "800",
+  fontSize: 14,
+},
 
   popup: {
     width: "80%",

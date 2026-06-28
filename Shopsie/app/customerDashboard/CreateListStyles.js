@@ -297,13 +297,19 @@ container: {
 },
 
 footerContainer: {
-  flexDirection: "row", 
+  position: "absolute",
+  left: 0,
+  right: 0,
+  bottom: 15,
+
+  flexDirection: "row",
   paddingHorizontal: 15,
-  padding: 18,
-  backgroundColor: "#2e4466", 
-  borderTopWidth: 1, 
-  borderColor: "#ddd",
-  marginBottom: 0, 
+  paddingVertical: 14,
+
+  backgroundColor: "#2e4466",
+
+  zIndex: 1000,
+  elevation: 10,
 },
 
 /* -------------------- LIST ITEMS (FIXED OVERFLOW) -------------------- */

@@ -8,7 +8,8 @@ import {
   TouchableOpacity,
   Modal,
   StyleSheet,
-  StatusBar
+  StatusBar,
+  ScrollView
 } from "react-native";
 
 import axios from "axios";
@@ -35,7 +36,7 @@ export default function SavedList() {
   const [createModalVisible, setCreateModalVisible] = useState(false); 
   const [showSharePopup, setShowSharePopup] = useState(false);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
-
+const [detailsModal, setDetailsModal] = useState(false);
   const getId = (item) => item?.id || item?._id;
 
   // LOAD LISTS
@@ -173,9 +174,19 @@ export default function SavedList() {
         renderItem={({ item }) => (
           <View style={styles.listCard}>
             {/* Left Circle Icon */}
-            <View style={styles.listIconContainer}>
-              <Ionicons name="list" size={20} color="#4b5b78" />
-            </View>
+          <TouchableOpacity
+  style={styles.listIconContainer}
+  onPress={() => {
+    setSelectedList(item);
+    setDetailsModal(true);
+  }}
+>
+  <Ionicons
+    name="list"
+    size={20}
+    color="#4b5b78"
+  />
+</TouchableOpacity>
 
             {/* List Name */}
             <Text style={styles.listName}>
@@ -244,7 +255,69 @@ export default function SavedList() {
         )}
       />
 
-      {/* DECISION OVERLAY MODALS */}
+      {/* DECISION OVERLAY details popup MODALS */}
+      <Modal visible={detailsModal} transparent animationType="fade">
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalBoxLarge}>
+
+      <View style={styles.modalHeaderRow}>
+        <Text style={styles.modalListTitle}>
+          {selectedList?.name}
+        </Text>
+      </View>
+
+      <ScrollView
+        style={{ width: "100%", maxHeight: 430 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {(selectedList?.items || []).map((i, idx) => (
+          <View key={idx} style={styles.modalItemBlock}>
+
+            <Text style={styles.modalCategory}>
+              {i.categoryName || "Category"}
+            </Text>
+
+            <Text style={styles.modalItemName}>
+              {i.name}
+            </Text>
+
+            <Text style={styles.modalMeta}>
+              Qty: {i.quantity || 1}
+            </Text>
+
+            <Text style={styles.modalMeta}>
+              Spec: {i.specification || "None"}
+            </Text>
+
+          </View>
+        ))}
+      </ScrollView>
+
+      <View style={styles.billRow}>
+        <Text style={styles.billLabel}>
+          Total Items
+        </Text>
+
+        <Text style={styles.billValue}>
+          {(selectedList?.items || []).length}
+        </Text>
+      </View>
+
+      <TouchableOpacity
+        style={styles.modalCloseButton}
+        onPress={() => {
+          setDetailsModal(false);
+          setSelectedList(null);
+        }}
+      >
+        <Text style={styles.modalCloseButtonText}>
+          Close
+        </Text>
+      </TouchableOpacity>
+
+    </View>
+  </View>
+</Modal>
 
       {/* CREATE LIST CONFIRMATION MODAL */}
       <Modal visible={createModalVisible} transparent animationType="fade">
@@ -373,52 +446,64 @@ export default function SavedList() {
       </Modal>
 
       {/* SHARE POPUP */}
-      <Modal visible={showSharePopup} transparent animationType="fade">
-        <View style={styles.overlay}>
-          <View style={styles.popup}>
-            <TouchableOpacity 
-              onPress={() => { setShowSharePopup(false); setSelectedList(null); }} 
-              style={styles.closeCornerBtn}
-            >
-              <Text style={styles.closeX}>✕</Text>
-            </TouchableOpacity>
+      {/* SHARE POPUP */}
+<Modal visible={showSharePopup} transparent animationType="fade">
+  <View style={styles.overlay}>
+    <View style={styles.sharePopup}>
+      <TouchableOpacity
+        onPress={() => {
+          setShowSharePopup(false);
+          setSelectedList(null);
+        }}
+        style={styles.closeCornerBtn}
+      >
+        <Text style={styles.closeX}>✕</Text>
+      </TouchableOpacity>
 
-            <Text style={styles.title}>Share List</Text>
-            <Text style={styles.modalSubtitle}>
-              Please add a shop and delivery location to proceed with sharing your list "{selectedList?.name}".
-            </Text>
+      <Ionicons
+        name="location-outline"
+        size={42}
+        color="#2e4466"
+        style={{ marginBottom: 10 }}
+      />
 
-            <View style={styles.rowBtns}>
-              <TouchableOpacity
-                onPress={() => {
-                  setShowSharePopup(false);
-                  setSelectedList(null);
-                }}
-                style={styles.cancelBtn}
-              >
-                <Text style={styles.cancelText}>Cancel</Text>
-              </TouchableOpacity>
+      <Text style={styles.shareTitle}>Add Locations</Text>
 
-              <TouchableOpacity
-                onPress={() => {
-                  setShowSharePopup(false);
-                  router.push({
-                    pathname: "/customerDashboard/cart",
-                    params: {
-                      listName: selectedList?.name,
-                      items: JSON.stringify(selectedList?.items || []),
-                      flow
-                    }
-                  });
-                }}
-                style={styles.greenBtn}
-              >
-                <Text style={styles.btnTextWhite}>Add Locations</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <Text style={styles.shareSubtitle}>
+        To share this list, please select a shop and delivery location first.
+      </Text>
+
+      <View style={styles.rowBtns}>
+        <TouchableOpacity
+          onPress={() => {
+            setShowSharePopup(false);
+            setSelectedList(null);
+          }}
+          style={styles.cancelBtn}
+        >
+          <Text style={styles.cancelText}>Cancel</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => {
+            setShowSharePopup(false);
+            router.push({
+              pathname: "/customerDashboard/cart",
+              params: {
+                listName: selectedList?.name,
+                items: JSON.stringify(selectedList?.items || []),
+                flow,
+              },
+            });
+          }}
+          style={[styles.greenBtn, { backgroundColor: "#2e4466" }]}
+        >
+          <Text style={styles.btnTextWhite}>Continue</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </View>
+</Modal>
 
       {/* DELETE POPUP */}
       <Modal visible={showDeletePopup} transparent animationType="fade">
@@ -500,6 +585,139 @@ const styles = StyleSheet.create({
     textAlign: 'center', 
     flex: 1 
   },
+  modalOverlay: {
+  position: "absolute",
+  top: 0,
+  bottom: 0,
+  left: 0,
+  right: 0,
+  backgroundColor: "rgba(15,23,42,0.6)",
+  justifyContent: "center",
+  alignItems: "center",
+  padding: 20,
+},
+
+modalBoxLarge: {
+  width: "100%",
+  maxWidth: 470,
+  maxHeight: "85%",
+  backgroundColor: "#fff",
+  borderRadius: 20,
+  padding: 16,
+},
+
+modalHeaderRow: {
+  width: "100%",
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: 12,
+},
+
+modalListTitle: {
+  fontWeight: "800",
+  fontSize: 20,
+  color: "#2e4466",
+  flex: 1,
+},
+
+locationSummary: {
+  width: "100%",
+  backgroundColor: "#f8fafc",
+  borderRadius: 12,
+  borderWidth: 1,
+  borderColor: "#e2e8f0",
+  padding: 10,
+  marginBottom: 10,
+},
+
+locationTitle: {
+  color: "#2e4466",
+  fontSize: 13,
+  fontWeight: "900",
+},
+
+locationText: {
+  color: "#475569",
+  fontSize: 12,
+  marginTop: 3,
+},
+
+modalItemBlock: {
+  paddingVertical: 10,
+  borderBottomWidth: 1,
+  borderBottomColor: "#f1f5f9",
+},
+
+modalCategory: {
+  color: "#2e4466",
+  fontSize: 14,
+  fontWeight: "800",
+},
+
+modalItemName: {
+  color: "#334155",
+  fontSize: 14,
+  fontWeight: "700",
+  marginTop: 4,
+},
+
+modalMeta: {
+  color: "#64748b",
+  marginTop: 3,
+  fontSize: 12,
+},
+
+modalShop: {
+  color: "#10b981",
+  marginTop: 3,
+  fontSize: 12,
+  fontWeight: "800",
+},
+
+modalTotal: {
+  color: "#10b981",
+  marginTop: 3,
+  fontSize: 12,
+  fontWeight: "800",
+},
+
+billRow: {
+  width: "100%",
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  paddingTop: 12,
+  marginTop: 8,
+  borderTopWidth: 1,
+  borderTopColor: "#e2e8f0",
+},
+
+billLabel: {
+  color: "#1e293b",
+  fontSize: 15,
+  fontWeight: "900",
+},
+
+billValue: {
+  color: "#10b981",
+  fontSize: 17,
+  fontWeight: "900",
+},
+
+modalCloseButton: {
+  backgroundColor: "#2e4466",
+  borderRadius: 14,
+  paddingVertical: 12,
+  alignItems: "center",
+  marginTop: 14,
+},
+
+modalCloseButtonText: {
+  color: "#fff",
+  fontWeight: "800",
+  fontSize: 14,
+},
 
   listSearchWrapper: { 
     paddingHorizontal: 20, 
@@ -709,6 +927,32 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 15
   },
+  sharePopup: {
+  width: "82%",
+  backgroundColor: "#fff",
+  borderRadius: 20,
+  paddingTop: 22,
+  paddingBottom: 22,
+  paddingHorizontal: 22,
+  alignItems: "center",
+},
+
+shareTitle: {
+  fontSize: 20,
+  fontWeight: "700",
+  color: "#2e4466",
+  textAlign: "center",
+  marginBottom: 10,
+},
+
+shareSubtitle: {
+  fontSize: 14,
+  color: "#64748b",
+  textAlign: "center",
+  lineHeight: 22,
+  marginBottom: 24,
+  paddingHorizontal: 6,
+},
 
   /* -------------------- BOTTOM NAVIGATION -------------------- */
   bottomNav: {

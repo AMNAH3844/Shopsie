@@ -1249,11 +1249,16 @@ document.addEventListener("message", function(e) {
             <Text style={styles.locationDetailText}>{activeLocation.label}</Text>
             <Text style={styles.coordsText}>{formatCoords(activeLocation.lat, activeLocation.lng)}</Text>
 
-            <TouchableOpacity style={styles.primaryBtn} onPress={confirmLocation}>
-              <Text style={styles.primaryBtnText}>{activeLocationChosen ? "Update Location" : "Done"}</Text>
-            </TouchableOpacity>
+           
                   </ScrollView>
+                  <TouchableOpacity style={styles.primaryBtn} onPress={confirmLocation}>
+  <Text style={styles.primaryBtnText}>
+    {activeLocationChosen ? "Update Location" : "Done"}
+  </Text>
+</TouchableOpacity>
+
       </View>
+       
     </View>
   </KeyboardAvoidingView>
 </Modal>
@@ -1747,6 +1752,13 @@ const styles = StyleSheet.create({
     marginTop: 2, 
     fontWeight: "500" 
   },
+  locationButtonContainer: {
+  padding: 15,
+  paddingBottom: Platform.OS === "ios" ? 25 : 15,
+  backgroundColor: "#fff",
+  borderTopWidth: 1,
+  borderTopColor: "#e2e8f0",
+},
 
   /* -------------------- PRIMARY & SECONDARY INTERACTION BUTTONS -------------------- */
   primaryBtn: { 
