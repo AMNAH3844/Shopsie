@@ -3,6 +3,7 @@ import { API_URLS } from '../../src/services/apiConfig';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
@@ -54,9 +55,17 @@ export default function RiderRequestDetail() {
     }
   };
 
-  if (loading) return <View style={styles.centered}><ActivityIndicator size="large" color="#2e4466" /></View>;
-
+  if (loading)
   return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#2e4466" />
+      </View>
+    </SafeAreaView>
+  );
+
+return (
+  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={styles.container}>
       <LinearGradient colors={["#eef4fe", "#2e4466"]} start={{ x: 1, y: 0 }} end={{ x: 0, y: 0 }} style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}><Ionicons name="chevron-back" size={28} color="#eef4fe" /></TouchableOpacity>
@@ -100,8 +109,34 @@ export default function RiderRequestDetail() {
           </TouchableOpacity>
         )}
       </ScrollView>
-    </View>
-  );
+      <View style={styles.bottomNav}>
+  <TouchableOpacity
+    style={styles.tabItem}
+    onPress={() => router.replace("/riderDashboard")}
+  >
+    <Ionicons name="home" size={22} color="white" />
+    <Text style={styles.navText}>Home</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={styles.tabItem}
+    onPress={() => router.push("/riderDashboard/history")}
+  >
+    <Ionicons name="time-outline" size={22} color="white" />
+    <Text style={styles.navText}>History</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={styles.tabItem}
+    onPress={() => router.push("/riderDashboard/downladedlistsrider")}
+  >
+    <Ionicons name="download-outline" size={22} color="white" />
+    <Text style={styles.navText}>Downloads</Text>
+  </TouchableOpacity>
+</View>
+       </View>
+  </SafeAreaView>
+);
 }
 
 const styles = StyleSheet.create({
@@ -109,7 +144,10 @@ const styles = StyleSheet.create({
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
   header: { height: 85, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   headerTitle: { flex: 1, color: "#2e4466", fontSize: 22, fontWeight: "800", textAlign: "center" },
-  body: { padding: 16, paddingBottom: 100 },
+ body: {
+  padding: 16,
+  paddingBottom: 90,
+},
   card: { backgroundColor: "#fff", borderRadius: 16, padding: 14, borderWidth: 1, borderColor: "#e2e8f0", marginBottom: 16 },
   title: { color: "#1e293b", fontSize: 18, fontWeight: "900" },
   meta: { color: "#64748b", fontSize: 12, marginTop: 4 },
@@ -118,11 +156,66 @@ const styles = StyleSheet.create({
   itemRow: { backgroundColor: "#fff", borderRadius: 14, padding: 12, borderWidth: 1, borderColor: "#e2e8f0", marginBottom: 10 },
   itemName: { color: "#1e293b", fontSize: 15, fontWeight: "900" },
   shopText: { color: "#047857", fontSize: 12, fontWeight: "800", marginTop: 5 },
-  actionRow: { flexDirection: "row", gap: 12, marginTop: 18 },
-  actionBtn: { flex: 1, height: 50, borderRadius: 14, alignItems: "center", justifyContent: "center" },
+actionRow: {
+  marginTop: 18,
+  alignItems: "center",
+},
+
+deleteBtn: {
+  marginTop: 12,
+  backgroundColor: "#ef4444",
+  height: 45,
+  borderRadius: 10,
+
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+
+  width: "100%",
+},
+actionBtn: {
+  width: "100%",
+  height: 52,
+  borderRadius: 14,
+  alignItems: "center",
+  justifyContent: "center",
+  marginBottom: 10,
+},
   rejectBtn: { backgroundColor: "#ef4444" },
   acceptBtn: { backgroundColor: "#10b981" },
   actionText: { color: "#fff", fontSize: 15, fontWeight: "900" },
   chatBtn: { height: 50, borderRadius: 14, backgroundColor: "#2e4466", flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: 18 },
   chatText: { color: "#fff", fontSize: 15, fontWeight: "900", marginLeft: 8 },
+  bottomNav: {
+  position: "absolute",
+  left: 0,
+  right: 0,
+  bottom: 0,
+
+  height: 55,
+
+  backgroundColor: "#2e4466",
+  flexDirection: "row",
+  justifyContent: "space-around",
+  alignItems: "center",
+
+  elevation: 0,
+  borderTopWidth: 0,
+  zIndex: 1000,
+},
+
+tabItem: {
+  flex: 1,
+  alignItems: "center",
+  justifyContent: "center",
+  paddingVertical: 4,
+},
+
+navText: {
+  color: "white",
+  fontSize: 12,
+  marginTop: 0,
+  textAlign: "center",
+  fontWeight: "500",
+},
 });

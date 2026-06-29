@@ -85,32 +85,36 @@ export default function BottomNav() {
 }
 
 const styles = StyleSheet.create({
-  bottomNav: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 70,
-    backgroundColor: "#2e4466",
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    borderTopWidth: 1,
-    borderTopColor: "#3b557a",
-    zIndex: 10,
-  },
-  navItem: { 
-    flex: 1, 
-    justifyContent: "center", 
-    alignItems: "center", 
-    height: "100%" 
-  },
-  navText: { 
-    color: "white", 
-    fontSize: 12, 
-    marginTop: 4, 
-    fontWeight: "500" 
-  },
+bottomNav: {
+  position: "absolute",
+  left: 0,
+  right: 0,
+  bottom: 0,
+
+  height: 55,
+
+  backgroundColor: "#2e4466",
+  flexDirection: "row",
+  justifyContent: "space-around",
+  alignItems: "center",
+
+  elevation: 0,
+  borderTopWidth: 0,
+  zIndex: 1000,
+},
+ navItem: {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+  paddingVertical: 4,
+},
+ navText: {
+  color: "white",
+  fontSize: 12,
+  marginTop: 0,
+  textAlign: "center",
+  fontWeight: "500",
+},
   badge: {
     position: "absolute",
     top: -6,

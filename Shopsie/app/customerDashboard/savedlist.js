@@ -11,6 +11,7 @@ import {
   StatusBar,
   ScrollView
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -95,6 +96,7 @@ const [detailsModal, setDetailsModal] = useState(false);
     : [];
 
   return (
+  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
 
@@ -545,15 +547,7 @@ const [detailsModal, setDetailsModal] = useState(false);
       </Modal>
 
       {/* FIXED NAVBAR */}
-     <View
-  style={[
-    styles.bottomNav,
-    {
-      paddingBottom: 30,
-      height:90
-    },
-  ]}
->
+    <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.tabItem} onPress={() => router.push("/customerDashboard")}>
           <Ionicons name="home" size={22} color="white" />
           <Text style={styles.navText}>Home</Text>
@@ -570,8 +564,9 @@ const [detailsModal, setDetailsModal] = useState(false);
         </TouchableOpacity>
       </View>
 
-    </View>
-  );
+       </View>
+  </SafeAreaView>
+);
 }
 
 /* ================= STYLES ================= */
@@ -772,11 +767,11 @@ modalCloseButtonText: {
     flex: 1,
   },
 
-  listContent: { 
-    paddingHorizontal: 20,
-    paddingTop: 15,
-    paddingBottom: 100 
-  },
+ listContent: {
+  paddingHorizontal: 20,
+  paddingTop: 15,
+  paddingBottom: 75,
+},
 
   emptyBox: { 
     flex: 1, 
@@ -964,32 +959,35 @@ shareSubtitle: {
 },
 
   /* -------------------- BOTTOM NAVIGATION -------------------- */
-  bottomNav: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 70,
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    backgroundColor: "#2e4466",
-    shadowColor: "#000",
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 10,
-  },
+ bottomNav: {
+  position: "absolute",
+  left: 0,
+  right: 0,
+  bottom: 0,
 
-  tabItem: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  height: 55,
 
-  navText: {
-    color: "white",
-    fontSize: 12,
-    marginTop: 4,
-    textAlign: "center",
-    fontWeight: "500",
-  }
+  backgroundColor: "#2e4466",
+  flexDirection: "row",
+  justifyContent: "space-around",
+  alignItems: "center",
+
+  elevation: 0,
+  borderTopWidth: 0,
+  zIndex: 1000,
+},
+
+ tabItem: {
+  flex: 1,
+  alignItems: "center",
+  justifyContent: "center",
+  paddingVertical: 4,
+},
+navText: {
+  color: "white",
+  fontSize: 12,
+  marginTop: 0,
+  textAlign: "center",
+  fontWeight: "500",
+},
 });

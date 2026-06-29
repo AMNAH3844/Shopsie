@@ -7,6 +7,7 @@ import {
   ScrollView,
 } from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
   Ionicons,
   MaterialCommunityIcons,
@@ -111,7 +112,8 @@ export default function ShopkeeperDashboard() {
     }, [])
   );
 
-  return (
+ return (
+  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={{ flex: 1 }}>
       {/* ================= ORIGINAL HEADER ================= */}
       <LinearGradient
@@ -184,12 +186,12 @@ export default function ShopkeeperDashboard() {
         </View>
       </LinearGradient>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingBottom: 110,
-        }}
-      >
+     <ScrollView
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={{
+    paddingBottom: 75,
+  }}
+>
         {/* ================= PROFILE CARD ================= */}
         <View style={styles.profileCard}>
           <Image
@@ -294,6 +296,7 @@ export default function ShopkeeperDashboard() {
 
       {/* ================= REUSABLE BOTTOM NAVIGATION ================= */}
       <BottomNavBar />
-    </View>
-  );
+      </View>
+  </SafeAreaView>
+);
 }

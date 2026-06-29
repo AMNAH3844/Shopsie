@@ -12,7 +12,8 @@ import {
   ScrollView,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-
+import { SafeAreaView } from "react-native-safe-area-context";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
@@ -93,7 +94,8 @@ const deleteList = async (id) => {
     router.push({ pathname: "/riderDashboard/rideroptimizer", params: { requestId } });
   };
 
-  return (
+ return (
+  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={styles.container}>
       <LinearGradient colors={["#eef4fe", "#2e4466"]} start={{ x: 1, y: 0 }} end={{ x: 0, y: 0 }} style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
@@ -145,6 +147,7 @@ const deleteList = async (id) => {
                 <TouchableOpacity
   style={styles.openBtn}
   onPress={() => {
+  console.log("DOWNLOADED LIST:", item);
   setSelectedListData(item);
   setShowItemsModal(true);
 }}
@@ -180,6 +183,29 @@ const deleteList = async (id) => {
           {selectedListData?.name}
         </Text>
       </View>
+      {selectedListData?.items?.[0]?.buyingLocationLabel && (
+  <View style={styles.locationBox}>
+    <Text style={styles.locationTitle}>
+      Buy From
+    </Text>
+
+    <Text style={styles.locationText}>
+      {selectedListData.items[0].buyingLocationLabel}
+    </Text>
+  </View>
+)}
+
+{selectedListData?.items?.[0]?.deliveryLocationLabel && (
+  <View style={styles.locationBox}>
+    <Text style={styles.locationTitle}>
+      Deliver To
+    </Text>
+
+    <Text style={styles.locationText}>
+      {selectedListData.items[0].deliveryLocationLabel}
+    </Text>
+  </View>
+)}
 
       <ScrollView
         style={{ width: "100%", maxHeight: 430 }}
@@ -329,24 +355,101 @@ const deleteList = async (id) => {
     </View>
   </View>
 </Modal>
+<View style={styles.bottomNav}>
+  <TouchableOpacity
+    style={styles.tabItem}
+    onPress={() => router.replace("/riderDashboard")}
+  >
+    <Ionicons name="home" size={22} color="white" />
+    <Text style={styles.navText}>Home</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={styles.tabItem}
+    onPress={() => router.push("/riderDashboard/history")}
+  >
+    <Ionicons name="time-outline" size={22} color="white" />
+    <Text style={styles.navText}>History</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={styles.tabItem}
+    onPress={() => {}}
+  >
+    <Ionicons name="download-outline" size={22} color="white" />
+    <Text style={styles.navText}>Downloads</Text>
+  </TouchableOpacity>
+</View>
      
-    </View>
-  );
+       </View>
+  </SafeAreaView>
+);
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8fafc" },
   header: { height: 85, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   headerTitle: { flex: 1, color: "#eef4fe", fontSize: 22, fontWeight: "800", textAlign: "center" },
-  listContent: { padding: 16, paddingBottom: 100 },
+ listContent: {
+  padding: 16,
+  paddingBottom: 100,
+},
   emptyText: { textAlign: "center", color: "#64748b", fontWeight: "800", marginTop: 30 },
   card: { backgroundColor: "#fff", padding: 14, borderRadius: 16, marginBottom: 12, borderWidth: 1, borderColor: "#e2e8f0", elevation: 2 },
   cardHeader: {
   flexDirection: "row",
   alignItems: "flex-start",
 },
+bottomNav: {
+  position: "absolute",
+  left: 0,
+  right: 0,
+  bottom: 0,
 
+  height: 55,
 
+  backgroundColor: "#2e4466",
+  flexDirection: "row",
+  justifyContent: "space-around",
+  alignItems: "center",
+
+  elevation: 0,
+  borderTopWidth: 0,
+  zIndex: 1000,
+},
+
+tabItem: {
+  flex: 1,
+  alignItems: "center",
+  justifyContent: "center",
+  paddingVertical: 4,
+},
+
+navText: {
+  color: "white",
+  fontSize: 12,
+  marginTop: 0,
+  textAlign: "center",
+  fontWeight: "500",
+},
+locationBox: {
+  backgroundColor: "#f8fafc",
+  borderRadius: 12,
+  padding: 12,
+  marginBottom: 12,
+},
+
+locationTitle: {
+  color: "#2e4466",
+  fontSize: 14,
+  fontWeight: "800",
+  marginBottom: 4,
+},
+
+locationText: {
+  color: "#475569",
+  fontSize: 13,
+},
   optimizeBtn: { width: 42, height: 42, borderRadius: 21, backgroundColor: "#eef4fe", alignItems: "center", justifyContent: "center", marginLeft: 10 },
   card: { backgroundColor:"#fff", borderRadius:18, padding:18, marginBottom:14, borderWidth:1, borderColor:"#e2e8f0", elevation:2 },
 

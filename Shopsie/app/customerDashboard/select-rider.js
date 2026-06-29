@@ -11,6 +11,7 @@ import {
   Modal,
   StatusBar,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
@@ -218,6 +219,7 @@ export default function CustomerSelectRider() {
   };
 
   return (
+  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={[styles.container, { backgroundColor: "#ffffff" }]}>
       <StatusBar barStyle="light-content" />
       
@@ -379,10 +381,10 @@ export default function CustomerSelectRider() {
           <Text style={styles.navText}>Inbox</Text>
         </TouchableOpacity>
       </View>
-    </View>
-  );
+     </View>
+  </SafeAreaView>
+);
 }
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#ffffff" },
   header: {
@@ -406,7 +408,10 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   loadingText: { color: "#64748b", fontSize: 14 },
-  list: { padding: 16, paddingBottom: 110 },
+list: {
+  padding: 16,
+  paddingBottom: 75,
+},
   infoCard: {
     backgroundColor: "#fff",
     borderRadius: 18,
@@ -595,31 +600,34 @@ const styles = StyleSheet.create({
     color: "#94a3b8",
     fontWeight: "bold",
   },
-  bottomNav: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 70,
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    backgroundColor: "#2e4466",
-    shadowColor: "#000",
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 10,
-    zIndex: 999,
-  },
-  tabItem: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  navText: {
-    color: "white",
-    fontSize: 12,
-    marginTop: 4,
-    textAlign: "center",
-    fontWeight: "500",
-  }
+bottomNav: {
+  position: "absolute",
+  left: 0,
+  right: 0,
+  bottom: 0,
+
+  height: 55,
+
+  backgroundColor: "#2e4466",
+  flexDirection: "row",
+  justifyContent: "space-around",
+  alignItems: "center",
+
+  elevation: 0,
+  borderTopWidth: 0,
+  zIndex: 1000,
+},
+ tabItem: {
+  flex: 1,
+  alignItems: "center",
+  justifyContent: "center",
+  paddingVertical: 4,
+},
+navText: {
+  color: "white",
+  fontSize: 12,
+  marginTop: 0,
+  textAlign: "center",
+  fontWeight: "500",
+}
 });

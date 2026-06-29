@@ -16,7 +16,7 @@ export default StyleSheet.create({
 
   screenContent: {
     paddingTop: 2,
-    paddingBottom: 110,
+     paddingBottom: 75,
   },
 
   /* ---------------- HEADER ---------------- */
@@ -700,36 +700,22 @@ export default StyleSheet.create({
   },
 
   /* ---------------- BOTTOM NAV ---------------- */
-  bottomNav: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 70,
-    backgroundColor: "#2e4466",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-around",
-    shadowColor: "#000",
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 10,
-  },
 
-  tabItem: {
-    alignItems: "center",
-    justifyContent: "center",
-    minWidth: 78,
-  },
 
-  navText: {
-    color: "white",
-    fontSize: 12,
-    fontWeight: "500",
-    marginTop: 4,
-    textAlign: "center",
-  },
+tabItem: {
+  flex: 1,
+  alignItems: "center",
+  justifyContent: "center",
+  paddingVertical: 4,
+},
 
+ navText: {
+  color: "white",
+  fontSize: 12,
+  marginTop: 0,
+  textAlign: "center",
+  fontWeight: "500",
+},
   /* ===== Document Row ===== */
   docRow: {
     flexDirection: "row",
@@ -808,4 +794,22 @@ export default StyleSheet.create({
     width: SCREEN_WIDTH,
     height: "80%",
   },
+
+  bottomNav: {
+  position: "absolute",
+  left: 0,
+  right: 0,
+  bottom: 0,
+
+  height: 55,
+
+  backgroundColor: "#2e4466",
+  flexDirection: "row",
+  justifyContent: "space-around",
+  alignItems: "center",
+
+  elevation: 0,
+  borderTopWidth: 0,
+  zIndex: 1000,
+},
 });

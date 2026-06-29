@@ -16,6 +16,7 @@ import {
   Alert
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useFocusEffect } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
@@ -324,7 +325,8 @@ const InboxScreen = () => {
     ...(filteredChats.length > 0 ? [{ title: "Messages", data: filteredChats, type: "chat" }] : []),
   ];
  
-  return (
+   return (
+  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
 
@@ -530,8 +532,9 @@ const InboxScreen = () => {
           </View>
         </View>
       </Modal>
-    </View>
-  );
+        </View>
+  </SafeAreaView>
+);
 };
  
 export default InboxScreen;
@@ -543,7 +546,10 @@ const styles = StyleSheet.create({
   listSearchWrapper: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 5, backgroundColor: '#fff' },
   listSearchBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f1f3f6', paddingHorizontal: 12, height: 45, borderRadius: 15, borderWidth: 1.5, borderColor: "#2e4466" },
   listSearchInput: { flex: 1, marginLeft: 8, fontSize: 15, color: '#2e4466', outlineStyle: 'none' },
-  listContent: { paddingHorizontal: 20, paddingBottom: 100 },
+  listContent: {
+  paddingHorizontal: 20,
+  paddingBottom: 75,
+},
   sectionHeader: { fontSize: 14, fontWeight: "700", color: "#2e4466", marginBottom: 8, marginTop: 14 },
   emptyBox: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12, marginBottom: 280 },
   emptyText: { color: "#94a3b8", fontWeight: "700", fontSize: 15 },
@@ -598,7 +604,36 @@ const styles = StyleSheet.create({
   redBtn: { flex: 1, backgroundColor: "#ef4444", paddingVertical: 15, borderRadius: 14, alignItems: "center", marginLeft: 10 },
   btnTextWhite: { color: "#fff", fontWeight: "700", fontSize: 15 },
   cancelText: { color: "#333", fontWeight: "700", fontSize: 15 },
-  bottomNav: { position: "absolute", bottom: 0, left: 0, right: 0, height: 70, flexDirection: "row", justifyContent: "space-around", alignItems: "center", backgroundColor: "#2e4466", boxShadow: "0px -4px 10px rgba(0, 0, 0, 0.15)", elevation: 10 },
-  tabItem: { justifyContent: "center", alignItems: "center" },
-  navText: { color: "white", fontSize: 12, marginTop: 4, textAlign: "center", fontWeight: "500" }
+  
+  bottomNav: {
+  position: "absolute",
+  left: 0,
+  right: 0,
+  bottom: 0,
+
+  height: 55,
+
+  backgroundColor: "#2e4466",
+  flexDirection: "row",
+  justifyContent: "space-around",
+  alignItems: "center",
+
+  elevation: 0,
+  borderTopWidth: 0,
+  zIndex: 1000,
+},
+tabItem: {
+  flex: 1,
+  alignItems: "center",
+  justifyContent: "center",
+  paddingVertical: 4,
+},
+navText: {
+  color: "white",
+  fontSize: 12,
+  marginTop: 0,
+  textAlign: "center",
+  fontWeight: "500",
+},
+
 });

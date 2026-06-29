@@ -12,6 +12,8 @@ import {
   KeyboardAvoidingView,
   ActivityIndicator,
 } from "react-native";
+import BottomNavBar from "./BottomNav";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -271,20 +273,7 @@ export default function EnterStock() {
       ) : null}
 
       {/* FIXED BOTTOM NAVIGATION BAR */}
-      <View style={localStyles.bottomNav}>
-        <TouchableOpacity style={localStyles.tabItem} onPress={() => router.replace("/shopkeeperDashboard")}>
-          <Ionicons name="home" size={22} color="white" />
-          <Text style={localStyles.navText}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={localStyles.tabItem} onPress={() => router.push("/shopkeeperDashboard/viewStock")}>
-          <MaterialCommunityIcons name="package-variant-closed" size={24} color="white" />
-          <Text style={localStyles.navText}>Stock</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={localStyles.tabItem} onPress={() => router.push("/shopkeeperDashboard/orders")}>
-          <Ionicons name="receipt" size={24} color="white" />
-          <Text style={localStyles.navText}>Orders</Text>
-        </TouchableOpacity>
-      </View>
+      <BottomNavBar />
     </View>
   );
 }
@@ -292,7 +281,10 @@ export default function EnterStock() {
 const localStyles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: '#F8FAFC' },
   flexContainer: { flex: 1 },
-  scrollContainer: { paddingVertical: 12, paddingBottom: 50 }, 
+scrollContainer: {
+  paddingVertical: 12,
+  paddingBottom: 75,
+}, 
   contentBody: { paddingHorizontal: 20 },
   
   gradientHeader: {
@@ -320,26 +312,39 @@ const localStyles = StyleSheet.create({
   fullEditButton: { width: '100%', flexDirection: 'row', backgroundColor: '#22C55E', borderRadius: 14, height: 52, alignItems: 'center', justifyContent: 'center', marginTop: 25 },
   fullEditButtonText: { color: 'white', fontWeight: '700', fontSize: 15 },
 
-  bottomNav: { 
-    position: 'absolute', 
-    bottom: 0, 
-    left: 0, 
-    right: 0, 
-    height: 70, 
-    backgroundColor: '#2e4466', 
-    flexDirection: 'row', 
-    justifyContent: 'space-around', 
-    alignItems: 'center', 
-    borderTopWidth: 1, 
-    borderTopColor: '#3b557a',
-    zIndex: 10 
-  },
-  tabItem: { flex: 1, justifyContent: "center", alignItems: "center", height: '100%' },
-  navText: { color: 'white', fontSize: 12, marginTop: 4, fontWeight: '500' },
+bottomNav: {
+  position: "absolute",
+  left: 0,
+  right: 0,
+  bottom: 0,
 
+  height: 55,
+
+  backgroundColor: "#2e4466",
+  flexDirection: "row",
+  justifyContent: "space-around",
+  alignItems: "center",
+
+  elevation: 0,
+  borderTopWidth: 0,
+  zIndex: 1000,
+},
+ tabItem: {
+  flex: 1,
+  alignItems: "center",
+  justifyContent: "center",
+  paddingVertical: 4,
+},
+  navText: {
+  color: "white",
+  fontSize: 12,
+  marginTop: 0,
+  textAlign: "center",
+  fontWeight: "500",
+},
   warningBox: {
     position: 'absolute',
-    bottom: 85, 
+   bottom: 75,
     left: 20,
     right: 20,
     backgroundColor: '#e67e22',

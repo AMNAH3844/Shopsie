@@ -16,6 +16,7 @@ import {
   Keyboard,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import BottomNav from "./BottomNav";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -383,20 +384,7 @@ export default function UpdateStock() {
       ) : null}
 
       {/* INLINE BOTTOM NAVIGATION (Now extracted outside KeyboardAvoidingView) */}
-      <View style={localStyles.bottomNav}>
-        <TouchableOpacity style={localStyles.tabItem} onPress={() => router.replace("/shopkeeperDashboard")}>
-          <Ionicons name="home" size={22} color="white" />
-          <Text style={localStyles.navText}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={localStyles.tabItem} onPress={() => router.push("/shopkeeperDashboard/viewStock")}>
-          <MaterialCommunityIcons name="package-variant-closed" size={24} color="white" />
-          <Text style={localStyles.navText}>Stock</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={localStyles.tabItem} onPress={() => router.push("/shopkeeperDashboard/orders")}>
-          <Ionicons name="receipt" size={24} color="white" />
-          <Text style={localStyles.navText}>Orders</Text>
-        </TouchableOpacity>
-      </View>
+    <BottomNav />
     </View>
   );
 }
@@ -404,8 +392,10 @@ export default function UpdateStock() {
 const localStyles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: '#F8FAFC' },
   searchSectionWrapper: { paddingHorizontal: 20, marginTop: 16 },
-  scrollContainer: { paddingHorizontal: 20, paddingBottom: 30 },
-  
+ scrollContainer: {
+  paddingHorizontal: 20,
+  paddingBottom: 90,
+},
   gradientHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -448,10 +438,7 @@ const localStyles = StyleSheet.create({
   modalBtnText: { fontWeight: '700', fontSize: 15 },
 
   // Will now remain fixed directly behind or under the keyboard window viewport bounds
-  bottomNav: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 70, backgroundColor: '#2e4466', flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', borderTopWidth: 1, borderTopColor: '#3b557a', zIndex: 10 },
-  tabItem: { flex: 1, justifyContent: "center", alignItems: "center", height: '100%' },
-  navText: { color: 'white', fontSize: 12, marginTop: 4, fontWeight: '500' },
-
+ 
   warningBox: { position: 'absolute', bottom: 85, left: 20, right: 20, backgroundColor: '#e67e22', padding: 14, borderRadius: 14, flexDirection: 'row', alignItems: 'center', zIndex: 9999, elevation: 6 },
   warningText: { color: '#fff', marginLeft: 10, fontSize: 14, fontWeight: '600', flex: 1 },
 });

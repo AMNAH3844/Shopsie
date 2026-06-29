@@ -4,6 +4,7 @@ import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator }
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter, useFocusEffect } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -13,7 +14,7 @@ import axios from "axios";
 
 export default function RiderHistory() {
   const router = useRouter();
-    const insets = useSafeAreaInsets();
+  
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -31,7 +32,8 @@ export default function RiderHistory() {
 
   useFocusEffect(useCallback(() => { loadHistory(); }, [loadHistory]));
 
-  return (
+ return (
+  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={styles.container}>
       <LinearGradient colors={["#eef4fe", "#2e4466"]} start={{ x: 1, y: 0 }} end={{ x: 0, y: 0 }} style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}><Ionicons name="chevron-back" size={28} color="#eef4fe" /></TouchableOpacity>
@@ -56,16 +58,9 @@ export default function RiderHistory() {
         />
       )}
       {/* BOTTOM NAV BAR */}
-<View
-  style={[
-    styles.bottomNav,
-    {
-      paddingBottom: 5,
-    },
-  ]}
->
-  <TouchableOpacity
-    style={{ flex: 1, alignItems: "center" }}
+<View style={styles.bottomNav}>
+ <TouchableOpacity
+  style={styles.tabItem}
     onPress={() => router.push("/riderDashboard")}
   >
     <Ionicons name="home" size={22} color="white" />
@@ -88,8 +83,9 @@ export default function RiderHistory() {
     <Text style={styles.navText}>Downloads</Text>
   </TouchableOpacity>
 </View>
-    </View>
-  );
+       </View>
+  </SafeAreaView>
+);
 }
 
 const styles = StyleSheet.create({
@@ -98,7 +94,7 @@ const styles = StyleSheet.create({
   headerTitle: { flex: 1, color: "#2e4466", fontSize: 22, fontWeight: "800", textAlign: "center" },
  list: {
   padding: 16,
-  paddingBottom: 90,
+  paddingBottom: 75,
 },
   card: { backgroundColor: "#fff", borderRadius: 16, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: "#e2e8f0" },
   title: { color: "#1e293b", fontSize: 17, fontWeight: "900" },
@@ -114,17 +110,32 @@ const styles = StyleSheet.create({
 
 bottomNav: {
   position: "absolute",
-  bottom: 0,
   left: 0,
   right: 0,
-  height: 70,
+  bottom: 0,
+
+  height: 55,
+
+  backgroundColor: "#2e4466",
   flexDirection: "row",
   justifyContent: "space-around",
   alignItems: "center",
-  backgroundColor: "#2e4466",
-  shadowColor: "#000",
-  shadowOpacity: 0.25,
-  shadowRadius: 6,
-  elevation: 10,
+
+  elevation: 0,
+  borderTopWidth: 0,
+  zIndex: 1000,
+},
+tabItem: {
+  flex: 1,
+  alignItems: "center",
+  justifyContent: "center",
+  paddingVertical: 4,
+},
+navText: {
+  color: "white",
+  fontSize: 12,
+  marginTop: 0,
+  textAlign: "center",
+  fontWeight: "500",
 },
 });

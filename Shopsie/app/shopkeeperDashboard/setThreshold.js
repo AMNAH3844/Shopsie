@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import BottomNav from "./BottomNav.js"; 
@@ -87,7 +88,8 @@ export default function SetThreshold() {
     }
   };
 
-  return (
+ return (
+  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={localStyles.mainContainer}>
       <StatusBar barStyle="light-content" />
       
@@ -163,7 +165,22 @@ export default function SetThreshold() {
               </TouchableOpacity>
 
               {item.threshold && (
-                <TouchableOpacity onPress={() => deleteThreshold(item.id)} style={localStyles.inlineDeleteButton} activeOpacity={0.7}>
+                <TouchableOpacity 
+                onPress={() =>
+  Alert.alert(
+    "Remove Threshold",
+    "Are you sure you want to remove this threshold?",
+    [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Remove",
+        style: "destructive",
+        onPress: () => deleteThreshold(item.id),
+      },
+    ]
+  )
+}
+                >
                   <MaterialIcons name="delete-forever" size={26} color="#EF4444" />
                 </TouchableOpacity>
               )}
@@ -175,14 +192,17 @@ export default function SetThreshold() {
 
       {/* EXACT FOOTER NAVIGATION */}
       <BottomNav />
-    </View>
-  );
+       </View>
+  </SafeAreaView>
+);
 }
 
 const localStyles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: '#F8FAFC' },
-  scrollContainer: { paddingHorizontal: 20, paddingBottom: 100 }, 
-  
+  scrollContainer: {
+  paddingHorizontal: 20,
+  paddingBottom: 75,
+},
   gradientHeader: {
     flexDirection: 'row',
     alignItems: 'center',

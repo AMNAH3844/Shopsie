@@ -14,6 +14,7 @@ import {
   KeyboardAvoidingView,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { WebView } from "react-native-webview";
@@ -960,6 +961,7 @@ document.addEventListener("message", function(e) {
   );
 
   return (
+  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={styles.mainContainer}>
       <LinearGradient colors={["#eef4fe", "#2e4466"]} start={{ x: 1, y: 0 }} end={{ x: 0, y: 0 }} style={styles.header}>
         <TouchableOpacity onPress={() => (router.canGoBack() ? router.back() : router.replace("/customerDashboard"))}>
@@ -1648,8 +1650,9 @@ document.addEventListener("message", function(e) {
           <Text style={styles.warningText}>{warningMessage}</Text>
         </View>
       )}
-    </View>
-  );
+       </View>
+  </SafeAreaView>
+);
 }
 
 const styles = StyleSheet.create({
@@ -1678,10 +1681,10 @@ const styles = StyleSheet.create({
     textAlign: "center", 
     flex: 1 
   },
-  scrollContent: { 
-    padding: 12, 
-    paddingBottom: 75 
-  },
+ scrollContent: {
+  padding: 12,
+  paddingBottom: 85,
+},
 
   /* -------------------- SECTION TITLE -------------------- */
   sectionHeader: {
@@ -2206,28 +2209,36 @@ const styles = StyleSheet.create({
   },
 
   /* -------------------- TAB FOOTER WRAPPERS -------------------- */
-  bottomNav: { 
-    position: "absolute", 
-    bottom: 0, 
-    left: 0, 
-    right: 0, 
-    height: 75, 
-    flexDirection: "row", 
-    justifyContent: "space-around", 
-    alignItems: "center", 
-    backgroundColor: "#2e4466", 
-    elevation: 10 
-  },
-  tabItem: { 
-    justifyContent: "center", 
-    alignItems: "center" 
-  },
-  navText: { 
-    color: "white", 
-    fontSize: 12, 
-    marginTop: 4, 
-    fontWeight: "500" 
-  },
+bottomNav: {
+  position: "absolute",
+  left: 0,
+  right: 0,
+  bottom: 0,
+
+  height: 55,
+
+  backgroundColor: "#2e4466",
+  flexDirection: "row",
+  justifyContent: "space-around",
+  alignItems: "center",
+
+  elevation: 0,
+  borderTopWidth: 0,
+  zIndex: 1000,
+},
+tabItem: {
+  flex: 1,
+  alignItems: "center",
+  justifyContent: "center",
+  paddingVertical: 4,
+},
+navText: {
+  color: "white",
+  fontSize: 12,
+  marginTop: 0,
+  textAlign: "center",
+  fontWeight: "500",
+},
 
   /* -------------------- FULL MODAL OVERLAYS & STRUCTURAL MAP BOXES -------------------- */
   fullModalOverlay: {
@@ -2438,7 +2449,7 @@ searchBtn: {
   },
   warningBox: { 
     position: 'absolute', 
-    bottom: 100, 
+    bottom: 80, 
     left: 20, 
     right: 20, 
     backgroundColor: '#e67e22', 

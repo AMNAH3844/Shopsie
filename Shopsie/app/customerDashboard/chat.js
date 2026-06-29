@@ -14,7 +14,7 @@ import {
   Platform,
   StatusBar
 } from "react-native";
-
+import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -293,7 +293,9 @@ export default function ChatScreen() {
     );
   }
 
-  return (
+ 
+    return (
+  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={styles.mainWrapper}>
       <StatusBar barStyle="light-content" />
 
@@ -479,8 +481,9 @@ export default function ChatScreen() {
           </View>
         </View>
       </Modal>
-    </View>
-  );
+       </View>
+  </SafeAreaView>
+);
 }
 
 const styles = StyleSheet.create({
@@ -523,20 +526,36 @@ const styles = StyleSheet.create({
   input: { flex: 1, backgroundColor: "#f1f5f9", borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10, color: "#1e293b", fontSize: 15 },
   sendBtn: { paddingVertical: 6, paddingHorizontal: 4 },
   send: { color: "#2e4466", fontWeight: "800", marginLeft: 12, fontSize: 15 },
-  bottomNav: {
-    height: 70,
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    backgroundColor: "#2e4466",
-    shadowColor: "#000",
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 10,
-    paddingBottom: Platform.OS === 'ios' ? 12 : 0,
-  },
-  tabItem: { justifyContent: "center", alignItems: "center", flex: 1, height: "100%" },
-  navText: { color: "white", fontSize: 12, marginTop: 4, textAlign: "center", fontWeight: "500" },
+bottomNav: {
+  position: "absolute",
+  left: 0,
+  right: 0,
+  bottom: 0,
+
+  height: 55,
+
+  backgroundColor: "#2e4466",
+  flexDirection: "row",
+  justifyContent: "space-around",
+  alignItems: "center",
+
+  elevation: 0,
+  borderTopWidth: 0,
+  zIndex: 1000,
+},
+  tabItem: {
+  flex: 1,
+  alignItems: "center",
+  justifyContent: "center",
+  paddingVertical: 4,
+},
+  navText: {
+  color: "white",
+  fontSize: 12,
+  marginTop: 0,
+  textAlign: "center",
+  fontWeight: "500",
+},
   modalOverlay: { position: "absolute", top: 0, bottom: 0, left: 0, right: 0, backgroundColor: "rgba(15,23,42,0.6)", justifyContent: "center", alignItems: "center", padding: 20 },
   modalBox: { width: "80%", backgroundColor: "#fff", borderRadius: 22, paddingTop: 15, paddingBottom: 25, paddingHorizontal: 40, alignItems: "center", position: 'relative' },
   modalBoxLarge: { width: "100%", maxWidth: 470, maxHeight: "85%", backgroundColor: "#fff", borderRadius: 20, padding: 16 },
@@ -560,7 +579,10 @@ const styles = StyleSheet.create({
   billValue: { color: "#10b981", fontSize: 17, fontWeight: "900" },
   modalCloseButton: { backgroundColor: "#2e4466", borderRadius: 14, paddingVertical: 12, alignItems: "center", marginTop: 14 },
   modalCloseButtonText: { color: "#fff", fontWeight: "800", fontSize: 14 },
-  warningBox: { position: "absolute", bottom: 100, left: 20, right: 20, backgroundColor: "#e67e22", padding: 12, borderRadius: 12, flexDirection: "row", alignItems: "center", zIndex: 999, elevation: 5 },
+  warningBox: {
+  position: "absolute",
+  bottom: 80,
+   left: 20, right: 20, backgroundColor: "#e67e22", padding: 12, borderRadius: 12, flexDirection: "row", alignItems: "center", zIndex: 999, elevation: 5 },
   warningText: { color: "#fff", marginLeft: 10, fontSize: 14, fontWeight: "600" },
   closeCornerBtn: { position: 'absolute', top: 15, right: 20, zIndex: 10, padding: 5 },
   closeX: { fontSize: 22, color: "#94a3b8", fontWeight: "bold" },

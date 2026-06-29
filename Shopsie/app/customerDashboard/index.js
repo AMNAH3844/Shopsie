@@ -70,9 +70,8 @@ export default function DashboardCustomer() {
 
   return (
   <SafeAreaView
-    edges={["bottom"]}
-    style={{ flex: 1, backgroundColor: "#fff" }}
-  >
+  style={{ flex: 1, backgroundColor: "#fff" }}
+>
     <View style={styles.container}>
 
       {/* HEADER */}
@@ -259,7 +258,7 @@ export default function DashboardCustomer() {
 
         <TouchableOpacity style={styles.tabItem} onPress={() => router.push("/customerDashboard/inbox")}>
           <Ionicons name="chatbubble-ellipses-outline" size={22} color="white" />
-          <Text style={styles.navText}>Inboxx</Text>
+          <Text style={styles.navText}>Inbox</Text>
         </TouchableOpacity>
       </View>
           </View>
@@ -341,17 +340,30 @@ const localStyles = StyleSheet.create({
   },
 bottomNav: {
   position: "absolute",
-  bottom: 0,
   left: 0,
-  right: 0, 
+  right: 0,
+  bottom: 0,
 
-  height: 60, // was 70
+  height: 55, // was 60
 
+  backgroundColor: "#2e4466",
   flexDirection: "row",
   justifyContent: "space-around",
   alignItems: "center",
 
-  backgroundColor: "#2e4466",
+  elevation: 0,
+  borderTopWidth: 0,
+  zIndex: 1000,
+},
+navText: {
+  color: "white",
+  fontSize: 12,
+  marginTop: 1, // was 4
+  textAlign: "center",
+  fontWeight: "500",
+},
+navText: {
+  marginTop: 0,
 },
 tabItem: {
   flex: 1,

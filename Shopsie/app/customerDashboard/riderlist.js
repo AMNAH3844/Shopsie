@@ -8,7 +8,7 @@ import {
   StatusBar,
   StyleSheet
 } from "react-native";
-
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -24,6 +24,7 @@ export default function RiderList() {
   };
 
   return (
+  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={[styles.container, { flex: 1, backgroundColor: "#ffffff" }]}>
       <StatusBar barStyle="light-content" />
 
@@ -53,9 +54,9 @@ export default function RiderList() {
         data={riders}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{
-          padding: 20,
-          paddingBottom: 100, // Offset prevents content from getting trapped behind absolute footer
-        }}
+  padding: 20,
+  paddingBottom: 75,
+}}
         renderItem={({ item }) => (
           <View
             style={{
@@ -135,12 +136,14 @@ export default function RiderList() {
           <Text style={localStyles.navText}>Inbox</Text>
         </TouchableOpacity>
       </View>
-    </View>
-  );
+        </View>
+  </SafeAreaView>
+);
 }
 
 // Dedicated scoped style module mirroring friend structural parameters explicitly
 const localStyles = StyleSheet.create({
+
   header: { 
     flexDirection: "row", 
     justifyContent: "space-between", 
@@ -155,30 +158,34 @@ const localStyles = StyleSheet.create({
     textAlign: 'center', 
     flex: 1 
   },
-  bottomNav: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 70,
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    backgroundColor: "#2e4466",
-    shadowColor: "#000",
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 10,
-  },
-  tabItem: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  navText: {
-    color: "white",
-    fontSize: 12,
-    marginTop: 4,
-    textAlign: "center",
-    fontWeight: "500",
-  }
+bottomNav: {
+  position: "absolute",
+  left: 0,
+  right: 0,
+  bottom: 0,
+
+  height: 55,
+
+  backgroundColor: "#2e4466",
+  flexDirection: "row",
+  justifyContent: "space-around",
+  alignItems: "center",
+
+  elevation: 0,
+  borderTopWidth: 0,
+  zIndex: 1000,
+},
+ tabItem: {
+  flex: 1,
+  alignItems: "center",
+  justifyContent: "center",
+  paddingVertical: 4,
+},
+ navText: {
+  color: "white",
+  fontSize: 12,
+  marginTop: 0,
+  textAlign: "center",
+  fontWeight: "500",
+}
 });

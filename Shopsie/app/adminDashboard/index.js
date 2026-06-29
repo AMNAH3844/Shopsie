@@ -1064,7 +1064,8 @@ export default function AdminDashboard() {
 
   /* ================= MAIN RENDER ================= */
   return (
-    <View style={styles.scrollContainer}>
+   <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+  <View style={styles.scrollContainer}>
       <Header />
       {activeScreen === "dashboard" && <DashboardView />}
       {activeScreen === "filter" && <FilterUsersView />}
@@ -1112,7 +1113,8 @@ export default function AdminDashboard() {
       )}
       
       <BottomNav />
-    </View>
+      </View>
+</SafeAreaView>
   );
 }
 

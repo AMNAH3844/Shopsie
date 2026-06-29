@@ -11,6 +11,7 @@ import {
   StatusBar,
   KeyboardAvoidingView,
 } from "react-native";
+import BottomNav from "./BottomNav";
 import React, { useState, useEffect, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
@@ -493,20 +494,7 @@ export default function ShopDetails() {
       ) : null}
 
       {/* FIXED BOTTOM NAVIGATION BAR */}
-      <View style={localStyles.bottomNav}>
-        <TouchableOpacity style={localStyles.tabItem} onPress={() => router.replace("/shopkeeperDashboard")}>
-          <Ionicons name="home" size={22} color="white" />
-          <Text style={localStyles.navText}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={localStyles.tabItem} onPress={() => router.push("/shopkeeperDashboard/viewStock")}>
-          <MaterialCommunityIcons name="package-variant-closed" size={24} color="white" />
-          <Text style={localStyles.navText}>Stock</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={localStyles.tabItem} onPress={() => router.push("/shopkeeperDashboard/orders")}>
-          <Ionicons name="receipt" size={24} color="white" />
-          <Text style={localStyles.navText}>Orders</Text>
-        </TouchableOpacity>
-      </View>
+      <BottomNav />
     </View>
   );
 }
@@ -516,7 +504,10 @@ const localStyles = StyleSheet.create({
   flexContainer: { flex: 1 },
   
   // Clean padding that keeps content viewable without giant empty gutters
-  scrollContainer: { paddingVertical: 12, paddingBottom: 40 }, 
+  scrollContainer: {
+  paddingVertical: 12,
+  paddingBottom: 85,
+},
   
   contentBody: { paddingHorizontal: 20 },
   centered: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: '#FFFFFF' },
@@ -566,24 +557,6 @@ const localStyles = StyleSheet.create({
   actionButtonText: { color: 'white', fontWeight: '700', fontSize: 15 },
   fullEditButton: { width: '100%', flexDirection: 'row', backgroundColor: '#22C55E', borderRadius: 14, height: 52, alignItems: 'center', justifyContent: 'center', marginTop: 25 },
   fullEditButtonText: { color: 'white', fontWeight: '700', fontSize: 15 },
-  
-  bottomNav: { 
-    position: 'absolute', 
-    bottom: 0, 
-    left: 0, 
-    right: 0, 
-    height: 70, 
-    backgroundColor: '#2e4466', 
-    flexDirection: 'row', 
-    justifyContent: 'space-around', 
-    alignItems: 'center', 
-    borderTopWidth: 1, 
-    borderTopColor: '#3b557a',
-    zIndex: 10 
-  },
-  tabItem: { flex: 1, justifyContent: "center", alignItems: "center", height: '100%' },
-  navText: { color: 'white', fontSize: 12, marginTop: 4, fontWeight: '500' },
-  
   searchContainer: { flexDirection: "row", alignItems: "center", marginBottom: 12, marginTop: 10, gap: 8 },
   searchInput: { flex: 1, height: 46, borderWidth: 1.5, borderColor: "#CBD5E1", borderRadius: 12, backgroundColor: "#FFFFFF", paddingHorizontal: 14, fontSize: 14, color: "#0F172A" },
   searchButton: { height: 46, paddingHorizontal: 18, backgroundColor: "#2e4466", borderRadius: 12, justifyContent: "center", alignItems: "center", minWidth: 90 },

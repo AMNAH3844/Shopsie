@@ -4,6 +4,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { WebView } from "react-native-webview";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import axios from "axios";
+import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
 import { LinearGradient } from "expo-linear-gradient";
@@ -367,7 +368,8 @@ export default function OptimizeRoute() {
     );
   }
 
-  return (
+ return (
+  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
 
@@ -612,8 +614,9 @@ export default function OptimizeRoute() {
           <Text style={styles.navText}>Inbox</Text>
         </TouchableOpacity>
       </View>
-    </View>
-  );
+       </View>
+  </SafeAreaView>
+);
 }
 
 const styles = StyleSheet.create({
@@ -635,7 +638,11 @@ const styles = StyleSheet.create({
     flex: 1 
   },
 
-  scrollContainer: { padding: 16, paddingTop: 25, paddingBottom: 100 },
+ scrollContainer: {
+  padding: 16,
+  paddingTop: 25,
+  paddingBottom: 75,
+},
   mapCard: { width: "100%", height: 250, borderRadius: 24, overflow: "hidden", backgroundColor: "#e2e8f0", elevation: 3, marginBottom: 16 },
   map: { flex: 1 },
   sectionCard: { backgroundColor: "white", borderRadius: 20, paddingHorizontal: 18, paddingTop: 20, paddingBottom: 16, elevation: 2, marginBottom: 16 },
@@ -685,30 +692,34 @@ const styles = StyleSheet.create({
   modalCloseButtonText: { color: "white", fontWeight: "700", fontSize: 14 },
 
   /* MATCHED BOTTOM NAVIGATION STYLING */
-  bottomNav: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 70,
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    backgroundColor: "#2e4466",
-    shadowColor: "#000",
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 10,
-  },
-  tabItem: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  navText: {
-    color: "white",
-    fontSize: 12,
-    marginTop: 4,
-    textAlign: "center",
-    fontWeight: "500",
-  }
+ bottomNav: {
+  position: "absolute",
+  left: 0,
+  right: 0,
+  bottom: 0,
+
+  height: 55,
+
+  backgroundColor: "#2e4466",
+  flexDirection: "row",
+  justifyContent: "space-around",
+  alignItems: "center",
+
+  elevation: 0,
+  borderTopWidth: 0,
+  zIndex: 1000,
+},
+tabItem: {
+  flex: 1,
+  alignItems: "center",
+  justifyContent: "center",
+  paddingVertical: 4,
+},
+navText: {
+  color: "white",
+  fontSize: 12,
+  marginTop: 0,
+  textAlign: "center",
+  fontWeight: "500",
+},
 });

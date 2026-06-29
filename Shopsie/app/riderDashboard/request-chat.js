@@ -16,6 +16,7 @@ import {
 } from "react-native";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { SafeAreaView } from "react-native-safe-area-context";
 import axios from "axios";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -387,7 +388,11 @@ export default function RiderChat(props) {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.page} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+    <KeyboardAvoidingView
+      style={styles.page}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       <LinearGradient colors={["#eef4fe", "#2e4466"]} start={{ x: 1, y: 0 }} end={{ x: 0, y: 0 }} style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={28} color="#eef4fe" />
@@ -523,8 +528,9 @@ export default function RiderChat(props) {
           <Text style={styles.warningText}>{toastMessage}</Text>
         </View>
       )}
-    </KeyboardAvoidingView>
-  );
+      </KeyboardAvoidingView>
+  </SafeAreaView>
+);
 }
 
 const styles = StyleSheet.create({
@@ -593,6 +599,9 @@ const styles = StyleSheet.create({
   billValue: { color: "#10b981", fontSize: 17, fontWeight: "900" },
   modalCloseButton: { backgroundColor: "#2e4466", borderRadius: 14, paddingVertical: 12, alignItems: "center", marginTop: 14 },
   modalCloseButtonText: { color: "#fff", fontWeight: "800", fontSize: 14 },
-  warningBox: { position: "absolute", bottom: 20, left: 15, right: 15, backgroundColor: "#e67e22", padding: 14, borderRadius: 14, flexDirection: "row", alignItems: "center", zIndex: 9999 },
+  warningBox: {
+  position: "absolute",
+  bottom: 30,
+   left: 15, right: 15, backgroundColor: "#e67e22", padding: 14, borderRadius: 14, flexDirection: "row", alignItems: "center", zIndex: 9999 },
   warningText: { color: "#fff", marginLeft: 10, fontSize: 14, fontWeight: "700", flex: 1 },
 });

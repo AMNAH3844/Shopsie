@@ -119,32 +119,31 @@ taskTitle: {
     fontSize: 14,
   },
 
-  /* -------------------- BOTTOM NAVIGATION -------------------- */
-  bottomNav: {
+
+//   /* -------------------- BOTTOM NAVIGATION -------------------- */
+ bottomNav: {
   position: "absolute",
   left: 0,
   right: 0,
-  bottom: 15,
+  bottom: 0,
 
-  height: 75,
+  height: 55,
 
   backgroundColor: "#2e4466",
   flexDirection: "row",
   justifyContent: "space-around",
   alignItems: "center",
 
-  borderTopWidth: 1,
-  borderTopColor: "#3b557a",
-
-  elevation: 10,
+  elevation: 0,
+  borderTopWidth: 0,
   zIndex: 1000,
 },
 
-  tabItem: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
+ tabItem: {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+},
   navText: {
     color: "white",
     fontSize: 12,

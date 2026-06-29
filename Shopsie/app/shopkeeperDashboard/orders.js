@@ -11,6 +11,7 @@ import {
   Modal,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
@@ -217,8 +218,8 @@ export default function ShopkeeperOrders() {
       </View>
     );
   };
-
-  return (
+return (
+  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={localStyles.mainContainer}>
       <StatusBar barStyle="light-content" />
       
@@ -319,14 +320,18 @@ export default function ShopkeeperOrders() {
       ) : null}
 
       <BottomNav />
-    </View>
-  );
+      </View>
+  </SafeAreaView>
+);
 }
 
 const localStyles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: "#F8FAFC" },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  scrollContainer: { paddingHorizontal: 20, paddingBottom: 110 }, 
+  scrollContainer: {
+  paddingHorizontal: 20,
+  paddingBottom: 75,
+}, 
   gradientHeader: {
     flexDirection: "row",
     alignItems: "center",
@@ -378,6 +383,9 @@ const localStyles = StyleSheet.create({
   modalBtn: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: "center" },
   modalBtnText: { fontWeight: '700', fontSize: 15 },
 
-  warningBox: { position: 'absolute', bottom: 85, left: 20, right: 20, backgroundColor: '#e67e22', padding: 14, borderRadius: 14, flexDirection: 'row', alignItems: 'center', zIndex: 9999, elevation: 6 },
+  warningBox: {
+  position: "absolute",
+  bottom: 75,
+   left: 20, right: 20, backgroundColor: '#e67e22', padding: 14, borderRadius: 14, flexDirection: 'row', alignItems: 'center', zIndex: 9999, elevation: 6 },
   warningText: { color: '#fff', marginLeft: 10, fontSize: 14, fontWeight: '600', flex: 1 },
 });

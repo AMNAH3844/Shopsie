@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context"; 
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -138,16 +139,21 @@ export default function RiderAccountDetails() {
 
   const accountLabel = paymentMethodType === "wallet" ? "Mobile Wallet Number" : paymentMethodType === "bank" ? "Account Number" : "Card/Account Number";
 
-  if (loading) {
-    return (
+if (loading) {
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <View style={styles.center}>
         <ActivityIndicator size="large" color="#2e4466" />
       </View>
-    );
-  }
+    </SafeAreaView>
+  );
+}
+  
 
   return (
+  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={styles.mainContainer}>
+
       <StatusBar barStyle="light-content" />
       <LinearGradient
         colors={["#eef4fe", "#2e4466"]}
@@ -284,7 +290,34 @@ export default function RiderAccountDetails() {
           </View>
         }
       />
+      <View style={styles.bottomNav}>
+  <TouchableOpacity
+    style={styles.tabItem}
+    onPress={() => router.replace("/riderDashboard")}
+  >
+    <Ionicons name="home" size={22} color="white" />
+    <Text style={styles.navText}>Home</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={styles.tabItem}
+    onPress={() => router.push("/riderDashboard/history")}
+  >
+    <Ionicons name="time-outline" size={22} color="white" />
+    <Text style={styles.navText}>History</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={styles.tabItem}
+    onPress={() => router.push("/riderDashboard/downladedlistsrider")}
+  >
+    <Ionicons name="download-outline" size={22} color="white" />
+    <Text style={styles.navText}>Downloads</Text>
+  </TouchableOpacity>
+</View>
     </View>
+</SafeAreaView>
+    
   );
 }
 
@@ -293,7 +326,10 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#F8FAFC" },
   header: { height: 85, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   headerTitle: { flex: 1, textAlign: "center", fontSize: 22, fontWeight: "800", color: "#2e4466" },
-  content: { paddingHorizontal: 20, paddingBottom: 80 },
+  content: {
+  paddingHorizontal: 20,
+  paddingBottom: 90,
+},
   sectionHeading: { fontSize: 16, fontWeight: "800", color: "#1E293B", marginTop: 20, marginBottom: 8 },
   card: { backgroundColor: "#FFFFFF", borderRadius: 16, padding: 16, borderWidth: 1, borderColor: "#E2E8F0", elevation: 2 },
   footerCard: { backgroundColor: "#FFFFFF", borderRadius: 16, padding: 16, borderWidth: 1, borderColor: "#E2E8F0", elevation: 2, marginTop: 10 },
@@ -318,4 +354,36 @@ const styles = StyleSheet.create({
   summaryRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 7, borderTopWidth: 1, borderTopColor: "#E2E8F0" },
   summaryLabel: { color: "#64748B", fontSize: 12, fontWeight: "800", flex: 1 },
   summaryValue: { color: "#0F172A", fontSize: 13, fontWeight: "900", flex: 1, textAlign: "right" },
+  bottomNav: {
+  position: "absolute",
+  left: 0,
+  right: 0,
+  bottom: 0,
+
+  height: 55,
+
+  backgroundColor: "#2e4466",
+  flexDirection: "row",
+  justifyContent: "space-around",
+  alignItems: "center",
+
+  elevation: 0,
+  borderTopWidth: 0,
+  zIndex: 1000,
+},
+
+tabItem: {
+  flex: 1,
+  alignItems: "center",
+  justifyContent: "center",
+  paddingVertical: 4,
+},
+
+navText: {
+  color: "white",
+  fontSize: 12,
+  marginTop: 0,
+  textAlign: "center",
+  fontWeight: "500",
+},
 });

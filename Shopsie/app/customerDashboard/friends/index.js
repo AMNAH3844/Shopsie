@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -269,6 +270,7 @@ const FriendsScreen = () => {
     );
 
     return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
         <View style={styles.container}>
             <StatusBar barStyle="light-content" />
             <LinearGradient colors={["#eef4fe", "#2e4466"]} start={{ x: 1, y: 0 }} end={{ x: 0, y: 0 }} style={styles.header}>
@@ -393,8 +395,9 @@ const FriendsScreen = () => {
                     <Text style={styles.navText}>Inbox</Text>
                 </TouchableOpacity>
             </View>
-        </View>
-    );
+             </View>
+    </SafeAreaView>
+);
 };
 
 const styles = StyleSheet.create({
@@ -408,7 +411,11 @@ const styles = StyleSheet.create({
         borderWidth: 0, elevation: 4, shadowColor: "#000", shadowOpacity: 0.3, shadowRadius: 5, marginBottom: 22,
     },
     searchInput: { flex: 1, fontSize: 16, color: '#2e4466', borderWidth: 0, outlineStyle: 'none' },
-    listContent: { paddingHorizontal: 20, paddingTop: 15, paddingBottom: 100 },
+    listContent: {
+    paddingHorizontal: 20,
+    paddingTop: 15,
+    paddingBottom: 75,
+},
     friendCard: { flexDirection: 'row', backgroundColor: '#FFF', borderRadius: 15, padding: 12, marginTop: 2, marginBottom: 12, marginHorizontal: 2, alignItems: 'center', elevation: 2, shadowColor: "#000", shadowOpacity: 0.4, shadowRadius: 6 },
     profilePic: { width: 45, height: 45, borderRadius: 22.5 },
     infoContainer: { flex: 1, marginLeft: 12 },
@@ -513,7 +520,7 @@ const styles = StyleSheet.create({
     },
     warningBox: {
         position: 'absolute',
-        bottom: 100,
+        bottom: 80,
         left: 20,
         right: 20,
         backgroundColor: '#e67e22',
@@ -534,32 +541,36 @@ const styles = StyleSheet.create({
         fontWeight: '600'
     },
 
-    bottomNav: {
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: 70,
-        flexDirection: "row",
-        justifyContent: "space-around",
-        alignItems: "center",
-        backgroundColor: "#2e4466",
-        shadowColor: "#000",
-        shadowOpacity: 0.25,
-        shadowRadius: 6,
-        elevation: 10,
-    },
-    tabItem: {
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    navText: {
-        color: "white",
-        fontSize: 12,
-        marginTop: 4,
-        textAlign: "center",
-        fontWeight: "500",
-    }
+  bottomNav: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+
+    height: 55,
+
+    backgroundColor: "#2e4466",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+
+    elevation: 0,
+    borderTopWidth: 0,
+    zIndex: 1000,
+},
+   tabItem: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 4,
+},
+  navText: {
+    color: "white",
+    fontSize: 12,
+    marginTop: 0,
+    textAlign: "center",
+    fontWeight: "500",
+},
 });
 
 export default FriendsScreen;

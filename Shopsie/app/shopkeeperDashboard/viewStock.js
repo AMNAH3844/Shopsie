@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import BottomNav from "../shopkeeperDashboard/BottomNav";
@@ -43,7 +44,8 @@ export default function ViewStock() {
     p.name?.toLowerCase().includes(search.toLowerCase())
   );
 
-  return (
+ return (
+  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={localStyles.mainContainer}>
       <StatusBar barStyle="light-content" />
 
@@ -142,8 +144,9 @@ export default function ViewStock() {
 
       {/* FIXED BOTTOM NAVBAR IMPLEMENTATION */}
       <BottomNav />
-    </View>
-  );
+       </View>
+  </SafeAreaView>
+);
 }
 
 const localStyles = StyleSheet.create({
@@ -151,7 +154,10 @@ const localStyles = StyleSheet.create({
   searchSectionWrapper: { paddingHorizontal: 20, marginTop: 16 },
   
   // ADJUSTED: Increased bottom padding from 100 to 110 to clear the absolute BottomNav cleanly
-  scrollContainer: { paddingHorizontal: 20, paddingBottom: 110 },
+ scrollContainer: {
+  paddingHorizontal: 20,
+  paddingBottom: 75,
+},
   
   gradientHeader: {
     flexDirection: 'row',

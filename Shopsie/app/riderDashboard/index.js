@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter, useFocusEffect } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import styles from "../styles/dashboardStyle";
 import { API_URLS } from "../../src/services/apiConfig";
@@ -18,7 +19,7 @@ const DEFAULT_IMAGE = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
 
 export default function DashboardRider() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  
   const [username, setUsername] = useState("Rider Name");
   const [profileImage, setProfileImage] = useState(DEFAULT_IMAGE);
   const [showOptimizeModal, setShowOptimizeModal] = useState(false);
@@ -81,6 +82,7 @@ export default function DashboardRider() {
   );
 
   return (
+  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
       {/* HEADER (fixed) */}
       <LinearGradient
@@ -155,7 +157,7 @@ export default function DashboardRider() {
   style={{
     flex: 1,
     justifyContent: "flex-start",
-    paddingBottom: 90,
+    paddingBottom: 70,
   }}
 >
         {/* PROFILE CARD - Increased marginTop for extra space from header */}
@@ -327,14 +329,7 @@ export default function DashboardRider() {
       </Modal>
 
       {/* EQUALLY DISTRIBUTED BOTTOM NAV BAR */}
-     <View
-     style={[
-       styles.bottomNav,
-       {
-         paddingBottom: 15,
-       },
-     ]}
-   >
+    <View style={styles.bottomNav}>
         <TouchableOpacity
   style={[styles.tabItem, { flex: 1, alignItems: "center" }]}
   onPress={() => {
@@ -362,6 +357,7 @@ export default function DashboardRider() {
           <Text style={styles.navText}>Downloads</Text>
         </TouchableOpacity>
       </View>
-    </View>
-  );
+       </View>
+  </SafeAreaView>
+);
 }

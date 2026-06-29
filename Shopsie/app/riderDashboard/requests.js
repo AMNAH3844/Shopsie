@@ -10,6 +10,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useFocusEffect } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -108,7 +109,20 @@ export default function RiderRequests() {
           {!!item.customerArchivedAt && (
             <TouchableOpacity
               style={styles.deleteBtn}
-              onPress={() => deleteExpiredRequest(item.id)}
+             onPress={() =>
+  Alert.alert(
+    "Delete Request",
+    "Are you sure you want to delete this expired request?",
+    [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => deleteExpiredRequest(item.id),
+      },
+    ]
+  )
+}
             >
               <Ionicons name="trash-outline" size={16} color="#fff" />
               <Text style={styles.deleteText}>Delete</Text>
@@ -129,6 +143,7 @@ export default function RiderRequests() {
   );
 
   return (
+  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={styles.container}>
       <LinearGradient
         colors={["#eef4fe", "#2e4466"]}
@@ -172,8 +187,34 @@ export default function RiderRequests() {
           }
         />
       )}
-    </View>
-  );
+      <View style={styles.bottomNav}>
+  <TouchableOpacity
+    style={styles.tabItem}
+    onPress={() => router.replace("/riderDashboard")}
+  >
+    <Ionicons name="home" size={22} color="white" />
+    <Text style={styles.navText}>Home</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={styles.tabItem}
+    onPress={() => router.push("/riderDashboard/history")}
+  >
+    <Ionicons name="time-outline" size={22} color="white" />
+    <Text style={styles.navText}>History</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={styles.tabItem}
+    onPress={() => router.push("/riderDashboard/downladedlistsrider")}
+  >
+    <Ionicons name="download-outline" size={22} color="white" />
+    <Text style={styles.navText}>Downloads</Text>
+  </TouchableOpacity>
+</View>
+        </View>
+  </SafeAreaView>
+);
 }
 
 const styles = StyleSheet.create({
@@ -192,7 +233,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     textAlign: "center",
   },
-  list: { padding: 16, paddingBottom: 100 },
+ list: { padding: 16, paddingBottom: 75 },
   card: {
     backgroundColor: "#fff",
     borderRadius: 16,
@@ -219,7 +260,7 @@ const styles = StyleSheet.create({
   expiredStatus: { color: "#ef4444" },
   warningBox: {
     position: 'absolute',
-    bottom: 100,
+    bottom: 80,
     left: 20,
     right: 20,
     backgroundColor: '#e67e22',
@@ -231,20 +272,56 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   warningText: { color: '#fff', marginLeft: 10, fontSize: 14, fontWeight: '600', flex: 1 },
+ 
+ deleteText: {
+  color: "#fff",
+  marginLeft: 8,
+  fontWeight: "800",
+  fontSize: 14,
+},
   deleteBtn: {
-    marginTop: 10,
-    backgroundColor: "#ef4444",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "flex-start",
-  },
-  deleteText: {
-    color: "#fff",
-    marginLeft: 6,
-    fontWeight: "700",
-    fontSize: 12,
-  },
+  marginTop: 12,
+  backgroundColor: "#ef4444",
+
+  height: 48,
+  width: "100%",
+
+  borderRadius: 10,
+
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+},
+bottomNav: {
+  position: "absolute",
+  left: 0,
+  right: 0,
+  bottom: 0,
+
+  height: 55,
+
+  backgroundColor: "#2e4466",
+  flexDirection: "row",
+  justifyContent: "space-around",
+  alignItems: "center",
+
+  elevation: 0,
+  borderTopWidth: 0,
+  zIndex: 1000,
+},
+
+tabItem: {
+  flex: 1,
+  alignItems: "center",
+  justifyContent: "center",
+  paddingVertical: 4,
+},
+
+navText: {
+  color: "white",
+  fontSize: 12,
+  marginTop: 0,
+  textAlign: "center",
+  fontWeight: "500",
+},
 });

@@ -12,6 +12,7 @@ import {
   StatusBar,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -71,6 +72,7 @@ export default function ShopkeeperReports() {
   );
 
   return (
+  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={styles.mainContainer}>
       <StatusBar barStyle="light-content" />
       <LinearGradient
@@ -107,14 +109,18 @@ export default function ShopkeeperReports() {
       )}
 
       <BottomNav />
-    </View>
-  );
+      </View>
+  </SafeAreaView>
+);
 }
 
 const styles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: "#f8fafc" },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  scrollContainer: { paddingHorizontal: 20, paddingBottom: 105 },
+  scrollContainer: {
+  paddingHorizontal: 20,
+  paddingBottom: 75,
+},
   gradientHeader: {
     flexDirection: "row",
     alignItems: "center",
