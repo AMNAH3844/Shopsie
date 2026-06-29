@@ -6,6 +6,7 @@ import {
   Image,
   Modal,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter, useFocusEffect } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -17,6 +18,7 @@ const DEFAULT_IMAGE = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
 
 export default function DashboardRider() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [username, setUsername] = useState("Rider Name");
   const [profileImage, setProfileImage] = useState(DEFAULT_IMAGE);
   const [showOptimizeModal, setShowOptimizeModal] = useState(false);
@@ -148,7 +150,14 @@ export default function DashboardRider() {
       </LinearGradient>
 
       {/* FIXED CONTENT MAIN BODY */}
-      <View style={{ flex: 1, justifyContent: "flex-start" }}>
+      {/* FIXED CONTENT MAIN BODY */}
+<View
+  style={{
+    flex: 1,
+    justifyContent: "flex-start",
+    paddingBottom: 90,
+  }}
+>
         {/* PROFILE CARD - Increased marginTop for extra space from header */}
         <View
           style={[
@@ -318,23 +327,24 @@ export default function DashboardRider() {
       </Modal>
 
       {/* EQUALLY DISTRIBUTED BOTTOM NAV BAR */}
-      <View
-        style={[
-          styles.bottomNav,
-          {
-            flexDirection: "row",
-            justifyContent: "space-around",
-            alignItems: "center",
-          },
-        ]}
-      >
+     <View
+     style={[
+       styles.bottomNav,
+       {
+         paddingBottom: 15,
+       },
+     ]}
+   >
         <TouchableOpacity
-          style={[styles.tabItem, { flex: 1, alignItems: "center" }]}
-          onPress={() => router.push("/dashboardrider")}
-        >
-          <Ionicons name="home" size={22} color="white" />
-          <Text style={styles.navText}>Home</Text>
-        </TouchableOpacity>
+  style={[styles.tabItem, { flex: 1, alignItems: "center" }]}
+  onPress={() => {
+    // already on home, do nothing
+    setShowOptimizeModal(false);
+  }}
+>
+  <Ionicons name="home" size={22} color="white" />
+  <Text style={styles.navText}>Home</Text>
+</TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.tabItem, { flex: 1, alignItems: "center" }]}

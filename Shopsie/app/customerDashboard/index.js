@@ -4,13 +4,16 @@ import { useRouter, useFocusEffect } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { SafeAreaView } from "react-native-safe-area-context";
 import styles from "../styles/dashboardStyle";
 import { API_URLS } from "../../src/services/apiConfig";
 
 const DEFAULT_IMAGE = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
 
 export default function DashboardCustomer() {
+  
   const router = useRouter();
+  // const insets = useSafeAreaInsets();
 
   const [username, setUsername] = useState("User Name");
   const [profileImage, setProfileImage] = useState(DEFAULT_IMAGE);
@@ -66,6 +69,10 @@ export default function DashboardCustomer() {
   );
 
   return (
+  <SafeAreaView
+    edges={["bottom"]}
+    style={{ flex: 1, backgroundColor: "#fff" }}
+  >
     <View style={styles.container}>
 
       {/* HEADER */}
@@ -224,6 +231,15 @@ export default function DashboardCustomer() {
 
       {/* NAVBAR */}
       <View style={styles.bottomNav}>
+     {/* <View
+  style={[
+    styles.bottomNav,
+    {
+      paddingBottom: Math.max(insets.bottom, 8),
+      minHeight: 65 + insets.bottom,
+    },
+  ]}
+> */}
         <TouchableOpacity
           style={styles.tabItem}
           onPress={() => {
@@ -243,16 +259,20 @@ export default function DashboardCustomer() {
 
         <TouchableOpacity style={styles.tabItem} onPress={() => router.push("/customerDashboard/inbox")}>
           <Ionicons name="chatbubble-ellipses-outline" size={22} color="white" />
-          <Text style={styles.navText}>Inbox</Text>
+          <Text style={styles.navText}>Inboxx</Text>
         </TouchableOpacity>
       </View>
+          </View>
+  </SafeAreaView>
 
-    </View>
-  );
+);
 }
 
 // ================= NEW UNIFIED LOCAL CSS =================
 const localStyles = StyleSheet.create({
+//   bottomNav: {
+//   minHeight: 65,
+// },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
@@ -318,5 +338,25 @@ const localStyles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 14,
     textAlign: "center"
-  }
+  },
+bottomNav: {
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  right: 0, 
+
+  height: 60, // was 70
+
+  flexDirection: "row",
+  justifyContent: "space-around",
+  alignItems: "center",
+
+  backgroundColor: "#2e4466",
+},
+tabItem: {
+  flex: 1,
+  alignItems: "center",
+  justifyContent: "center",
+  paddingVertical: 4, // keep small
+}
 });

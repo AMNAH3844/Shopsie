@@ -3,6 +3,8 @@ import { API_URLS } from '../../src/services/apiConfig';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter, useFocusEffect } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
@@ -11,6 +13,7 @@ import axios from "axios";
 
 export default function RiderHistory() {
   const router = useRouter();
+    const insets = useSafeAreaInsets();
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -52,6 +55,39 @@ export default function RiderHistory() {
           )}
         />
       )}
+      {/* BOTTOM NAV BAR */}
+<View
+  style={[
+    styles.bottomNav,
+    {
+      paddingBottom: 5,
+    },
+  ]}
+>
+  <TouchableOpacity
+    style={{ flex: 1, alignItems: "center" }}
+    onPress={() => router.push("/riderDashboard")}
+  >
+    <Ionicons name="home" size={22} color="white" />
+    <Text style={styles.navText}>Home</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={{ flex: 1, alignItems: "center" }}
+    onPress={() => {}}
+  >
+    <Ionicons name="time-outline" size={22} color="white" />
+    <Text style={styles.navText}>History</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={{ flex: 1, alignItems: "center" }}
+    onPress={() => router.push("/riderDashboard/downladedlistsrider")}
+  >
+    <Ionicons name="download-outline" size={22} color="white" />
+    <Text style={styles.navText}>Downloads</Text>
+  </TouchableOpacity>
+</View>
     </View>
   );
 }
@@ -60,9 +96,35 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8fafc" },
   header: { height: 85, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   headerTitle: { flex: 1, color: "#2e4466", fontSize: 22, fontWeight: "800", textAlign: "center" },
-  list: { padding: 16, paddingBottom: 100 },
+ list: {
+  padding: 16,
+  paddingBottom: 90,
+},
   card: { backgroundColor: "#fff", borderRadius: 16, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: "#e2e8f0" },
   title: { color: "#1e293b", fontSize: 17, fontWeight: "900" },
   meta: { color: "#64748b", fontSize: 12, marginTop: 4 },
   empty: { textAlign: "center", marginTop: 50, color: "#94a3b8", fontWeight: "700" },
+  navText: {
+  color: "white",
+  fontSize: 12,
+  marginTop: 4,
+  textAlign: "center",
+  fontWeight: "500",
+},
+
+bottomNav: {
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  right: 0,
+  height: 70,
+  flexDirection: "row",
+  justifyContent: "space-around",
+  alignItems: "center",
+  backgroundColor: "#2e4466",
+  shadowColor: "#000",
+  shadowOpacity: 0.25,
+  shadowRadius: 6,
+  elevation: 10,
+},
 });

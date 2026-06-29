@@ -11,7 +11,7 @@ import {
   StatusBar,
   ScrollView
 } from "react-native";
-
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -20,6 +20,7 @@ import { LinearGradient } from "expo-linear-gradient";
 
 export default function SavedList() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { flow = "normal" } = useLocalSearchParams();
   
   // Data States
@@ -544,7 +545,15 @@ const [detailsModal, setDetailsModal] = useState(false);
       </Modal>
 
       {/* FIXED NAVBAR */}
-      <View style={styles.bottomNav}>
+     <View
+  style={[
+    styles.bottomNav,
+    {
+      paddingBottom: 30,
+      height:90
+    },
+  ]}
+>
         <TouchableOpacity style={styles.tabItem} onPress={() => router.push("/customerDashboard")}>
           <Ionicons name="home" size={22} color="white" />
           <Text style={styles.navText}>Home</Text>
