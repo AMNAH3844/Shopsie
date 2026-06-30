@@ -7,12 +7,13 @@ function getTransporter() {
 
   const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_SECURE } = process.env;
 
-  console.log("Creating transporter...");
-  console.log("SMTP_HOST:", SMTP_HOST);
-  console.log("SMTP_PORT:", SMTP_PORT);
-  console.log("SMTP_SECURE:", SMTP_SECURE);
-  console.log("SMTP_USER:", SMTP_USER);
-  console.log("SMTP_PASS exists:", !!SMTP_PASS);
+  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) {
+    const error = new Error(
+      "SMTP email configuration is missing. Add SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and EMAIL_FROM in backend-prisma/.env."
+    );
+    error.statusCode = 500;
+    throw error;
+  }
 
   reusableTransporter = nodemailer.createTransport({
     host: SMTP_HOST,
@@ -22,6 +23,9 @@ function getTransporter() {
       user: SMTP_USER,
       pass: SMTP_PASS,
     },
+    connectionTimeout: 30000,
+    greetingTimeout: 30000,
+    socketTimeout: 30000,
   });
 
   return reusableTransporter;

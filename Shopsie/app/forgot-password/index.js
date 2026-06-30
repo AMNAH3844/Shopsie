@@ -196,9 +196,11 @@ export default function ForgotPassword() {
             disabled={busy}
           >
             {sendingLoading ? (
+              
               <ActivityIndicator color="#0a0c47" />
             ) : (
               <Text style={styles.buttonText}>Send Reset Email</Text>
+              
             )}
           </TouchableOpacity>
         )}
