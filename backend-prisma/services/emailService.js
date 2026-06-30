@@ -15,6 +15,15 @@ function getTransporter() {
     throw error;
   }
 
+  console.log("=== FINAL SMTP CONFIG ===");
+  console.log({
+    host: SMTP_HOST,
+    port: SMTP_PORT,
+    secure: SMTP_SECURE,
+    user: SMTP_USER,
+    hasPassword: !!SMTP_PASS,
+  });
+
   reusableTransporter = nodemailer.createTransport({
     host: SMTP_HOST,
     port: Number(SMTP_PORT),
