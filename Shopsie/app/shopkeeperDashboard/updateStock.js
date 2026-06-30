@@ -209,8 +209,8 @@ export default function UpdateStock() {
           style={{ flex: 1 }}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View style={{ flex: 1 }}>
+          
+  <View style={{ flex: 1 }}>
               {/* EXACT HEADER IMPLEMENTATION */}
               <LinearGradient
                 colors={["#eef4fe", "#2e4466"]}
@@ -402,7 +402,7 @@ export default function UpdateStock() {
                 />
               )}
             </View>
-          </TouchableWithoutFeedback>
+
         </KeyboardAvoidingView>
 
         {/* UNIFIED DESIGN DELETE MODAL OVERLAY */}

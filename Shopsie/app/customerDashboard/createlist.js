@@ -678,9 +678,124 @@ export default function CreateList() {
               }
             />
 
-            {/* 4. OVERLAY PANELS */}
+            {/* 5. INTERACTIVE DECISION OVERLAYS & MODALS */}
 
-            {/* DATABASE PANEL */}
+            {/* FLOATING ACTION TOAST */}
+            {showWarningBox && (
+              <View style={styles.warningBox}>
+                <Ionicons name="alert-circle-outline" size={20} color="#fff" />
+                <Text style={styles.warningText}>{warningMessage}</Text>
+              </View>
+            )}
+
+            {/* DESTRUCTIVE MODAL: STRUCTURAL DATABASE REMOVAL */}
+            <Modal
+              animationType="fade"
+              transparent
+              visible={deleteModalVisible}
+              onRequestClose={() => setDeleteModalVisible(false)}
+            >
+              <View style={styles.modalOverlay}>
+                <View style={styles.modalBox}>
+                  <TouchableOpacity
+                    onPress={() => setDeleteModalVisible(false)}
+                    style={styles.closeCornerBtn}
+                  >
+                    <Text style={styles.closeX}>✕</Text>
+                  </TouchableOpacity>
+
+                  <Text style={[styles.modalTitle, { color: "#d45a3a" }]}>
+                    Delete Item
+                  </Text>
+                  <Text style={styles.modalSubtitle}>
+                    Are you sure you want to permanently delete "
+                    {selectedItemToDelete.name}" from your custom database?
+                  </Text>
+
+                  <View style={styles.shareButtonsRow}>
+                    <TouchableOpacity
+                      style={[styles.friendBtn, { backgroundColor: "#e5e5e5" }]}
+                      onPress={() => setDeleteModalVisible(false)}
+                    >
+                      <Text style={[styles.friendBtnText, { color: "#333" }]}>
+                        Cancel
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.riderBtn, { backgroundColor: "#d45a3a" }]}
+                      onPress={executeDatabaseDelete}
+                    >
+                      <Text style={styles.riderBtnText}>Delete</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </Modal>
+
+            {/* CONSTRUCTIVE MODAL: WORKFLOW VALIDATION ROUTING */}
+            <Modal
+              animationType="fade"
+              transparent
+              visible={shareModalVisible}
+              onRequestClose={() => setShareModalVisible(false)}
+            >
+              <View style={styles.modalOverlay}>
+                <View style={styles.modalBox}>
+                  <TouchableOpacity
+                    onPress={() => setShareModalVisible(false)}
+                    style={styles.closeCornerBtn}
+                  >
+                    <Text style={styles.closeX}>✕</Text>
+                  </TouchableOpacity>
+
+                  <Text style={styles.modalTitle}>Share Active List</Text>
+                  <Text style={styles.modalSubtitle}>
+                    Are you ready to share your current list "{listName}" with
+                    selected partners?
+                  </Text>
+
+                  <View style={styles.shareButtonsRow}>
+                    <TouchableOpacity
+                      style={[styles.friendBtn, { backgroundColor: "#e5e5e5" }]}
+                      onPress={() => setShareModalVisible(false)}
+                    >
+                      <Text style={[styles.friendBtnText, { color: "#333" }]}>
+                        Cancel
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.riderBtn, { backgroundColor: "#10b981" }]}
+                      onPress={() => {
+                        setShareModalVisible(false);
+                        setFinalizedData(null);
+                        router.push({
+                          pathname: "/customerDashboard/cart",
+                          params: {
+                            items: JSON.stringify(listItems),
+                            listName: listName,
+                          },
+                        });
+                      }}
+                    >
+                      <Text style={styles.riderBtnText}>Proceed</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </Modal>
+          </View>
+        </KeyboardAvoidingView>
+
+        <View style={styles.footerContainer}>
+          <TouchableOpacity style={styles.saveBtn} onPress={saveList}>
+            <Text style={styles.buttonText}>Save for Later</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.finalizeBtn} onPress={finalizeList}>
+            <Text style={styles.buttonText}>Finalize & Share</Text>
+          </TouchableOpacity>
+        </View>
+         {/* DATABASE PANEL */}
             {showDB && (
               <View style={styles.panel}>
                 <TouchableOpacity
@@ -876,125 +991,8 @@ export default function CreateList() {
                 </TouchableOpacity>
               </View>
             )}
-
-            {/* 5. INTERACTIVE DECISION OVERLAYS & MODALS */}
-
-            {/* FLOATING ACTION TOAST */}
-            {showWarningBox && (
-              <View style={styles.warningBox}>
-                <Ionicons name="alert-circle-outline" size={20} color="#fff" />
-                <Text style={styles.warningText}>{warningMessage}</Text>
-              </View>
-            )}
-
-            {/* DESTRUCTIVE MODAL: STRUCTURAL DATABASE REMOVAL */}
-            <Modal
-              animationType="fade"
-              transparent
-              visible={deleteModalVisible}
-              onRequestClose={() => setDeleteModalVisible(false)}
-            >
-              <View style={styles.modalOverlay}>
-                <View style={styles.modalBox}>
-                  <TouchableOpacity
-                    onPress={() => setDeleteModalVisible(false)}
-                    style={styles.closeCornerBtn}
-                  >
-                    <Text style={styles.closeX}>✕</Text>
-                  </TouchableOpacity>
-
-                  <Text style={[styles.modalTitle, { color: "#d45a3a" }]}>
-                    Delete Item
-                  </Text>
-                  <Text style={styles.modalSubtitle}>
-                    Are you sure you want to permanently delete "
-                    {selectedItemToDelete.name}" from your custom database?
-                  </Text>
-
-                  <View style={styles.shareButtonsRow}>
-                    <TouchableOpacity
-                      style={[styles.friendBtn, { backgroundColor: "#e5e5e5" }]}
-                      onPress={() => setDeleteModalVisible(false)}
-                    >
-                      <Text style={[styles.friendBtnText, { color: "#333" }]}>
-                        Cancel
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.riderBtn, { backgroundColor: "#d45a3a" }]}
-                      onPress={executeDatabaseDelete}
-                    >
-                      <Text style={styles.riderBtnText}>Delete</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            </Modal>
-
-            {/* CONSTRUCTIVE MODAL: WORKFLOW VALIDATION ROUTING */}
-            <Modal
-              animationType="fade"
-              transparent
-              visible={shareModalVisible}
-              onRequestClose={() => setShareModalVisible(false)}
-            >
-              <View style={styles.modalOverlay}>
-                <View style={styles.modalBox}>
-                  <TouchableOpacity
-                    onPress={() => setShareModalVisible(false)}
-                    style={styles.closeCornerBtn}
-                  >
-                    <Text style={styles.closeX}>✕</Text>
-                  </TouchableOpacity>
-
-                  <Text style={styles.modalTitle}>Share Active List</Text>
-                  <Text style={styles.modalSubtitle}>
-                    Are you ready to share your current list "{listName}" with
-                    selected partners?
-                  </Text>
-
-                  <View style={styles.shareButtonsRow}>
-                    <TouchableOpacity
-                      style={[styles.friendBtn, { backgroundColor: "#e5e5e5" }]}
-                      onPress={() => setShareModalVisible(false)}
-                    >
-                      <Text style={[styles.friendBtnText, { color: "#333" }]}>
-                        Cancel
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.riderBtn, { backgroundColor: "#10b981" }]}
-                      onPress={() => {
-                        setShareModalVisible(false);
-                        setFinalizedData(null);
-                        router.push({
-                          pathname: "/customerDashboard/cart",
-                          params: {
-                            items: JSON.stringify(listItems),
-                            listName: listName,
-                          },
-                        });
-                      }}
-                    >
-                      <Text style={styles.riderBtnText}>Proceed</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            </Modal>
-          </View>
-        </KeyboardAvoidingView>
-
-        <View style={styles.footerContainer}>
-          <TouchableOpacity style={styles.saveBtn} onPress={saveList}>
-            <Text style={styles.buttonText}>Save for Later</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.finalizeBtn} onPress={finalizeList}>
-            <Text style={styles.buttonText}>Finalize & Share</Text>
-          </TouchableOpacity>
-        </View>
       </View>
+      
     </SafeAreaView>
   );
 }

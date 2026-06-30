@@ -119,19 +119,19 @@ export default StyleSheet.create({
 
   /* -------------------- PANELS (UPDATED FIX) -------------------- */
   panel: {
-    position: "absolute",
-    top: 0,
-    right: 0,
-    width: "45%",
-    height: "100%",
-    backgroundColor: "#e9edf3",
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    zIndex: 9999,
-    elevation: 20,
-    borderLeftWidth: 1,
-    borderLeftColor: "#cfd6e0",
-  },
+  position: "absolute",
+
+  top: 0,
+  right: 0,
+  bottom: 0,
+
+  width: "45%",
+
+  backgroundColor: "#e9edf3",
+
+  zIndex: 9999,
+  elevation: 999,
+},
 
   panelScroll: {
     flexGrow: 1,
@@ -295,21 +295,22 @@ export default StyleSheet.create({
     backgroundColor: "#f4f4f4",
   },
 
-  footerContainer: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 15,
+ footerContainer: {
+  position: "absolute",
+  left: 0,
+  right: 0,
+  bottom: 0,
 
-    flexDirection: "row",
-    paddingHorizontal: 15,
-    paddingVertical: 14,
+  flexDirection: "row",
 
-    backgroundColor: "#2e4466",
+  paddingHorizontal: 15,
+  paddingVertical: 14,
 
-    zIndex: 1000,
-    elevation: 10,
-  },
+  backgroundColor: "#2e4466",
+
+  zIndex: 100,
+  elevation: 5,
+},
 
   /* -------------------- LIST ITEMS (FIXED OVERFLOW) -------------------- */
   listItem: {

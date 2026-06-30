@@ -12,13 +12,12 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  StatusBar,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
 const formatCoords = (lat, lng) => {
@@ -423,7 +422,10 @@ export default function ChatScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+    <SafeAreaView
+  style={{ flex: 1, backgroundColor: "#fff" }}
+  edges={["bottom"]}
+>
       <View style={styles.mainWrapper}>
         {/* MATCHING COHESIVE HEADER DESIGN */}
         <LinearGradient
@@ -445,12 +447,12 @@ export default function ChatScreen() {
           <View style={{ width: 32 }} />
         </LinearGradient>
 
-        {/* FIXED STRUCTURE: Behavior handles height shifts across platforms safely without moving navigation bar */}
+        {/* FIXED STRUCTURE: keyboardVerticalOffset adjusted to push view above active keyboard layout bounds */}
         <KeyboardAvoidingView
-          style={styles.keyboardContainer}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 85 : 0}
-        >
+  style={styles.keyboardContainer}
+  behavior={Platform.OS === "ios" ? "padding" : "height"}
+  keyboardVerticalOffset={Platform.OS === "ios" ? 85 : 0}
+>
           <View style={styles.container}>
             <FlatList
               data={messages}
@@ -493,39 +495,6 @@ export default function ChatScreen() {
             </View>
           </View>
         </KeyboardAvoidingView>
-
-        {/* MATCHING UNIFIED DESIGN BOTTOM NAVIGATION BAR */}
-        <View style={styles.bottomNav}>
-          <TouchableOpacity
-            style={styles.tabItem}
-            onPress={() => router.push("/customerDashboard")}
-          >
-            <Ionicons name="home" size={22} color="white" />
-            <Text style={styles.navText}>Home</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.tabItem}
-            onPress={() => router.push("/customerDashboard/savedlist")}
-          >
-            <MaterialCommunityIcons
-              name="format-list-bulleted"
-              size={22}
-              color="white"
-            />
-            <Text style={styles.navText}>Saved Lists</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.tabItem}
-            onPress={() => router.push("/customerDashboard/inbox")}
-          >
-            <Ionicons
-              name="chatbubble-ellipses-outline"
-              size={22}
-              color="white"
-            />
-            <Text style={styles.navText}>Inbox</Text>
-          </TouchableOpacity>
-        </View>
 
         {/* Modals & Overlays */}
         {selectedList && (
@@ -716,7 +685,10 @@ export default function ChatScreen() {
 }
 
 const styles = StyleSheet.create({
-  mainWrapper: { flex: 1, backgroundColor: "#2e4466" },
+  mainWrapper: {
+  flex: 1,
+  backgroundColor: "#fff",
+},
   center: {
     flex: 1,
     justifyContent: "center",
@@ -737,8 +709,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
     flex: 1,
   },
-  keyboardContainer: { flex: 1, backgroundColor: "#ffffff" },
-  container: { flex: 1 },
+  keyboardContainer: {
+  flex: 1,
+  backgroundColor: "#ffffff",
+},
+container: {
+  flex: 1,
+  backgroundColor: "#ffffff",
+},
   messageContainer: {
     flexDirection: "row",
     marginVertical: 6,
@@ -839,36 +817,6 @@ const styles = StyleSheet.create({
   },
   sendBtn: { paddingVertical: 6, paddingHorizontal: 4 },
   send: { color: "#2e4466", fontWeight: "800", marginLeft: 12, fontSize: 15 },
-  bottomNav: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-
-    height: 75,
-
-    backgroundColor: "#2e4466",
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-
-    elevation: 0,
-    borderTopWidth: 0,
-    zIndex: 1000,
-  },
-  tabItem: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 4,
-  },
-  navText: {
-    color: "white",
-    fontSize: 12,
-    marginTop: 0,
-    textAlign: "center",
-    fontWeight: "500",
-  },
   modalOverlay: {
     position: "absolute",
     top: 0,
@@ -982,7 +930,7 @@ const styles = StyleSheet.create({
   modalCloseButtonText: { color: "#fff", fontWeight: "800", fontSize: 14 },
   warningBox: {
     position: "absolute",
-    bottom: 80,
+    bottom: 20,
     left: 20,
     right: 20,
     backgroundColor: "#e67e22",

@@ -105,6 +105,13 @@ export default function Settings() {
       );
     }
 
+    // Email validation constraint
+    if (activeField === "email" && !newValueInput.trim().toLowerCase().endsWith("@gmail.com")) {
+      return triggerWarningNotification(
+        "Warning: Email must be of correct format (@gmail.com).",
+      );
+    }
+
     if (newValueInput.trim() === userData[activeField]) {
       return triggerWarningNotification(
         `Warning: New value is identical to current ${activeField}.`,
@@ -153,6 +160,13 @@ export default function Settings() {
     ) {
       return triggerWarningNotification(
         "Warning: All password input boxes are required.",
+      );
+    }
+
+    // Password length validation constraint
+    if (newPassword.trim().length < 5) {
+      return triggerWarningNotification(
+        "Warning: Password must be more or equal to 5 characters.",
       );
     }
 

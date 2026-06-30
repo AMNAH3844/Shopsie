@@ -369,7 +369,6 @@ const localStyles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     color: "#1E293B",
-    marginTop: 22,
     marginBottom: 6,
   },
   card: {
