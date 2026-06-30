@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -10,6 +9,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  View,
 } from "react-native";
 import { API_URLS } from "../../src/services/apiConfig";
 
@@ -23,6 +23,16 @@ export default function ForgotPassword() {
   const [showLockedMessage, setShowLockedMessage] = useState(false);
   const [lookupLoading, setLookupLoading] = useState(false);
   const [sendingLoading, setSendingLoading] = useState(false);
+
+  // Warning toast states
+  const [toastMessage, setToastMessage] = useState("");
+  const [showToast, setShowToast] = useState(false);
+
+  const triggerToast = (msg) => {
+    setToastMessage(msg);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 2500);
+  };
 
   useEffect(() => {
     const loadKnownAccount = () => {
@@ -49,7 +59,7 @@ export default function ForgotPassword() {
 
   const handleLookupEmail = async () => {
     if (!username.trim()) {
-      Alert.alert("Error", "Username is required");
+      triggerToast("Username is required");
       return;
     }
 
@@ -69,10 +79,7 @@ export default function ForgotPassword() {
       const data = await res.json();
 
       if (!res.ok) {
-        Alert.alert(
-          "Error",
-          data.message || "No account found for this username",
-        );
+        triggerToast(data.message || "No account found for this username");
         return;
       }
 
@@ -81,7 +88,7 @@ export default function ForgotPassword() {
       setShowLockedMessage(false);
     } catch (error) {
       console.error(error);
-      Alert.alert("Error", "Network error connecting to backend cluster.");
+      triggerToast("Network error connecting to backend cluster.");
     } finally {
       setLookupLoading(false);
     }
@@ -89,7 +96,7 @@ export default function ForgotPassword() {
 
   const handleSendResetEmail = async () => {
     if (!emailLocked || !email.trim()) {
-      Alert.alert("Error", "Find your account email first");
+      triggerToast("Find your account email first");
       return;
     }
 
@@ -109,23 +116,18 @@ export default function ForgotPassword() {
       const data = await res.json();
 
       if (!res.ok) {
-        Alert.alert("Error", data.message || "Unable to send reset email");
+        triggerToast(data.message || "Unable to send reset email");
         return;
       }
 
-      Alert.alert(
-        "Reset Email Sent",
-        "Please check your email for the reset link.",
-        [
-          {
-            text: "OK",
-            onPress: () => router.replace("/signin"),
-          },
-        ],
-      );
+      // Show success variant or route directly after notification
+      triggerToast("Reset email sent! Redirecting...");
+      setTimeout(() => {
+        router.replace("/signin");
+      }, 2000);
     } catch (error) {
       console.error(error);
-      Alert.alert("Error", "Network error connecting to backend cluster.");
+      triggerToast("Network error connecting to backend cluster.");
     } finally {
       setSendingLoading(false);
     }
@@ -196,11 +198,9 @@ export default function ForgotPassword() {
             disabled={busy}
           >
             {sendingLoading ? (
-              
               <ActivityIndicator color="#0a0c47" />
             ) : (
               <Text style={styles.buttonText}>Send Reset Email</Text>
-              
             )}
           </TouchableOpacity>
         )}
@@ -209,6 +209,12 @@ export default function ForgotPassword() {
           <Text style={styles.link}>Back</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {showToast && (
+        <View style={styles.warningBox}>
+          <Text style={styles.warningText}>{toastMessage}</Text>
+        </View>
+      )}
     </KeyboardAvoidingView>
   );
 }
@@ -271,6 +277,30 @@ const styles = StyleSheet.create({
     color: "#a8f0e6",
     fontSize: 14,
     fontWeight: "700",
+    textAlign: "center",
+  },
+  warningBox: {
+    position: "absolute",
+    bottom: 30,
+    left: 20,
+    right: 20,
+    backgroundColor: "#e67e22",
+    padding: 14,
+    borderRadius: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 999,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  warningText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
     textAlign: "center",
   },
 });

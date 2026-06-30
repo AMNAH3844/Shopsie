@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -10,6 +9,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  View,
 } from "react-native";
 import { API_URLS } from "../../src/services/apiConfig";
 
@@ -22,19 +22,29 @@ export default function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Warning toast states
+  const [toastMessage, setToastMessage] = useState("");
+  const [showToast, setShowToast] = useState(false);
+
+  const triggerToast = (msg) => {
+    setToastMessage(msg);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 2500);
+  };
+
   const handleResetPassword = async () => {
     if (!token) {
-      Alert.alert("Error", "Reset token is missing or invalid");
+      triggerToast("Reset token is missing or invalid");
       return;
     }
 
     if (!newPassword || !confirmPassword) {
-      Alert.alert("Error", "All fields required");
+      triggerToast("All fields required");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match");
+      triggerToast("Passwords do not match");
       return;
     }
 
@@ -50,7 +60,7 @@ export default function ResetPassword() {
       const data = await res.json();
 
       if (!res.ok) {
-        Alert.alert("Error", data.message || "Unable to reset password");
+        triggerToast(data.message || "Unable to reset password");
         return;
       }
 
@@ -60,7 +70,7 @@ export default function ResetPassword() {
       });
     } catch (error) {
       console.error(error);
-      Alert.alert("Error", "Network error connecting to backend cluster.");
+      triggerToast("Network error connecting to backend cluster.");
     } finally {
       setLoading(false);
     }
@@ -106,6 +116,12 @@ export default function ResetPassword() {
           )}
         </TouchableOpacity>
       </ScrollView>
+
+      {showToast && (
+        <View style={styles.warningBox}>
+          <Text style={styles.warningText}>{toastMessage}</Text>
+        </View>
+      )}
     </KeyboardAvoidingView>
   );
 }
@@ -146,5 +162,29 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#0a0c47",
     fontWeight: "700",
+  },
+  warningBox: {
+    position: "absolute",
+    bottom: 30,
+    left: 20,
+    right: 20,
+    backgroundColor: "#e67e22",
+    padding: 14,
+    borderRadius: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 999,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  warningText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+    textAlign: "center",
   },
 });
