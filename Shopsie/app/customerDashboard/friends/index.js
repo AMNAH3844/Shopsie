@@ -272,7 +272,6 @@ const FriendsScreen = () => {
     return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
         <View style={styles.container}>
-            <StatusBar barStyle="light-content" />
             <LinearGradient colors={["#eef4fe", "#2e4466"]} start={{ x: 1, y: 0 }} end={{ x: 0, y: 0 }} style={styles.header}>
                <TouchableOpacity 
                    onPress={() => router.canGoBack() ? router.back() : router.replace("/customerDashboard")}
@@ -547,7 +546,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
 
-    height: 55,
+    height: 75,
 
     backgroundColor: "#2e4466",
     flexDirection: "row",

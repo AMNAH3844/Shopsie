@@ -15,6 +15,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import BottomNav from "./BottomNav";
 import { useRouter } from "expo-router";
@@ -100,19 +101,21 @@ export default function UpdateStock() {
     const rawQuantity = updates[id]?.quantity;
     const rawSpec = updates[id]?.specification;
 
+    // VALIDATION: Price must be >= 1
     if (rawPrice !== undefined && rawPrice !== "") {
       const numericPrice = Number(rawPrice);
-      if (isNaN(numericPrice) || numericPrice <= 0) {
-        triggerWarningNotification("Warning: Price must be greater than 0.");
+      if (isNaN(numericPrice) || numericPrice < 1) {
+        triggerWarningNotification("Warning: Price must be 1 or greater.");
         return;
       }
       body.price = numericPrice;
     }
 
+    // VALIDATION: Quantity must be >= 1
     if (rawQuantity !== undefined && rawQuantity !== "") {
       const numericQuantity = Number(rawQuantity);
-      if (isNaN(numericQuantity) || numericQuantity < 0) {
-        triggerWarningNotification("Warning: Quantity cannot be negative.");
+      if (isNaN(numericQuantity) || numericQuantity < 1) {
+        triggerWarningNotification("Warning: Quantity must be 1 or greater.");
         return;
       }
       body.quantity = numericQuantity;
@@ -196,210 +199,211 @@ export default function UpdateStock() {
   );
 
   return (
-    <View style={localStyles.mainContainer}>
-      <StatusBar barStyle="light-content" />
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      <View style={localStyles.mainContainer}>
 
-      {/* FIXED STRUCTURE: Keyboard avoiding handles inner inputs, navbar sits cleanly beneath outside it */}
-      <KeyboardAvoidingView 
-        style={{ flex: 1 }} 
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={{ flex: 1 }}>
-            
-            {/* EXACT HEADER IMPLEMENTATION */}
-            <LinearGradient 
-              colors={["#eef4fe", "#2e4466"]} 
-              start={{ x: 1, y: 0 }} 
-              end={{ x: 0, y: 0 }} 
-              style={localStyles.gradientHeader}
-            >
-              <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/shopkeeperDashboard")}>
-                <Ionicons name="chevron-back" size={28} color="#eef4fe" />
-              </TouchableOpacity>
-              <View style={localStyles.headerCenterContainer}>
-                <Text style={localStyles.headerTitleText}>
-                  Update Stock
-                </Text>
+        {/* FIXED STRUCTURE: Keyboard avoiding handles inner inputs */}
+        <KeyboardAvoidingView 
+          style={{ flex: 1 }} 
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={{ flex: 1 }}>
+              
+              {/* EXACT HEADER IMPLEMENTATION */}
+              <LinearGradient 
+                colors={["#eef4fe", "#2e4466"]} 
+                start={{ x: 1, y: 0 }} 
+                end={{ x: 0, y: 0 }} 
+                style={localStyles.gradientHeader}
+              >
+                <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/shopkeeperDashboard")}>
+                  <Ionicons name="chevron-back" size={28} color="#eef4fe" />
+                </TouchableOpacity>
+                <View style={localStyles.headerCenterContainer}>
+                  <Text style={localStyles.headerTitleText}>
+                    Update Stock
+                  </Text>
+                </View>
+                <View style={{ width: 28 }} />
+              </LinearGradient>
+
+              {/* SEARCH BAR CONTAINER */}
+              <View style={localStyles.searchSectionWrapper}>
+                <View style={localStyles.searchBarContainer}>
+                  <Ionicons name="search-outline" size={20} color="#64748B" style={localStyles.inputIcon} />
+                  <TextInput
+                    placeholder="Search product by name..."
+                    placeholderTextColor="#94A3B8"
+                    value={search}
+                    onChangeText={setSearch}
+                    style={localStyles.baseInputOverride}
+                  />
+                  {search.length > 0 && (
+                    <TouchableOpacity onPress={() => setSearch("")}>
+                      <Ionicons name="close-circle" size={18} color="#94A3B8" />
+                    </TouchableOpacity>
+                  )}
+                </View>
               </View>
-              <View style={{ width: 28 }} />
-            </LinearGradient>
 
-            {/* SEARCH BAR CONTAINER */}
-            <View style={localStyles.searchSectionWrapper}>
-              <View style={localStyles.searchBarContainer}>
-                <Ionicons name="search-outline" size={20} color="#64748B" style={localStyles.inputIcon} />
-                <TextInput
-                  placeholder="Search product by name..."
-                  placeholderTextColor="#94A3B8"
-                  value={search}
-                  onChangeText={setSearch}
-                  style={localStyles.baseInputOverride}
+              {/* PRODUCT LIST ENGINE */}
+              {isFetching ? (
+                <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                  <ActivityIndicator size="large" color="#2e4466" />
+                </View>
+              ) : (
+                <FlatList
+                  data={filteredProducts}
+                  keyExtractor={(item) => item.id.toString()}
+                  contentContainerStyle={localStyles.scrollContainer}
+                  showsVerticalScrollIndicator={false}
+                  ListHeaderComponent={<Text style={localStyles.sectionHeading}>Inventory Items</Text>}
+                  renderItem={({ item }) => (
+                    <View style={localStyles.card}>
+                      <Text style={localStyles.productTitle}>{item.name}</Text>
+
+                      {/* Price Row */}
+                      <Text style={localStyles.fieldLabel}>Price</Text>
+                      <View style={localStyles.inputWrapper}>
+                        <Ionicons name="pricetag-outline" size={18} color="#64748B" style={localStyles.inputIcon} />
+                        <TextInput
+                          placeholder={`Current: Rs ${item.price}`}
+                          placeholderTextColor="#94A3B8"
+                          keyboardType="decimal-pad"
+                          style={localStyles.baseInputOverride}
+                          onChangeText={(t) => handlePriceInputChange(t, item.id)}
+                          value={updates[item.id]?.price || ""}
+                        />
+                      </View>
+
+                      {/* Quantity Row */}
+                      <Text style={localStyles.fieldLabel}>Quantity</Text>
+                      <View style={localStyles.inputWrapper}>
+                        <MaterialCommunityIcons name="numeric" size={18} color="#64748B" style={localStyles.inputIcon} />
+                        <TextInput
+                          placeholder={`Current: ${item.quantity}`}
+                          placeholderTextColor="#94A3B8"
+                          keyboardType="number-pad"
+                          style={localStyles.baseInputOverride}
+                          onChangeText={(t) => handleQuantityInputChange(t, item.id)}
+                          value={updates[item.id]?.quantity || ""}
+                        />
+                      </View>
+
+                      {/* Specification Row */}
+                      <Text style={localStyles.fieldLabel}>Specification</Text>
+                      <View style={[localStyles.inputWrapper, localStyles.textAreaWrapper]}>
+                        <TextInput
+                          placeholder={`Current: ${item.specification || "-"}`}
+                          placeholderTextColor="#94A3B8"
+                          style={[localStyles.baseInputOverride, localStyles.textAreaInput]}
+                          multiline={true}
+                          numberOfLines={3}
+                          onChangeText={(t) =>
+                            setUpdates({
+                              ...updates,
+                              [item.id]: { ...updates[item.id], specification: t },
+                            })
+                          }
+                          value={updates[item.id]?.specification || ""}
+                        />
+                      </View>
+
+                      {/* ACTION ROW UTILITY BUTTONS */}
+                      <View style={localStyles.actionRow}>
+                        <TouchableOpacity
+                          style={[localStyles.actionButtonHalf, localStyles.saveButtonColor]}
+                          onPress={() => updateProduct(item.id)}
+                          activeOpacity={0.8}
+                        >
+                          <Ionicons name="checkmark-circle-outline" size={18} color="white" style={{ marginRight: 4 }} />
+                          <Text style={localStyles.actionButtonText}>Update</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          style={[localStyles.actionButtonHalf, localStyles.cancelButtonColor]}
+                          onPress={() => openDeleteConfirmation(item.id, item.name)}
+                          activeOpacity={0.7}
+                        >
+                          <Ionicons name="trash-outline" size={18} color="white" style={{ marginRight: 4 }} />
+                          <Text style={localStyles.actionButtonText}>Delete</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  )}
                 />
-                {search.length > 0 && (
-                  <TouchableOpacity onPress={() => setSearch("")}>
-                    <Ionicons name="close-circle" size={18} color="#94A3B8" />
-                  </TouchableOpacity>
-                )}
+              )}
+            </View>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
+
+        {/* UNIFIED DESIGN DELETE MODAL OVERLAY */}
+        <Modal
+          animationType="fade"
+          transparent
+          visible={deleteModalVisible}
+          onRequestClose={() => setDeleteModalVisible(false)}
+        >
+          <View style={localStyles.modalOverlay}>
+            <View style={localStyles.modalBox}>
+              <TouchableOpacity onPress={() => setDeleteModalVisible(false)} style={localStyles.closeCornerBtn}>
+                <Text style={localStyles.closeX}>✕</Text>
+              </TouchableOpacity>
+
+              <Text style={[localStyles.modalTitle, { color: '#EF4444' }]}>Delete Product</Text>
+              <Text style={localStyles.modalSubtitle}>
+                Are you sure you want to permanently remove "{selectedProduct.name}" from stock records?
+              </Text>
+              
+              <View style={localStyles.modalButtonsRow}>
+                <TouchableOpacity 
+                  style={[localStyles.modalBtn, { backgroundColor: '#E2E8F0' }]} 
+                  onPress={() => setDeleteModalVisible(false)}
+                >
+                  <Text style={[localStyles.modalBtnText, { color: '#334155' }]}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[localStyles.modalBtn, { backgroundColor: '#EF4444' }]} 
+                  onPress={executeDeleteProduct}
+                >
+                  <Text style={[localStyles.modalBtnText, { color: '#fff' }]}>Delete</Text>
+                </TouchableOpacity>
               </View>
             </View>
-
-            {/* PRODUCT LIST ENGINE */}
-            {isFetching ? (
-              <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                <ActivityIndicator size="large" color="#2e4466" />
-              </View>
-            ) : (
-              <FlatList
-                data={filteredProducts}
-                keyExtractor={(item) => item.id.toString()}
-                contentContainerStyle={localStyles.scrollContainer}
-                showsVerticalScrollIndicator={false}
-                ListHeaderComponent={<Text style={localStyles.sectionHeading}>Inventory Items</Text>}
-                renderItem={({ item }) => (
-                  <View style={localStyles.card}>
-                    <Text style={localStyles.productTitle}>{item.name}</Text>
-
-                    {/* Price Row */}
-                    <Text style={localStyles.fieldLabel}>Price</Text>
-                    <View style={localStyles.inputWrapper}>
-                      <Ionicons name="pricetag-outline" size={18} color="#64748B" style={localStyles.inputIcon} />
-                      <TextInput
-                        placeholder={`Current: Rs ${item.price}`}
-                        placeholderTextColor="#94A3B8"
-                        keyboardType="decimal-pad"
-                        style={localStyles.baseInputOverride}
-                        onChangeText={(t) => handlePriceInputChange(t, item.id)}
-                        value={updates[item.id]?.price || ""}
-                      />
-                    </View>
-
-                    {/* Quantity Row */}
-                    <Text style={localStyles.fieldLabel}>Quantity</Text>
-                    <View style={localStyles.inputWrapper}>
-                      <MaterialCommunityIcons name="numeric" size={18} color="#64748B" style={localStyles.inputIcon} />
-                      <TextInput
-                        placeholder={`Current: ${item.quantity}`}
-                        placeholderTextColor="#94A3B8"
-                        keyboardType="number-pad"
-                        style={localStyles.baseInputOverride}
-                        onChangeText={(t) => handleQuantityInputChange(t, item.id)}
-                        value={updates[item.id]?.quantity || ""}
-                      />
-                    </View>
-
-                    {/* Specification Row */}
-                    <Text style={localStyles.fieldLabel}>Specification</Text>
-                    <View style={[localStyles.inputWrapper, localStyles.textAreaWrapper]}>
-                      <TextInput
-                        placeholder={`Current: ${item.specification || "-"}`}
-                        placeholderTextColor="#94A3B8"
-                        style={[localStyles.baseInputOverride, localStyles.textAreaInput]}
-                        multiline={true}
-                        numberOfLines={3}
-                        onChangeText={(t) =>
-                          setUpdates({
-                            ...updates,
-                            [item.id]: { ...updates[item.id], specification: t },
-                          })
-                        }
-                        value={updates[item.id]?.specification || ""}
-                      />
-                    </View>
-
-                    {/* ACTION ROW UTILITY BUTTONS */}
-                    <View style={localStyles.actionRow}>
-                      <TouchableOpacity
-                        style={[localStyles.actionButtonHalf, localStyles.saveButtonColor]}
-                        onPress={() => updateProduct(item.id)}
-                        activeOpacity={0.8}
-                      >
-                        <Ionicons name="checkmark-circle-outline" size={18} color="white" style={{ marginRight: 4 }} />
-                        <Text style={localStyles.actionButtonText}>Update</Text>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        style={[localStyles.actionButtonHalf, localStyles.cancelButtonColor]}
-                        onPress={() => openDeleteConfirmation(item.id, item.name)}
-                        activeOpacity={0.7}
-                      >
-                        <Ionicons name="trash-outline" size={18} color="white" style={{ marginRight: 4 }} />
-                        <Text style={localStyles.actionButtonText}>Delete</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                )}
-              />
-            )}
           </View>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
+        </Modal>
 
-      {/* UNIFIED DESIGN DELETE MODAL OVERLAY */}
-      <Modal
-        animationType="fade"
-        transparent
-        visible={deleteModalVisible}
-        onRequestClose={() => setDeleteModalVisible(false)}
-      >
-        <View style={localStyles.modalOverlay}>
-          <View style={localStyles.modalBox}>
-            <TouchableOpacity onPress={() => setDeleteModalVisible(false)} style={localStyles.closeCornerBtn}>
-              <Text style={localStyles.closeX}>✕</Text>
-            </TouchableOpacity>
-
-            <Text style={[localStyles.modalTitle, { color: '#EF4444' }]}>Delete Product</Text>
-            <Text style={localStyles.modalSubtitle}>
-              Are you sure you want to permanently remove "{selectedProduct.name}" from stock records?
-            </Text>
-            
-            <View style={localStyles.modalButtonsRow}>
-              <TouchableOpacity 
-                style={[localStyles.modalBtn, { backgroundColor: '#E2E8F0' }]} 
-                onPress={() => setDeleteModalVisible(false)}
-              >
-                <Text style={[localStyles.modalBtnText, { color: '#334155' }]}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[localStyles.modalBtn, { backgroundColor: '#EF4444' }]} 
-                onPress={executeDeleteProduct}
-              >
-                <Text style={[localStyles.modalBtnText, { color: '#fff' }]}>Delete</Text>
-              </TouchableOpacity>
-            </View>
+        {/* TRANSIENT BANNER LAYER */}
+        {warningMessage ? (
+          <View style={localStyles.warningBox}>
+            <Ionicons 
+              name={warningMessage.startsWith("Success") ? "checkmark-circle-outline" : "warning-outline"} 
+              size={22} 
+              color="#fff" 
+            />
+            <Text style={localStyles.warningText}>{warningMessage}</Text>
           </View>
-        </View>
-      </Modal>
+        ) : null}
 
-      {/* TRANSIENT BANNER LAYER */}
-      {warningMessage ? (
-        <View style={localStyles.warningBox}>
-          <Ionicons 
-            name={warningMessage.startsWith("Success") ? "checkmark-circle-outline" : "warning-outline"} 
-            size={22} 
-            color="#fff" 
-          />
-          <Text style={localStyles.warningText}>{warningMessage}</Text>
-        </View>
-      ) : null}
-
-      {/* INLINE BOTTOM NAVIGATION (Now extracted outside KeyboardAvoidingView) */}
-    <BottomNav />
-    </View>
+        {/* FIXED BOTTOM NAVIGATION BAR */}
+        <BottomNav />
+      </View>
+    </SafeAreaView>
   );
 }
 
 const localStyles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: '#F8FAFC' },
   searchSectionWrapper: { paddingHorizontal: 20, marginTop: 16 },
- scrollContainer: {
-  paddingHorizontal: 20,
-  paddingBottom: 90,
-},
+  scrollContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 95,
+  },
   gradientHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justify: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 26,
     width: '100%',
@@ -437,8 +441,6 @@ const localStyles = StyleSheet.create({
   modalBtn: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: "center" },
   modalBtnText: { fontWeight: '700', fontSize: 15 },
 
-  // Will now remain fixed directly behind or under the keyboard window viewport bounds
- 
   warningBox: { position: 'absolute', bottom: 85, left: 20, right: 20, backgroundColor: '#e67e22', padding: 14, borderRadius: 14, flexDirection: 'row', alignItems: 'center', zIndex: 9999, elevation: 6 },
   warningText: { color: '#fff', marginLeft: 10, fontSize: 14, fontWeight: '600', flex: 1 },
 });

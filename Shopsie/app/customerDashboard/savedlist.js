@@ -98,7 +98,6 @@ const [detailsModal, setDetailsModal] = useState(false);
   return (
   <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
 
       {/* HEADER */}
       <LinearGradient
@@ -462,13 +461,6 @@ const [detailsModal, setDetailsModal] = useState(false);
       >
         <Text style={styles.closeX}>✕</Text>
       </TouchableOpacity>
-
-      <Ionicons
-        name="location-outline"
-        size={42}
-        color="#2e4466"
-        style={{ marginBottom: 10 }}
-      />
 
       <Text style={styles.shareTitle}>Add Locations</Text>
 
@@ -965,7 +957,7 @@ shareSubtitle: {
   right: 0,
   bottom: 0,
 
-  height: 55,
+  height: 75,
 
   backgroundColor: "#2e4466",
   flexDirection: "row",

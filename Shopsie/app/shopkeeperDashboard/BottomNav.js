@@ -15,7 +15,6 @@ export default function BottomNav() {
       const token = await AsyncStorage.getItem("token");
       if (!token) return;
 
-      // Using the exact config key that matches your ShopkeeperOrders screen
       const res = await fetch(API_URLS.SHOP_ORDER_NOTIFICATION_COUNT, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -64,7 +63,11 @@ export default function BottomNav() {
         <TouchableOpacity 
           key={item.label} 
           style={styles.navItem} 
-          onPress={() => router.replace(item.path)}
+          onPress={() => {
+            // FIXED: Using router.navigate preserves the stack history context 
+            // so the hardware back button returns to the last viewed tab instead of page 0.
+            router.navigate(item.path);
+          }}
         >
           <View style={{ position: "relative" }}>
             {item.icon}
@@ -85,36 +88,33 @@ export default function BottomNav() {
 }
 
 const styles = StyleSheet.create({
-bottomNav: {
-  position: "absolute",
-  left: 0,
-  right: 0,
-  bottom: 0,
-
-  height: 55,
-
-  backgroundColor: "#2e4466",
-  flexDirection: "row",
-  justifyContent: "space-around",
-  alignItems: "center",
-
-  elevation: 0,
-  borderTopWidth: 0,
-  zIndex: 1000,
-},
- navItem: {
-  flex: 1,
-  justifyContent: "center",
-  alignItems: "center",
-  paddingVertical: 4,
-},
- navText: {
-  color: "white",
-  fontSize: 12,
-  marginTop: 0,
-  textAlign: "center",
-  fontWeight: "500",
-},
+  bottomNav: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 75,
+    backgroundColor: "#2e4466",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    elevation: 0,
+    borderTopWidth: 0,
+    zIndex: 1000,
+  },
+  navItem: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 4,
+  },
+  navText: {
+    color: "white",
+    fontSize: 12,
+    marginTop: 0,
+    textAlign: "center",
+    fontWeight: "500",
+  },
   badge: {
     position: "absolute",
     top: -6,

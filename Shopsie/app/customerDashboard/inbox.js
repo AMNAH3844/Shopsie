@@ -328,7 +328,6 @@ const InboxScreen = () => {
    return (
   <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
 
       <LinearGradient
         colors={["#eef4fe", "#2e4466"]}
@@ -611,7 +610,7 @@ const styles = StyleSheet.create({
   right: 0,
   bottom: 0,
 
-  height: 55,
+  height: 75,
 
   backgroundColor: "#2e4466",
   flexDirection: "row",

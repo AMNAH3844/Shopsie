@@ -91,7 +91,6 @@ export default function SetThreshold() {
  return (
   <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={localStyles.mainContainer}>
-      <StatusBar barStyle="light-content" />
       
       {/* EXACT HEADER IMPLEMENTATION */}
       <LinearGradient 

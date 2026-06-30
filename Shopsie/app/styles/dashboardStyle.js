@@ -127,7 +127,7 @@ taskTitle: {
   right: 0,
   bottom: 0,
 
-  height: 55,
+  height: 75,
 
   backgroundColor: "#2e4466",
   flexDirection: "row",

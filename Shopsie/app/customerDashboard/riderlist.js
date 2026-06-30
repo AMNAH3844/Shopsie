@@ -26,7 +26,6 @@ export default function RiderList() {
   return (
   <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={[styles.container, { flex: 1, backgroundColor: "#ffffff" }]}>
-      <StatusBar barStyle="light-content" />
 
       {/* ================= EXACT UNIFIED HEADER ================= */}
       <LinearGradient
@@ -164,7 +163,7 @@ bottomNav: {
   right: 0,
   bottom: 0,
 
-  height: 55,
+  height: 75,
 
   backgroundColor: "#2e4466",
   flexDirection: "row",

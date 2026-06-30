@@ -9,16 +9,17 @@ import {
   ActivityIndicator,
   Switch,
   Alert,
+  KeyboardAvoidingView,
   ScrollView,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { WebView } from "react-native-webview";
 import { useRouter, useFocusEffect } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import * as Location from "expo-location";
-// Import the centralized config
 import { API_URLS } from '../../src/services/apiConfig';
 
 const DEFAULT_LAT = 31.5204;
@@ -31,6 +32,9 @@ export default function RiderSetLocation() {
   const router = useRouter();
   const webViewRef = useRef(null);
 
+  // ==========================================
+  // STATE MANAGEMENT
+  // ==========================================
   const [lat, setLat] = useState(DEFAULT_LAT);
   const [lng, setLng] = useState(DEFAULT_LNG);
   const [label, setLabel] = useState("Current rider location");
@@ -39,32 +43,44 @@ export default function RiderSetLocation() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
+  const [warning, setWarning] = useState("");
 
+  // ==========================================
+  // WARNING TOAST FUNCTION (Orange feedback box)
+  // ==========================================
+  const triggerWarning = (message) => {
+    setWarning(message);
+    setTimeout(() => {
+      setWarning("");
+    }, 3000);
+  };
+
+  // ==========================================
+  // API CALLS (Load saved location configuration)
+  // ==========================================
   const loadLocation = useCallback(async () => {
-  try {
-    setLoading(true);
-    const token = await AsyncStorage.getItem("token");
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem("token");
 
-    // Ensure we are hitting the RIDER endpoint (api/rider)
-    const res = await axios.get(`${API_URLS.RIDER}/me/location`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+      const res = await axios.get(`${API_URLS.RIDER}/me/location`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    const data = res.data;
-
-    // Strict check: Only update state if coordinates actually exist in DB
-    if (data && data.currentLat !== null && data.currentLng !== null) {
-      setLat(Number(data.currentLat));
-      setLng(Number(data.currentLng));
-      setLabel(data.locationLabel || "Saved Location");
-      setIsLocationOn(Boolean(data.isLocationOn));
+      const data = res.data;
+      if (data && data.currentLat !== null && data.currentLng !== null) {
+        setLat(Number(data.currentLat));
+        setLng(Number(data.currentLng));
+        setLabel(data.locationLabel || "Saved Location");
+        setIsLocationOn(Boolean(data.isLocationOn));
+      }
+    } catch (e) {
+      console.log("Load location error:", e.message);
+      triggerWarning("Could not refresh background data.");
+    } finally {
+      setLoading(false);
     }
-  } catch (e) {
-    console.log("Load location error:", e.response?.data || e.message);
-  } finally {
-    setLoading(false);
-  }
-}, []);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -72,6 +88,9 @@ export default function RiderSetLocation() {
     }, [loadLocation])
   );
 
+  // ==========================================
+  // WEB & MOBILE WEBVIEW POST-MESSAGE BRIDGE
+  // ==========================================
   useEffect(() => {
     const payload = { type: "UPDATE_LOCATION", lat: Number(lat), lng: Number(lng) };
 
@@ -89,6 +108,9 @@ export default function RiderSetLocation() {
     }
   }, [lat, lng]);
 
+  // ==========================================
+  // SAVE, GPS, SEARCH HANDLERS
+  // ==========================================
   const saveLocation = async (nextOnline = isLocationOn) => {
     try {
       const nextLat = Number(lat);
@@ -99,10 +121,8 @@ export default function RiderSetLocation() {
       }
 
       setSaving(true);
-
       const token = await AsyncStorage.getItem("token");
 
-      // Replaced API_BASE with API_URLS.RIDER
       const res = await axios.post(
         `${API_URLS.RIDER}/me/location`,
         {
@@ -134,10 +154,7 @@ export default function RiderSetLocation() {
         setSuccessMsg("");
       }, 2500);
     } catch (e) {
-      Alert.alert(
-        "Error",
-        e.response?.data?.message || e.message || "Could not save location"
-      );
+      triggerWarning(e.response?.data?.message || e.message || "Could not save location");
     } finally {
       setSaving(false);
     }
@@ -146,7 +163,6 @@ export default function RiderSetLocation() {
   const useGps = async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
-
       if (status !== "granted") {
         return Alert.alert("Permission denied", "Allow location access first.");
       }
@@ -159,7 +175,7 @@ export default function RiderSetLocation() {
       setLng(Number(current.coords.longitude));
       setLabel("GPS current location");
     } catch (e) {
-      Alert.alert("Error", "Could not get GPS location.");
+      triggerWarning("Could not get GPS location.");
     }
   };
 
@@ -169,16 +185,9 @@ export default function RiderSetLocation() {
 
     try {
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(
-          query
-        )}`,
-        {
-          headers: {
-            "User-Agent": "ShoppingRiderApp/1.0",
-          },
-        }
+        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`,
+        { headers: { "User-Agent": "ShoppingRiderApp/1.0" } }
       );
-
       const data = await res.json();
 
       if (!data?.length) {
@@ -189,7 +198,7 @@ export default function RiderSetLocation() {
       setLng(Number(data[0].lon));
       setLabel(data[0].display_name || query);
     } catch (e) {
-      Alert.alert("Error", "Could not search location.");
+      triggerWarning("Could not search location.");
     }
   };
 
@@ -210,31 +219,19 @@ export default function RiderSetLocation() {
     <!DOCTYPE html>
     <html>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
         <style>
-          body, html, #map {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
-          }
+          body, html, #map { margin: 0; padding: 0; height: 100%; width: 100%; }
         </style>
       </head>
       <body>
         <div id="map"></div>
-
         <script>
           var map = L.map('map').setView([${Number(lat)}, ${Number(lng)}], 14);
-
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19
-          }).addTo(map);
-
-          var marker = L.marker([${Number(lat)}, ${Number(lng)}], {
-            draggable: true
-          }).addTo(map);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+          var marker = L.marker([${Number(lat)}, ${Number(lng)}], { draggable: true }).addTo(map);
 
           function send(lat, lng) {
             var payload = JSON.stringify({ lat: lat, lng: lng });
@@ -263,10 +260,7 @@ export default function RiderSetLocation() {
 
           window.addEventListener('message', function(event) {
             try {
-              var payload = typeof event.data === 'string'
-                ? JSON.parse(event.data)
-                : event.data;
-
+              var payload = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
               if (payload && payload.type === 'UPDATE_LOCATION') {
                 updateLocation(payload.lat, payload.lng);
               }
@@ -286,128 +280,151 @@ export default function RiderSetLocation() {
   }
 
   return (
-    <View style={styles.container}>
-      <LinearGradient colors={["#eef4fe", "#2e4466"]} style={styles.header}>
-        <TouchableOpacity onPress={() => router.replace("/riderDashboard")}>
-          <Ionicons name="chevron-back" size={28} color="#eef4fe" />
-        </TouchableOpacity>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      <View style={styles.container}>
+        
+        {/* TOP HEADER - Exact identical structure and style matching History */}
+        <LinearGradient colors={["#eef4fe", "#2e4466"]} start={{ x: 1, y: 0 }} end={{ x: 0, y: 0 }} style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Ionicons name="chevron-back" size={28} color="#eef4fe" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Set Location</Text>
+          <View style={{ width: 28 }} />
+        </LinearGradient>
 
-        <Text style={styles.headerTitle}>Set Location</Text>
-        <View style={{ width: 28 }} />
-      </LinearGradient>
+        {/* MAIN CONTROLS & WEB CONTAINER */}
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === "ios" ? "padding" : "height"} 
+          style={{ flex: 1 }}
+        >
+          <ScrollView 
+            contentContainerStyle={styles.scrollBody} 
+            showsVerticalScrollIndicator={false}
+          >
+            {!!successMsg && (
+              <View style={styles.successBox}>
+                <Text style={styles.successText}>{successMsg}</Text>
+              </View>
+            )}
 
-      <ScrollView contentContainerStyle={styles.body}>
-        {!!successMsg && (
-          <View style={styles.successBox}>
-            <Text style={styles.successText}>{successMsg}</Text>
+            <View style={styles.searchRow}>
+              <TextInput
+                value={search}
+                onChangeText={setSearch}
+                placeholder="Search location"
+                style={styles.input}
+                placeholderTextColor="#94a3b8"
+              />
+              <TouchableOpacity style={styles.iconBtn} onPress={searchLocation}>
+                <Ionicons name="search" size={20} color="#fff" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.mapBox}>
+              {Platform.OS === "web" ? (
+                <iframe
+                  id="rider-location-map"
+                  srcDoc={mapHtml}
+                  style={{ width: "100%", height: "100%", border: "none" }}
+                />
+              ) : (
+                <WebView
+                  ref={webViewRef}
+                  source={{ html: mapHtml }}
+                  onMessage={onMapMessage}
+                  javaScriptEnabled
+                  domStorageEnabled
+                />
+              )}
+            </View>
+
+            <Text style={styles.labelText} numberOfLines={1}>{label}</Text>
+            <Text style={styles.coordsText}>{formatCoords(lat, lng)}</Text>
+
+            <TouchableOpacity style={styles.gpsBtn} onPress={useGps}>
+              <Ionicons name="locate" size={18} color="#2e4466" />
+              <Text style={styles.gpsText}>Use GPS</Text>
+            </TouchableOpacity>
+
+            <View style={styles.toggleRow}>
+              <View style={{ flex: 1, paddingRight: 8 }}>
+                <Text style={styles.toggleTitle}>Show location to customers</Text>
+                <Text style={styles.toggleSub}>
+                  {isLocationOn ? "You are online for rider requests." : "You are off duty."}
+                </Text>
+              </View>
+              <Switch
+                value={isLocationOn}
+                disabled={saving}
+                onValueChange={(next) => saveLocation(next)}
+              />
+            </View>
+
+            <TouchableOpacity
+              style={[styles.saveBtn, saving && styles.saveBtnDisabled]}
+              onPress={() => saveLocation(isLocationOn)}
+              disabled={saving}
+            >
+              {saving ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.saveText}>Save Location</Text>
+              )}
+            </TouchableOpacity>
+          </ScrollView>
+        </KeyboardAvoidingView>
+
+        {/* ORANGE WARNING TOAST */}
+        {!!warning && (
+          <View style={styles.warningBox}>
+            <Ionicons name="warning" size={20} color="#fff" />
+            <Text style={styles.warningText}>{warning}</Text>
           </View>
         )}
 
-        <View style={styles.searchRow}>
-          <TextInput
-            value={search}
-            onChangeText={setSearch}
-            placeholder="Search location"
-            style={styles.input}
-          />
+        {/* BOTTOM NAVIGATION BAR - Exact identical structure matching History */}
+        <View style={styles.bottomNav}>
+          <TouchableOpacity
+            style={styles.tabItem}
+            onPress={() => router.replace("/riderDashboard")}
+          >
+            <Ionicons name="home" size={22} color="white" />
+            <Text style={styles.navText}>Home</Text>
+          </TouchableOpacity>
 
-          <TouchableOpacity style={styles.iconBtn} onPress={searchLocation}>
-            <Ionicons name="search" size={20} color="#fff" />
+          <TouchableOpacity
+            style={styles.tabItem}
+            onPress={() => router.push("/riderDashboard/history")}
+          >
+            <Ionicons name="time-outline" size={22} color="white" />
+            <Text style={styles.navText}>History</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.tabItem}
+            onPress={() => router.push("/riderDashboard/downladedlistsrider")}
+          >
+            <Ionicons name="download-outline" size={22} color="white" />
+            <Text style={styles.navText}>Downloads</Text>
           </TouchableOpacity>
         </View>
 
-        <View style={styles.mapBox}>
-          {Platform.OS === "web" ? (
-            <iframe
-              id="rider-location-map"
-              srcDoc={mapHtml}
-              style={{ width: "100%", height: "100%", border: "none" }}
-            />
-          ) : (
-            <WebView
-              ref={webViewRef}
-              source={{ html: mapHtml }}
-              onMessage={onMapMessage}
-              javaScriptEnabled
-              domStorageEnabled
-            />
-          )}
-        </View>
-
-        <Text style={styles.labelText}>{label}</Text>
-        <Text style={styles.coordsText}>{formatCoords(lat, lng)}</Text>
-
-        <TouchableOpacity style={styles.gpsBtn} onPress={useGps}>
-          <Ionicons name="locate" size={18} color="#2e4466" />
-          <Text style={styles.gpsText}>Use GPS</Text>
-        </TouchableOpacity>
-
-        <View style={styles.toggleRow}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.toggleTitle}>Show location to customers</Text>
-            <Text style={styles.toggleSub}>
-              {isLocationOn
-                ? "You are online for rider requests."
-                : "You are off duty."}
-            </Text>
-          </View>
-
-          <Switch
-            value={isLocationOn}
-            disabled={saving}
-            onValueChange={(next) => saveLocation(next)}
-          />
-        </View>
-
-        <TouchableOpacity
-          style={[styles.saveBtn, saving && styles.saveBtnDisabled]}
-          onPress={() => saveLocation(isLocationOn)}
-          disabled={saving}
-        >
-          {saving ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.saveText}>Save Location</Text>
-          )}
-        </TouchableOpacity>
-      </ScrollView>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
 
+// ==========================================
+// CSS STYLES (Synchronized with History page specs)
+// ==========================================
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8fafc" },
-  centered: { flex: 1, justifyContent: "center", alignItems: "center" },
-
-  header: {
-    height: 85,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: "center",
-    color: "#2e4466",
-    fontSize: 20,
-    fontWeight: "800",
-  },
-
-  body: { padding: 16, paddingBottom: 40 },
-
-  successBox: {
-    backgroundColor: "#d1fae5",
-    padding: 10,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  successText: {
-    color: "#065f46",
-    fontWeight: "700",
-    textAlign: "center",
-  },
-
+  centered: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#f8fafc" },
+  header: { height: 85, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  headerTitle: { flex: 1, color: "#2e4466", fontSize: 22, fontWeight: "800", textAlign: "center" },
+  scrollBody: { padding: 16, paddingBottom: 100 },
+  successBox: { backgroundColor: "#d1fae5", padding: 10, borderRadius: 10, marginBottom: 12 },
+  successText: { color: "#065f46", fontWeight: "700", textAlign: "center" },
   searchRow: { flexDirection: "row", marginBottom: 12 },
   input: {
     flex: 1,
@@ -416,52 +433,90 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 10,
     backgroundColor: "#fff",
+    color: "#334155",
   },
   iconBtn: {
     marginLeft: 8,
     backgroundColor: "#2e4466",
-    padding: 12,
+    paddingHorizontal: 16,
     borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
   },
-
-  mapBox: {
-    height: 330,
-    borderRadius: 12,
-    overflow: "hidden",
-    backgroundColor: "#e2e8f0",
-  },
-
-  labelText: { marginTop: 10, fontWeight: "700", color: "#1e293b" },
-  coordsText: { color: "#64748b" },
-
+  mapBox: { height: 250, borderRadius: 16, overflow: "hidden", backgroundColor: "#e2e8f0" },
+  labelText: { marginTop: 12, fontWeight: "700", color: "#1e293b", fontSize: 14 },
+  coordsText: { color: "#64748b", fontSize: 12, marginTop: 2 },
   gpsBtn: {
-    marginTop: 10,
+    marginTop: 12,
     padding: 12,
     borderRadius: 10,
     backgroundColor: "#eef4fe",
     flexDirection: "row",
     justifyContent: "center",
+    alignItems: "center",
   },
   gpsText: { marginLeft: 6, fontWeight: "700", color: "#2e4466" },
-
   toggleRow: {
     flexDirection: "row",
-    marginTop: 15,
+    marginTop: 12,
     padding: 12,
     backgroundColor: "#fff",
     borderRadius: 12,
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
   },
-  toggleTitle: { fontWeight: "800", color: "#1e293b" },
-  toggleSub: { color: "#64748b", fontSize: 12 },
-
+  toggleTitle: { fontWeight: "800", color: "#1e293b", fontSize: 14 },
+  toggleSub: { color: "#64748b", fontSize: 12, marginTop: 2 },
   saveBtn: {
-    marginTop: 15,
+    marginTop: 14,
     backgroundColor: "#2e4466",
     padding: 14,
     borderRadius: 12,
     alignItems: "center",
+    justifyContent: "center",
   },
   saveBtnDisabled: { opacity: 0.7 },
-  saveText: { color: "#fff", fontWeight: "800" },
+  saveText: { color: "#fff", fontWeight: "800", fontSize: 15 },
+  bottomNav: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 75,
+    backgroundColor: "#2e4466",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    elevation: 0,
+    borderTopWidth: 0,
+    zIndex: 1000,
+  },
+  tabItem: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 4,
+  },
+  navText: {
+    color: "white",
+    fontSize: 12,
+    marginTop: 0,
+    textAlign: "center",
+    fontWeight: "500",
+  },
+  warningBox: {
+    position: 'absolute',
+    bottom: 90,
+    left: 20,
+    right: 20,
+    backgroundColor: '#e67e22',
+    padding: 14,
+    borderRadius: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    zIndex: 9999,
+    elevation: 6,
+  },
+  warningText: { color: '#fff', marginLeft: 10, fontSize: 14, fontWeight: '600', flex: 1 },
 });

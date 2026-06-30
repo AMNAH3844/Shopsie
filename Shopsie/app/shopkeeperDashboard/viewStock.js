@@ -47,7 +47,6 @@ export default function ViewStock() {
  return (
   <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={localStyles.mainContainer}>
-      <StatusBar barStyle="light-content" />
 
       {/* EXACT FIXED HEADER IMPLEMENTATION */}
       <LinearGradient 

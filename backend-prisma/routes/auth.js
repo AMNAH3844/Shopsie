@@ -403,7 +403,7 @@ router.get("/admin/shop-report-warnings", verifyToken, verifyAdmin, async (req, 
       _count: { id: true },
     });
 
-    const warnings = grouped.filter((item) => item._count.id >= 1);
+    const warnings = grouped.filter((item) => item._count.id >= 5);
     const shopkeeperIds = warnings.map((item) => item.shopkeeperId);
     const shopkeepers = shopkeeperIds.length
       ? await prisma.shopkeeper.findMany({

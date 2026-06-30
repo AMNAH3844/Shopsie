@@ -10,6 +10,7 @@ import {
   Modal,
   TextInput,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -273,9 +274,9 @@ export default function Notifications() {
     );
   };
 
-  return (
+return (
+  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={localStyles.mainContainer}>
-      <StatusBar barStyle="light-content" />
       <LinearGradient
         colors={["#eef4fe", "#2e4466"]}
         start={{ x: 1, y: 0 }}
@@ -576,6 +577,7 @@ export default function Notifications() {
         </View>
       </Modal>
     </View>
+    </SafeAreaView>
   );
 }
 

@@ -132,9 +132,6 @@ router.patch("/order-notifications/read-all", async (req, res) => {
       return res.status(404).json({ message: "Shopkeeper not found" });
     }
 
-    // If your table has an explicit 'isRead' field, you can update it here.
-    // If it relies entirely on the 'status' changing from 'PENDING', this can simply return success.
-    // Assuming an optional 'isRead' field setup or status layout update:
     await prisma.shopkeeperOrderNotification.updateMany({
       where: { 
         shopkeeperId: shopkeeper.id,

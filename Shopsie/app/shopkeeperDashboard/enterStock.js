@@ -12,6 +12,7 @@ import {
   KeyboardAvoidingView,
   ActivityIndicator,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import BottomNavBar from "./BottomNav";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -53,7 +54,6 @@ export default function EnterStock() {
   const handlePriceChange = (text) => {
     // Allows only positive numbers and a single decimal point
     const sanitized = text.replace(/[^0-9.]/g, "");
-    setName(name); // just keeping consistency
     setPrice(sanitized);
   };
 
@@ -130,161 +130,162 @@ export default function EnterStock() {
   };
 
   return (
-    <View style={localStyles.mainContainer}>
-      <StatusBar barStyle="light-content" />
-      
-      {/* EXACT HEADER IMPLEMENTATION */}
-      <LinearGradient 
-        colors={["#eef4fe", "#2e4466"]} 
-        start={{ x: 1, y: 0 }} 
-        end={{ x: 0, y: 0 }} 
-        style={localStyles.gradientHeader}
-      >
-        <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/shopkeeperDashboard")}>
-          <Ionicons name="chevron-back" size={28} color="#eef4fe" />
-        </TouchableOpacity>
-        <View style={localStyles.headerCenterContainer}>
-          <Text style={localStyles.headerTitleText}>
-            Enter Stock
-          </Text>
-        </View>
-        <View style={{ width: 28 }} />
-      </LinearGradient>
-
-      {/* KEYBOARD AVOIDING RUNTIME WRAPPER */}
-      <KeyboardAvoidingView 
-        style={localStyles.flexContainer} 
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
-      >
-        {/* SCROLLABLE FORM BODY */}
-        <ScrollView 
-          showsVerticalScrollIndicator={false} 
-          contentContainerStyle={localStyles.scrollContainer}
-          keyboardShouldPersistTaps="handled"
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      <View style={localStyles.mainContainer}>
+        
+        {/* EXACT HEADER IMPLEMENTATION */}
+        <LinearGradient 
+          colors={["#eef4fe", "#2e4466"]} 
+          start={{ x: 1, y: 0 }} 
+          end={{ x: 0, y: 0 }} 
+          style={localStyles.gradientHeader}
         >
-          <View style={localStyles.contentBody}>
-            
-            <Text style={localStyles.sectionHeading}>Product Details</Text>
-            <View style={localStyles.card}>
+          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/shopkeeperDashboard")}>
+            <Ionicons name="chevron-back" size={28} color="#eef4fe" />
+          </TouchableOpacity>
+          <View style={localStyles.headerCenterContainer}>
+            <Text style={localStyles.headerTitleText}>
+              Enter Stock
+            </Text>
+          </View>
+          <View style={{ width: 28 }} />
+        </LinearGradient>
+
+        {/* KEYBOARD AVOIDING RUNTIME WRAPPER */}
+        <KeyboardAvoidingView 
+          style={localStyles.flexContainer} 
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
+        >
+          {/* SCROLLABLE FORM BODY */}
+          <ScrollView 
+            showsVerticalScrollIndicator={false} 
+            contentContainerStyle={localStyles.scrollContainer}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={localStyles.contentBody}>
               
-              {/* Product Name Input */}
-              <Text style={localStyles.fieldLabel}>Product Name</Text>
-              <View style={localStyles.inputWrapper}>
-                <Ionicons name="cube-outline" size={20} color="#64748B" style={localStyles.inputIcon} />
-                <TextInput
-                  placeholder="Product Name"
-                  placeholderTextColor="#94A3B8"
-                  value={name}
-                  onChangeText={setName}
-                  style={localStyles.baseInputOverride}
-                />
+              <Text style={localStyles.sectionHeading}>Product Details</Text>
+              <View style={localStyles.card}>
+                
+                {/* Product Name Input */}
+                <Text style={localStyles.fieldLabel}>Product Name</Text>
+                <View style={localStyles.inputWrapper}>
+                  <Ionicons name="cube-outline" size={20} color="#64748B" style={localStyles.inputIcon} />
+                  <TextInput
+                    placeholder="Product Name"
+                    placeholderTextColor="#94A3B8"
+                    value={name}
+                    onChangeText={setName}
+                    style={localStyles.baseInputOverride}
+                  />
+                </View>
+
+                {/* Price Input */}
+                <Text style={localStyles.fieldLabel}>Price</Text>
+                <View style={localStyles.inputWrapper}>
+                  <Ionicons name="pricetag-outline" size={20} color="#64748B" style={localStyles.inputIcon} />
+                  <TextInput
+                    placeholder="0.00"
+                    keyboardType="decimal-pad"
+                    placeholderTextColor="#94A3B8"
+                    value={price}
+                    onChangeText={handlePriceChange}
+                    style={localStyles.baseInputOverride}
+                  />
+                </View>
+
+                {/* Quantity Input */}
+                <Text style={localStyles.fieldLabel}>Quantity</Text>
+                <View style={localStyles.inputWrapper}>
+                  <MaterialCommunityIcons name="numeric" size={20} color="#64748B" style={localStyles.inputIcon} />
+                  <TextInput
+                    placeholder="0"
+                    keyboardType="number-pad"
+                    placeholderTextColor="#94A3B8"
+                    value={quantity}
+                    onChangeText={(txt) => handleIntegerChange(txt, setQuantity)}
+                    style={localStyles.baseInputOverride}
+                  />
+                </View>
+
+                {/* Threshold Input Field */}
+                <Text style={localStyles.fieldLabel}>Alert Threshold Limit</Text>
+                <View style={localStyles.inputWrapper}>
+                  <Ionicons name="speedometer-outline" size={20} color="#64748B" style={localStyles.inputIcon} />
+                  <TextInput
+                    placeholder="0"
+                    keyboardType="number-pad"
+                    placeholderTextColor="#94A3B8"
+                    value={threshold}
+                    onChangeText={(txt) => handleIntegerChange(txt, setThreshold)}
+                    style={localStyles.baseInputOverride}
+                  />
+                </View>
+
+                {/* Specification Input */}
+                <Text style={localStyles.fieldLabel}>Specification</Text>
+                <View style={[localStyles.inputWrapper, localStyles.textAreaWrapper]}>
+                  <TextInput
+                    placeholder="Enter item specifications..."
+                    placeholderTextColor="#94A3B8"
+                    value={specification}
+                    onChangeText={setSpecification}
+                    multiline={true}
+                    numberOfLines={4}
+                    style={[localStyles.baseInputOverride, localStyles.textAreaInput]}
+                  />
+                </View>
+
               </View>
 
-              {/* Price Input */}
-              <Text style={localStyles.fieldLabel}>Price</Text>
-              <View style={localStyles.inputWrapper}>
-                <Ionicons name="pricetag-outline" size={20} color="#64748B" style={localStyles.inputIcon} />
-                <TextInput
-                  placeholder="0.00"
-                  keyboardType="decimal-pad"
-                  placeholderTextColor="#94A3B8"
-                  value={price}
-                  onChangeText={handlePriceChange}
-                  style={localStyles.baseInputOverride}
-                />
-              </View>
-
-              {/* Quantity Input */}
-              <Text style={localStyles.fieldLabel}>Quantity</Text>
-              <View style={localStyles.inputWrapper}>
-                <MaterialCommunityIcons name="numeric" size={20} color="#64748B" style={localStyles.inputIcon} />
-                <TextInput
-                  placeholder="0"
-                  keyboardType="number-pad"
-                  placeholderTextColor="#94A3B8"
-                  value={quantity}
-                  onChangeText={(txt) => handleIntegerChange(txt, setQuantity)}
-                  style={localStyles.baseInputOverride}
-                />
-              </View>
-
-              {/* Threshold Input Field */}
-              <Text style={localStyles.fieldLabel}>Alert Threshold Limit</Text>
-              <View style={localStyles.inputWrapper}>
-                <Ionicons name="speedometer-outline" size={20} color="#64748B" style={localStyles.inputIcon} />
-                <TextInput
-                  placeholder="0"
-                  keyboardType="number-pad"
-                  placeholderTextColor="#94A3B8"
-                  value={threshold}
-                  onChangeText={(txt) => handleIntegerChange(txt, setThreshold)}
-                  style={localStyles.baseInputOverride}
-                />
-              </View>
-
-              {/* Specification Input */}
-              <Text style={localStyles.fieldLabel}>Specification</Text>
-              <View style={[localStyles.inputWrapper, localStyles.textAreaWrapper]}>
-                <TextInput
-                  placeholder="Enter item specifications..."
-                  placeholderTextColor="#94A3B8"
-                  value={specification}
-                  onChangeText={setSpecification}
-                  multiline={true}
-                  numberOfLines={4}
-                  style={[localStyles.baseInputOverride, localStyles.textAreaInput]}
-                />
-              </View>
+              {/* Action Save Button */}
+              <TouchableOpacity 
+                style={localStyles.fullEditButton} 
+                onPress={handleAdd} 
+                activeOpacity={0.8}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <>
+                    <Ionicons name="add-circle-outline" size={20} color="white" style={{ marginRight: 8 }} />
+                    <Text style={localStyles.fullEditButtonText}>Add Product</Text>
+                  </>
+                )}
+              </TouchableOpacity>
 
             </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
 
-            {/* Action Save Button */}
-            <TouchableOpacity 
-              style={localStyles.fullEditButton} 
-              onPress={handleAdd} 
-              activeOpacity={0.8}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <>
-                  <Ionicons name="add-circle-outline" size={20} color="white" style={{ marginRight: 8 }} />
-                  <Text style={localStyles.fullEditButtonText}>Add Product</Text>
-                </>
-              )}
-            </TouchableOpacity>
-
+        {/* DYNAMIC ORANGE/SUCCESS TRANSIENT BANNER LAYER */}
+        {warningMessage ? (
+          <View style={localStyles.warningBox}>
+            <Ionicons 
+              name={warningMessage.startsWith("Success") ? "checkmark-circle-outline" : "warning-outline"} 
+              size={22} 
+              color="#fff" 
+            />
+            <Text style={localStyles.warningText}>{warningMessage}</Text>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        ) : null}
 
-      {/* DYNAMIC ORANGE/SUCCESS TRANSIENT BANNER LAYER */}
-      {warningMessage ? (
-        <View style={localStyles.warningBox}>
-          <Ionicons 
-            name={warningMessage.startsWith("Success") ? "checkmark-circle-outline" : "warning-outline"} 
-            size={22} 
-            color="#fff" 
-          />
-          <Text style={localStyles.warningText}>{warningMessage}</Text>
-        </View>
-      ) : null}
-
-      {/* FIXED BOTTOM NAVIGATION BAR */}
-      <BottomNavBar />
-    </View>
+        {/* FIXED BOTTOM NAVIGATION BAR */}
+        <BottomNavBar />
+      </View>
+    </SafeAreaView>
   );
 }
 
 const localStyles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: '#F8FAFC' },
   flexContainer: { flex: 1 },
-scrollContainer: {
-  paddingVertical: 12,
-  paddingBottom: 75,
-}, 
+  scrollContainer: {
+    paddingVertical: 12,
+    paddingBottom: 90, // Bumper margin spacing to scroll cleanly past absolute BottomNav
+  }, 
   contentBody: { paddingHorizontal: 20 },
   
   gradientHeader: {
@@ -309,42 +310,12 @@ scrollContainer: {
   textAreaWrapper: { alignItems: 'flex-start', paddingVertical: 10 },
   textAreaInput: { height: 80, textAlignVertical: 'top' },
 
-  fullEditButton: { width: '100%', flexDirection: 'row', backgroundColor: '#22C55E', borderRadius: 14, height: 52, alignItems: 'center', justifyContent: 'center', marginTop: 25 },
+  fullEditButton: { width: '100%', flexDirection: 'row', backgroundColor: '#22C55E', borderRadius: 14, height: 52, alignItems: 'center', justifyContent: 'center', marginTop: 15},
   fullEditButtonText: { color: 'white', fontWeight: '700', fontSize: 15 },
 
-bottomNav: {
-  position: "absolute",
-  left: 0,
-  right: 0,
-  bottom: 0,
-
-  height: 55,
-
-  backgroundColor: "#2e4466",
-  flexDirection: "row",
-  justifyContent: "space-around",
-  alignItems: "center",
-
-  elevation: 0,
-  borderTopWidth: 0,
-  zIndex: 1000,
-},
- tabItem: {
-  flex: 1,
-  alignItems: "center",
-  justifyContent: "center",
-  paddingVertical: 4,
-},
-  navText: {
-  color: "white",
-  fontSize: 12,
-  marginTop: 0,
-  textAlign: "center",
-  fontWeight: "500",
-},
   warningBox: {
     position: 'absolute',
-   bottom: 75,
+    bottom: 85, // Slightly lifted over bottom navigation boundaries
     left: 20,
     right: 20,
     backgroundColor: '#e67e22',

@@ -221,7 +221,6 @@ export default function ShopkeeperOrders() {
 return (
   <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={localStyles.mainContainer}>
-      <StatusBar barStyle="light-content" />
       
       <LinearGradient
         colors={["#eef4fe", "#2e4466"]}

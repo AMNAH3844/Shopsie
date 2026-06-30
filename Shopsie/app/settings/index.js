@@ -14,6 +14,7 @@ import {
   Dimensions,
   StatusBar,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
@@ -288,9 +289,9 @@ export default function Settings() {
     </View>
   );
 
-  return (
+ return (
+  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={styles.scrollContainer}>
-      <StatusBar barStyle="dark-content" />
       <ScrollView 
         style={styles.screenScroll} 
         contentContainerStyle={styles.screenContent}
@@ -515,6 +516,7 @@ export default function Settings() {
         </View>
       ) : null}
     </View>
+    </SafeAreaView>
   );
 }
 

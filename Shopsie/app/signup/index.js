@@ -1,8 +1,5 @@
-import * as ImagePicker from "expo-image-picker";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { API_URLS } from '../../src/services/apiConfig';
+import React, { useState, useRef } from "react";
 import {
-  ScrollView,
   View,
   Text,
   TextInput,
@@ -10,10 +7,14 @@ import {
   ActivityIndicator,
   Platform,
   Animated,
-  KeyboardAvoidingView
+  StyleSheet,
 } from "react-native";
-import React, { useState, useRef } from "react";
+import { ScrollView } from "react-native"; 
+import { SafeAreaView } from "react-native-safe-area-context";
+import * as ImagePicker from "expo-image-picker";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { API_URLS } from "../../src/services/apiConfig";
 import styles from "../styles/Authstyle";
 
 export default function Signup() {
@@ -56,8 +57,6 @@ export default function Signup() {
     }, 3500);
   };
 
-  // const API_URL = "http://172.20.140.250:5000/api/auth";
-
   const appendImage = async (formData, key, asset) => {
     if (!asset) return;
     if (Platform.OS === "web") {
@@ -90,35 +89,50 @@ export default function Signup() {
       return;
     }
 
-    // 1. Precise Basic Empty Field Validations
     if (!signUpData.username.trim()) {
       triggerToast("Empty field: Username cannot be blank");
       return;
     }
-    if (!signUpData.email.trim()) {
+    
+    // Email basic and format validation
+    const emailTrimmed = signUpData.email.trim().toLowerCase();
+    if (!emailTrimmed) {
       triggerToast("Empty field: Email cannot be blank");
       return;
     }
+    
+    // Checks if email matches exactly standard text followed by @gmail.com
+    const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    if (!gmailRegex.test(emailTrimmed)) {
+      triggerToast("Invalid format: Must be a valid @gmail.com address.");
+      return;
+    }
+
     if (!signUpData.password) {
       triggerToast("Empty field: Password cannot be blank");
       return;
     }
 
-    // 2. Structured Username/Password format conditions -> Unified single notification text
-   if (signUpData.password.length < 5) {
-  triggerToast("Password must be at least 5 characters long.");
-  return;
-}
+    if (signUpData.password.length < 5) {
+      triggerToast("Password must be at least 5 characters long.");
+      return;
+    }
+    if (signUpData.password !== signUpData.confirmPassword) {
+      triggerToast("Passwords do not match.");
+      return;
+    }
 
-if (signUpData.password !== signUpData.confirmPassword) {
-  triggerToast("Passwords do not match.");
-  return;
-}
-
-    // Rider Branch Class Validations
     if (selectedRole === "rider") {
       if (!signUpData.phoneNo.trim()) {
         triggerToast("Empty field: Phone number required");
+        return;
+      }
+      if (signUpData.phoneNo.includes("-") || signUpData.phoneNo.includes(".")) {
+        triggerToast("Invalid format: Phone number cannot contain negative signs or decimals");
+        return;
+      }
+      if (signUpData.phoneNo.length !== 11) {
+        triggerToast("Invalid Phone Number: Must be exactly 11 digits long.");
         return;
       }
       if (!signUpData.cnicFront || !signUpData.cnicBack || !signUpData.vehicleDoc) {
@@ -127,7 +141,6 @@ if (signUpData.password !== signUpData.confirmPassword) {
       }
     }
 
-    // Shopkeeper Class Validations
     if (selectedRole === "shopkeeper" && !signUpData.shopName.trim()) {
       triggerToast("Empty field: Shop Name required");
       return;
@@ -137,8 +150,8 @@ if (signUpData.password !== signUpData.confirmPassword) {
 
     try {
       const formData = new FormData();
-      formData.append("username", signUpData.username.trim()); // exact case preservation
-      formData.append("email", signUpData.email.trim().toLowerCase());
+      formData.append("username", signUpData.username.trim());
+      formData.append("email", emailTrimmed);
       formData.append("password", signUpData.password);
       formData.append("role", selectedRole);
 
@@ -172,28 +185,26 @@ if (signUpData.password !== signUpData.confirmPassword) {
       setLoading(false);
     }
   };
+
+  const formatLabel = (str) => {
+    if (str.startsWith("cnic")) {
+      return "CNIC " + str.replace("cnic", "");
+    }
+    return str.replace(/([A-Z])/g, " $1");
+  };
+
   return (
- <View style={{ flex: 1 }}>
-  <KeyboardAvoidingView
-    style={{ flex: 1 }}
-    behavior={Platform.OS === "ios" ? "padding" : "height"}
-    keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
-  >
-    <ScrollView
-      style={styles.scrollContainer}
-      contentContainerStyle={{
-        flexGrow: 1,
-        paddingBottom: 40,
-      }}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-    >
-
-
-
-        <View style={styles.container}>
+    <SafeAreaView style={customStyles.safeAreaRoot}>
+      <ScrollView
+        style={styles.scrollContainer}
+        contentContainerStyle={customStyles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={[styles.container, customStyles.fixedContainer]}>
           <View style={[styles.header, styles.riderHeader]}>
-            <Text style={[styles.logo]}>🛍️</Text>
+            <Text style={styles.logo}>🛍️</Text>
             <Text style={[styles.title, styles.riderTitle]}>Shop. Smile. Repeat.</Text>
           </View>
 
@@ -243,16 +254,20 @@ if (signUpData.password !== signUpData.confirmPassword) {
                     placeholder="Phone Number"
                     placeholderTextColor="#000000"
                     keyboardType="phone-pad"
+                    maxLength={11}
                     value={signUpData.phoneNo}
-                    onChangeText={(t) => setSignUpData({ ...signUpData, phoneNo: t })}
+                    onChangeText={(t) => {
+                      const cleanText = t.replace(/[-.]/g, "");
+                      setSignUpData({ ...signUpData, phoneNo: cleanText });
+                    }}
                   />
 
                   {["cnicFront", "cnicBack", "vehicleDoc"].map((f, i) => (
                     <TouchableOpacity key={i} style={styles.uploadButton} onPress={() => pickImage(f)}>
                       <Text style={styles.uploadText}>
                         {signUpData[f]
-                          ? `✓ ${f.replace(/([A-Z])/g, " $1")} Uploaded`
-                          : `📷 Upload ${f.replace(/([A-Z])/g, " $1")}`}
+                          ? `✓ ${formatLabel(f)} Uploaded`
+                          : `📷 Upload ${formatLabel(f)}`}
                       </Text>
                     </TouchableOpacity>
                   ))}
@@ -284,8 +299,7 @@ if (signUpData.password !== signUpData.confirmPassword) {
             </TouchableOpacity>
           </View>
         </View>
-            </ScrollView>
-    </KeyboardAvoidingView>
+      </ScrollView>
 
       {alertVisible && (
         <Animated.View style={[customStyles.orangeToastContainer, { opacity: fadeAnim }]}>
@@ -293,13 +307,24 @@ if (signUpData.password !== signUpData.confirmPassword) {
           <Text style={customStyles.orangeToastText}>{alertMessage}</Text>
         </Animated.View>
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
-// 🎨 IN-LINE STYLES SHEET FOR ERROR OVERLAYS
-const customStyles = {
-  
+const customStyles = StyleSheet.create({
+  safeAreaRoot: {
+    flex: 1,
+    backgroundColor: "#3f5375",
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+  fixedContainer: {
+    padding: 20,
+    minHeight: "100%",
+    justifyContent: "flex-start",
+    paddingTop: 40,
+  },
   orangeToastContainer: {
     position: "absolute",
     bottom: 50,
@@ -316,13 +341,13 @@ const customStyles = {
     shadowOpacity: 0.15,
     shadowRadius: 6,
     elevation: 6,
-    zIndex: 99999
+    zIndex: 99999,
   },
   orangeToastText: {
     color: "white",
     fontSize: 13,
     fontWeight: "600",
     marginLeft: 10,
-    flex: 1
-  }
-};
+    flex: 1,
+  },
+});

@@ -11,14 +11,13 @@ import {
   ActivityIndicator,
   Platform,
   StatusBar,
+  KeyboardAvoidingView,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context"; 
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-
-// const API_URL = "http://172.20.140.250:5000/api/rider";
 
 const methodOptions = [
   { label: "Wallet", value: "wallet" },
@@ -139,185 +138,193 @@ export default function RiderAccountDetails() {
 
   const accountLabel = paymentMethodType === "wallet" ? "Mobile Wallet Number" : paymentMethodType === "bank" ? "Account Number" : "Card/Account Number";
 
-if (loading) {
+  if (loading) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color="#2e4466" />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#2e4466" />
+      <View style={styles.mainContainer}>
+        
+        {/* TOP HEADER */}
+        <LinearGradient
+          colors={["#eef4fe", "#2e4466"]}
+          start={{ x: 1, y: 0 }}
+          end={{ x: 0, y: 0 }}
+          style={styles.header}
+        >
+          <TouchableOpacity onPress={() => (router.canGoBack() ? router.back() : router.replace("/riderDashboard"))}>
+            <Ionicons name="chevron-back" size={28} color="#eef4fe" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Account Details</Text>
+          <View style={{ width: 28 }} />
+        </LinearGradient>
+
+        {/* KEYBOARD WRAPPER & FORM VIEW */}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
+        >
+          <FlatList
+            data={providers}
+            keyExtractor={(item) => String(item.id)}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.content}
+            showsVerticalScrollIndicator={false}
+            ListHeaderComponent={
+              <>
+                <Text style={styles.sectionHeading}>Daily Cash</Text>
+                <View style={styles.card}>
+                  <Text style={styles.label}>Daily Cash Limit</Text>
+                  <View style={styles.inputWrapper}>
+                    <Ionicons name="cash-outline" size={20} color="#64748B" style={styles.inputIcon} />
+                    <TextInput
+                      value={dailyCashLimit}
+                      onChangeText={(text) => setDailyCashLimit(digitsOnly(text))}
+                      placeholder="Example: 40000"
+                      placeholderTextColor="#94A3B8"
+                      keyboardType="numeric"
+                      style={styles.input}
+                    />
+                  </View>
+                </View>
+
+                <Text style={styles.sectionHeading}>Online Payment</Text>
+                <View style={styles.card}>
+                  <Text style={styles.label}>Payment Method</Text>
+                  <View style={styles.segmentRow}>
+                    {methodOptions.map((option) => {
+                      const active = paymentMethodType === option.value;
+                      return (
+                        <TouchableOpacity
+                          key={option.value}
+                          style={[styles.segmentBtn, active && styles.segmentBtnActive]}
+                          onPress={() => {
+                            setPaymentMethodType(option.value);
+                            setProviderSearch("");
+                            setPaymentProviderName("");
+                          }}
+                        >
+                          <Text style={[styles.segmentText, active && styles.segmentTextActive]}>{option.label}</Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+
+                  <Text style={styles.label}>Search or Type Provider</Text>
+                  <View style={styles.inputWrapper}>
+                    <Ionicons name="search-outline" size={20} color="#64748B" style={styles.inputIcon} />
+                    <TextInput
+                      value={providerSearch}
+                      onChangeText={(text) => {
+                        setProviderSearch(text);
+                        setPaymentProviderName(text);
+                      }}
+                      placeholder="Easypaisa, JazzCash, HBL..."
+                      placeholderTextColor="#94A3B8"
+                      style={styles.input}
+                    />
+                  </View>
+                </View>
+              </>
+            }
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={[styles.providerRow, paymentProviderName === item.name && styles.providerRowActive]}
+                onPress={() => {
+                  setPaymentProviderName(item.name);
+                  setProviderSearch(item.name);
+                }}
+              >
+                <Ionicons name="business-outline" size={18} color={paymentProviderName === item.name ? "#047857" : "#64748B"} />
+                <Text style={[styles.providerText, paymentProviderName === item.name && styles.providerTextActive]}>{item.name}</Text>
+              </TouchableOpacity>
+            )}
+            ListFooterComponent={
+              <View style={styles.footerCard}>
+                <Text style={styles.label}>{accountLabel}</Text>
+                <View style={styles.inputWrapper}>
+                  <Ionicons name="keypad-outline" size={20} color="#64748B" style={styles.inputIcon} />
+                  <TextInput
+                    value={paymentAccountNumber}
+                    onChangeText={(text) => setPaymentAccountNumber(digitsOnly(text))}
+                    placeholder={paymentMethodType === "wallet" ? "03xxxxxxxxx" : "Enter digits only"}
+                    placeholderTextColor="#94A3B8"
+                    keyboardType="numeric"
+                    style={styles.input}
+                  />
+                </View>
+
+                <TouchableOpacity style={styles.saveBtn} onPress={saveDetails} disabled={saving}>
+                  {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveText}>Save Details</Text>}
+                </TouchableOpacity>
+
+                {savedSummary && (
+                  <View style={styles.summaryCard}>
+                    <View style={styles.summaryHeader}>
+                      <Ionicons name="wallet-outline" size={20} color="#2e4466" />
+                      <Text style={styles.summaryTitle}>Saved Account Summary</Text>
+                    </View>
+                    <View style={styles.summaryRow}>
+                      <Text style={styles.summaryLabel}>Cash Limit</Text>
+                      <Text style={styles.summaryValue}>
+                        {savedSummary.dailyCashLimit ? `Rs. ${Number(savedSummary.dailyCashLimit).toLocaleString()}` : "Not set"}
+                      </Text>
+                    </View>
+                    <View style={styles.summaryRow}>
+                      <Text style={styles.summaryLabel}>Payment Type</Text>
+                      <Text style={styles.summaryValue}>{savedSummary.paymentMethodType || "Not set"}</Text>
+                    </View>
+                    <View style={styles.summaryRow}>
+                      <Text style={styles.summaryLabel}>Provider</Text>
+                      <Text style={styles.summaryValue}>{savedSummary.paymentProviderName || "Not set"}</Text>
+                    </View>
+                    <View style={styles.summaryRow}>
+                      <Text style={styles.summaryLabel}>Number / Account</Text>
+                      <Text style={styles.summaryValue}>{savedSummary.paymentAccountNumber || "Not set"}</Text>
+                    </View>
+                  </View>
+                )}
+              </View>
+            }
+          />
+        </KeyboardAvoidingView>
+
+        {/* FIXED BOTTOM NAVIGATION BAR */}
+        <View style={styles.bottomNav}>
+          <TouchableOpacity
+            style={styles.tabItem}
+            onPress={() => router.replace("/riderDashboard")}
+          >
+            <Ionicons name="home" size={22} color="white" />
+            <Text style={styles.navText}>Home</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.tabItem}
+            onPress={() => router.push("/riderDashboard/history")}
+          >
+            <Ionicons name="time-outline" size={22} color="white" />
+            <Text style={styles.navText}>History</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.tabItem}
+            onPress={() => router.push("/riderDashboard/downladedlistsrider")}
+          >
+            <Ionicons name="download-outline" size={22} color="white" />
+            <Text style={styles.navText}>Downloads</Text>
+          </TouchableOpacity>
+        </View>
+
       </View>
     </SafeAreaView>
-  );
-}
-  
-
-  return (
-  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-    <View style={styles.mainContainer}>
-
-      <StatusBar barStyle="light-content" />
-      <LinearGradient
-        colors={["#eef4fe", "#2e4466"]}
-        start={{ x: 1, y: 0 }}
-        end={{ x: 0, y: 0 }}
-        style={styles.header}
-      >
-        <TouchableOpacity onPress={() => (router.canGoBack() ? router.back() : router.replace("/riderDashboard"))}>
-          <Ionicons name="chevron-back" size={28} color="#eef4fe" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Account Details</Text>
-        <View style={{ width: 28 }} />
-      </LinearGradient>
-
-      <FlatList
-        data={providers}
-        keyExtractor={(item) => String(item.id)}
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.content}
-        ListHeaderComponent={
-          <>
-            <Text style={styles.sectionHeading}>Daily Cash</Text>
-            <View style={styles.card}>
-              <Text style={styles.label}>Daily Cash Limit</Text>
-              <View style={styles.inputWrapper}>
-                <Ionicons name="cash-outline" size={20} color="#64748B" style={styles.inputIcon} />
-                <TextInput
-                  value={dailyCashLimit}
-                  onChangeText={(text) => setDailyCashLimit(digitsOnly(text))}
-                  placeholder="Example: 40000"
-                  placeholderTextColor="#94A3B8"
-                  keyboardType="numeric"
-                  style={styles.input}
-                />
-              </View>
-            </View>
-
-            <Text style={styles.sectionHeading}>Online Payment</Text>
-            <View style={styles.card}>
-              <Text style={styles.label}>Payment Method</Text>
-              <View style={styles.segmentRow}>
-                {methodOptions.map((option) => {
-                  const active = paymentMethodType === option.value;
-                  return (
-                    <TouchableOpacity
-                      key={option.value}
-                      style={[styles.segmentBtn, active && styles.segmentBtnActive]}
-                      onPress={() => {
-                        setPaymentMethodType(option.value);
-                        setProviderSearch("");
-                        setPaymentProviderName("");
-                      }}
-                    >
-                      <Text style={[styles.segmentText, active && styles.segmentTextActive]}>{option.label}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-
-              <Text style={styles.label}>Search or Type Provider</Text>
-              <View style={styles.inputWrapper}>
-                <Ionicons name="search-outline" size={20} color="#64748B" style={styles.inputIcon} />
-                <TextInput
-                  value={providerSearch}
-                  onChangeText={(text) => {
-                    setProviderSearch(text);
-                    setPaymentProviderName(text);
-                  }}
-                  placeholder="Easypaisa, JazzCash, HBL..."
-                  placeholderTextColor="#94A3B8"
-                  style={styles.input}
-                />
-              </View>
-            </View>
-          </>
-        }
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={[styles.providerRow, paymentProviderName === item.name && styles.providerRowActive]}
-            onPress={() => {
-              setPaymentProviderName(item.name);
-              setProviderSearch(item.name);
-            }}
-          >
-            <Ionicons name="business-outline" size={18} color={paymentProviderName === item.name ? "#047857" : "#64748B"} />
-            <Text style={[styles.providerText, paymentProviderName === item.name && styles.providerTextActive]}>{item.name}</Text>
-          </TouchableOpacity>
-        )}
-        ListFooterComponent={
-          <View style={styles.footerCard}>
-            <Text style={styles.label}>{accountLabel}</Text>
-            <View style={styles.inputWrapper}>
-              <Ionicons name="keypad-outline" size={20} color="#64748B" style={styles.inputIcon} />
-              <TextInput
-                value={paymentAccountNumber}
-                onChangeText={(text) => setPaymentAccountNumber(digitsOnly(text))}
-                placeholder={paymentMethodType === "wallet" ? "03xxxxxxxxx" : "Enter digits only"}
-                placeholderTextColor="#94A3B8"
-                keyboardType="numeric"
-                style={styles.input}
-              />
-            </View>
-
-            <TouchableOpacity style={styles.saveBtn} onPress={saveDetails} disabled={saving}>
-              {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveText}>Save Details</Text>}
-            </TouchableOpacity>
-
-            {savedSummary && (
-              <View style={styles.summaryCard}>
-                <View style={styles.summaryHeader}>
-                  <Ionicons name="wallet-outline" size={20} color="#2e4466" />
-                  <Text style={styles.summaryTitle}>Saved Account Summary</Text>
-                </View>
-                <View style={styles.summaryRow}>
-                  <Text style={styles.summaryLabel}>Cash Limit</Text>
-                  <Text style={styles.summaryValue}>
-                    {savedSummary.dailyCashLimit ? `Rs. ${Number(savedSummary.dailyCashLimit).toLocaleString()}` : "Not set"}
-                  </Text>
-                </View>
-                <View style={styles.summaryRow}>
-                  <Text style={styles.summaryLabel}>Payment Type</Text>
-                  <Text style={styles.summaryValue}>{savedSummary.paymentMethodType || "Not set"}</Text>
-                </View>
-                <View style={styles.summaryRow}>
-                  <Text style={styles.summaryLabel}>Provider</Text>
-                  <Text style={styles.summaryValue}>{savedSummary.paymentProviderName || "Not set"}</Text>
-                </View>
-                <View style={styles.summaryRow}>
-                  <Text style={styles.summaryLabel}>Number / Account</Text>
-                  <Text style={styles.summaryValue}>{savedSummary.paymentAccountNumber || "Not set"}</Text>
-                </View>
-              </View>
-            )}
-          </View>
-        }
-      />
-      <View style={styles.bottomNav}>
-  <TouchableOpacity
-    style={styles.tabItem}
-    onPress={() => router.replace("/riderDashboard")}
-  >
-    <Ionicons name="home" size={22} color="white" />
-    <Text style={styles.navText}>Home</Text>
-  </TouchableOpacity>
-
-  <TouchableOpacity
-    style={styles.tabItem}
-    onPress={() => router.push("/riderDashboard/history")}
-  >
-    <Ionicons name="time-outline" size={22} color="white" />
-    <Text style={styles.navText}>History</Text>
-  </TouchableOpacity>
-
-  <TouchableOpacity
-    style={styles.tabItem}
-    onPress={() => router.push("/riderDashboard/downladedlistsrider")}
-  >
-    <Ionicons name="download-outline" size={22} color="white" />
-    <Text style={styles.navText}>Downloads</Text>
-  </TouchableOpacity>
-</View>
-    </View>
-</SafeAreaView>
-    
   );
 }
 
@@ -326,10 +333,7 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#F8FAFC" },
   header: { height: 85, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   headerTitle: { flex: 1, textAlign: "center", fontSize: 22, fontWeight: "800", color: "#2e4466" },
-  content: {
-  paddingHorizontal: 20,
-  paddingBottom: 90,
-},
+  content: { paddingHorizontal: 20, paddingBottom: 110 },
   sectionHeading: { fontSize: 16, fontWeight: "800", color: "#1E293B", marginTop: 20, marginBottom: 8 },
   card: { backgroundColor: "#FFFFFF", borderRadius: 16, padding: 16, borderWidth: 1, borderColor: "#E2E8F0", elevation: 2 },
   footerCard: { backgroundColor: "#FFFFFF", borderRadius: 16, padding: 16, borderWidth: 1, borderColor: "#E2E8F0", elevation: 2, marginTop: 10 },
@@ -355,35 +359,30 @@ const styles = StyleSheet.create({
   summaryLabel: { color: "#64748B", fontSize: 12, fontWeight: "800", flex: 1 },
   summaryValue: { color: "#0F172A", fontSize: 13, fontWeight: "900", flex: 1, textAlign: "right" },
   bottomNav: {
-  position: "absolute",
-  left: 0,
-  right: 0,
-  bottom: 0,
-
-  height: 55,
-
-  backgroundColor: "#2e4466",
-  flexDirection: "row",
-  justifyContent: "space-around",
-  alignItems: "center",
-
-  elevation: 0,
-  borderTopWidth: 0,
-  zIndex: 1000,
-},
-
-tabItem: {
-  flex: 1,
-  alignItems: "center",
-  justifyContent: "center",
-  paddingVertical: 4,
-},
-
-navText: {
-  color: "white",
-  fontSize: 12,
-  marginTop: 0,
-  textAlign: "center",
-  fontWeight: "500",
-},
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 75,
+    backgroundColor: "#2e4466",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    elevation: 0,
+    borderTopWidth: 0,
+    zIndex: 1000,
+  },
+  tabItem: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 4,
+  },
+  navText: {
+    color: "white",
+    fontSize: 12,
+    marginTop: 0,
+    textAlign: "center",
+    fontWeight: "500",
+  },
 });

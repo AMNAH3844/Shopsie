@@ -207,12 +207,7 @@ export default function ShopkeeperDashboard() {
           <Text style={styles.username}>
             {username}
           </Text>
-        </View>
-
-        {/* ================= ORDERS CARD ================= */}
-        
-
-        
+        </View>    
 
         {/* ================= GRID BUTTONS ================= */}
         <View style={styles.grid}>

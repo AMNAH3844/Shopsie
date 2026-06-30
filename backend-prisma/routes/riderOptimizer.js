@@ -522,7 +522,7 @@ const reportCount = await prisma.shopReport.count({
   },
 });
 
-if (reportCount >= 1) {
+if (reportCount >= 5) {
   await prisma.adminNotification.create({
     data: {
       type: "SUSPEND_WARNING",

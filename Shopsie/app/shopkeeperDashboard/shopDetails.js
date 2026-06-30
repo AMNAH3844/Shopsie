@@ -11,6 +11,7 @@ import {
   StatusBar,
   KeyboardAvoidingView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import BottomNav from "./BottomNav";
 import React, { useState, useEffect, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -214,6 +215,14 @@ export default function ShopDetails() {
       triggerWarningNotification("Warning: Please complete all registration fields.");
       return;
     }
+    if (!/^\d{11}$/.test(phone)) {
+      triggerWarningNotification("Warning: Phone number must contain exactly 11 digits.");
+      return;
+    }
+    if (phone.startsWith("-")) {
+      triggerWarningNotification("Warning: Negative phone numbers are not allowed.");
+      return;
+    }
     try {
       setSaving(true);
       const token = await AsyncStorage.getItem("token");
@@ -283,232 +292,239 @@ export default function ShopDetails() {
   `;
 
   return (
-    <View style={localStyles.mainContainer}>
-      <StatusBar barStyle="light-content" />
-      
-      {/* HEADER */}
-      <LinearGradient 
-        colors={["#eef4fe", "#2e4466"]} 
-        start={{ x: 1, y: 0 }} 
-        end={{ x: 0, y: 0 }} 
-        style={localStyles.gradientHeader}
-      >
-        <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/shopkeeperDashboard")}>
-          <Ionicons name="chevron-back" size={28} color="#eef4fe" />
-        </TouchableOpacity>
-        <View style={localStyles.headerCenterContainer}>
-          <Text style={localStyles.headerTitleText}>
-            {isEditMode ? "Edit Shop" : "Shop Profile"}
-          </Text>
-        </View>
-        <View style={{ width: 28 }} />
-      </LinearGradient>
-
-      {/* FIXED NATIVE CONTAINER AND BEHAVIOR SETTINGS */}
-      <KeyboardAvoidingView 
-        style={localStyles.flexContainer} 
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
-      >
-        <ScrollView 
-          showsVerticalScrollIndicator={false} 
-          contentContainerStyle={localStyles.scrollContainer}
-          keyboardShouldPersistTaps="handled"
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      <View style={localStyles.mainContainer}>
+        
+        {/* HEADER */}
+        <LinearGradient 
+          colors={["#eef4fe", "#2e4466"]} 
+          start={{ x: 1, y: 0 }} 
+          end={{ x: 0, y: 0 }} 
+          style={localStyles.gradientHeader}
         >
-          <View style={localStyles.contentBody}>
-            
-            {/* SECTION 1: General Information */}
-            <Text style={localStyles.sectionHeading}>General Information</Text>
-            <View style={localStyles.card}>
-              <Text style={localStyles.fieldLabel}>Shop Name</Text>
-              <View style={[localStyles.inputWrapper, !isEditMode && localStyles.disabledWrapper]}>
-                <Ionicons name="storefront-outline" size={20} color={isEditMode ? "#64748B" : "#94A3B8"} style={localStyles.inputIcon} />
-                <TextInput
-                  placeholder="Enter Shop Name"
-                  placeholderTextColor="#94A3B8"
-                  value={shopName}
-                  onChangeText={setShopName}
-                  editable={isEditMode}
-                  style={[localStyles.baseInputOverride, !isEditMode && localStyles.disabledTextOverride]}
-                />
-              </View>
-            
-              <Text style={localStyles.fieldLabel}>City</Text>
-              <View style={[localStyles.inputWrapper, !isEditMode && localStyles.disabledWrapper]}>
-                <Ionicons name="business-outline" size={20} color={isEditMode ? "#64748B" : "#94A3B8"} style={localStyles.inputIcon} />
-                <TextInput
-                  placeholder="Enter City"
-                  placeholderTextColor="#94A3B8"
-                  value={city}
-                  onChangeText={setCity}
-                  editable={isEditMode}
-                  style={[localStyles.baseInputOverride, !isEditMode && localStyles.disabledTextOverride]}
-                />
-              </View>
+          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/shopkeeperDashboard")}>
+            <Ionicons name="chevron-back" size={28} color="#eef4fe" />
+          </TouchableOpacity>
+          <View style={localStyles.headerCenterContainer}>
+            <Text style={localStyles.headerTitleText}>
+              {isEditMode ? "Edit Shop" : "Shop Profile"}
+            </Text>
+          </View>
+          <View style={{ width: 28 }} />
+        </LinearGradient>
 
-              <Text style={localStyles.fieldLabel}>Phone</Text>
-              <View style={[localStyles.inputWrapper, !isEditMode && localStyles.disabledWrapper]}>
-                <Ionicons name="call-outline" size={20} color={isEditMode ? "#64748B" : "#94A3B8"} style={localStyles.inputIcon} />
-                <TextInput
-                  placeholder="Enter Phone Number"
-                  placeholderTextColor="#94A3B8"
-                  value={phone}
-                  onChangeText={setPhone}
-                  editable={isEditMode}
-                  keyboardType="phone-pad"
-                  style={[localStyles.baseInputOverride, !isEditMode && localStyles.disabledTextOverride]}
-                />
-              </View>
-            </View>
-
-            {/* SECTION 2: Storefront Pinpoint */}
-            <View style={localStyles.mapHeaderRow}>
-              <View style={{ flex: 1 }}>
-                <View style={localStyles.flexRowAlignCenter}>
-                  <Ionicons name="location" size={18} color="#1E3A8A" style={{ marginRight: 6 }} />
-                  <Text style={localStyles.mapSectionTitle}>Shopfront Pinpoint</Text>
+        {/* FIXED NATIVE CONTAINER AND BEHAVIOR SETTINGS */}
+        <KeyboardAvoidingView 
+          style={localStyles.flexContainer} 
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
+        >
+          <ScrollView 
+            showsVerticalScrollIndicator={false} 
+            contentContainerStyle={localStyles.scrollContainer}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={localStyles.contentBody}>
+              
+              {/* SECTION 1: General Information */}
+              <Text style={localStyles.sectionHeading}>General Information</Text>
+              <View style={localStyles.card}>
+                <Text style={localStyles.fieldLabel}>Shop Name</Text>
+                <View style={[localStyles.inputWrapper, !isEditMode && localStyles.disabledWrapper]}>
+                  <Ionicons name="storefront-outline" size={20} color={isEditMode ? "#64748B" : "#94A3B8"} style={localStyles.inputIcon} />
+                  <TextInput
+                    placeholder="Enter Shop Name"
+                    placeholderTextColor="#94A3B8"
+                    value={shopName}
+                    onChangeText={setShopName}
+                    editable={isEditMode}
+                    style={[localStyles.baseInputOverride, !isEditMode && localStyles.disabledTextOverride]}
+                  />
                 </View>
-                <Text style={localStyles.mapHelpText}>
-                  {isEditMode ? "Hold and drag the marker pin directly onto your storefront door location." : "This is your currently saved location coordinate displayed to drivers."}
-                </Text>
+              
+                <Text style={localStyles.fieldLabel}>City</Text>
+                <View style={[localStyles.inputWrapper, !isEditMode && localStyles.disabledWrapper]}>
+                  <Ionicons name="business-outline" size={20} color={isEditMode ? "#64748B" : "#94A3B8"} style={localStyles.inputIcon} />
+                  <TextInput
+                    placeholder="Enter City"
+                    placeholderTextColor="#94A3B8"
+                    value={city}
+                    onChangeText={setCity}
+                    editable={isEditMode}
+                    style={[localStyles.baseInputOverride, !isEditMode && localStyles.disabledTextOverride]}
+                  />
+                </View>
+
+                <Text style={localStyles.fieldLabel}>Phone</Text>
+                <View style={[localStyles.inputWrapper, !isEditMode && localStyles.disabledWrapper]}>
+                  <Ionicons name="call-outline" size={20} color={isEditMode ? "#64748B" : "#94A3B8"} style={localStyles.inputIcon} />
+                  <TextInput
+                    placeholder="Enter Phone Number"
+                    placeholderTextColor="#94A3B8"
+                    value={phone}
+                    onChangeText={(text) => {
+                      const cleaned = text.replace(/[^0-9]/g, "");
+                      if (cleaned.length <= 11) {
+                        setPhone(cleaned);
+                      }
+                    }}
+                    editable={isEditMode}
+                    keyboardType="number-pad"
+                    maxLength={11}
+                    style={[
+                      localStyles.baseInputOverride,
+                      !isEditMode && localStyles.disabledTextOverride,
+                    ]}
+                  />
+                </View>
+              </View>
+
+              {/* SECTION 2: Storefront Pinpoint */}
+              <View style={localStyles.mapHeaderRow}>
+                <View style={{ flex: 1 }}>
+                  <View style={localStyles.flexRowAlignCenter}>
+                    <Ionicons name="location" size={18} color="#1E3A8A" style={{ marginRight: 6 }} />
+                    <Text style={localStyles.mapSectionTitle}>Shopfront Pinpoint</Text>
+                  </View>
+                  <Text style={localStyles.mapHelpText}>
+                    {isEditMode ? "Hold and drag the marker pin directly onto your storefront door location." : "This is your currently saved location coordinate displayed to drivers."}
+                  </Text>
+
+                  {isEditMode && (
+                    <View style={localStyles.searchContainer}>
+                      <TextInput
+                        placeholder="Search shop location..."
+                        placeholderTextColor="#94A3B8"
+                        value={searchLocation}
+                        onChangeText={setSearchLocation}
+                        style={localStyles.searchInput}
+                      />
+                      <TouchableOpacity onPress={searchAndMovePin} disabled={searchingLocation} style={localStyles.searchButton}>
+                        {searchingLocation ? <ActivityIndicator color="#fff" /> : <Text style={localStyles.searchButtonText}>Search</Text>}
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
 
                 {isEditMode && (
-                  <View style={localStyles.searchContainer}>
-                    <TextInput
-                      placeholder="Search shop location..."
-                      placeholderTextColor="#94A3B8"
-                      value={searchLocation}
-                      onChangeText={setSearchLocation}
-                      style={localStyles.searchInput}
-                    />
-                    <TouchableOpacity onPress={searchAndMovePin} disabled={searchingLocation} style={localStyles.searchButton}>
-                      {searchingLocation ? <ActivityIndicator color="#fff" /> : <Text style={localStyles.searchButtonText}>Search</Text>}
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </View>
-
-              {isEditMode && (
-                <TouchableOpacity onPress={() => fetchCurrentGPSLocation(false)} disabled={locating} style={localStyles.gpsButton} activeOpacity={0.7}>
-                  <Ionicons name="locate" size={14} color="#0284C7" style={{ marginRight: 4 }} />
-                  <Text style={localStyles.gpsButtonText}>{locating ? "Locating..." : "Use GPS"}</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <View style={localStyles.mapCardWrapper}>
-              {Platform.OS === "web" ? (
-                <iframe id="leaflet-iframe" srcDoc={leafletHTML} style={{ width: "100%", height: "100%", border: "none" }} title="Map" />
-              ) : (
-                <WebView ref={webViewRef} originWhitelist={["*"]} source={{ html: leafletHTML }} onMessage={handleMapMessage} style={{ flex: 1 }} />
-              )}
-            </View>
-
-            {/* Coordinate Grid UI */}
-            <View style={localStyles.coordinatesGrid}>
-              <View style={localStyles.coordinateHalf}>
-                <Text style={localStyles.coordLabel}>Latitude</Text>
-                <View style={[localStyles.coordValueBox, localStyles.latitudeBoxAccent]}>
-                  <Ionicons name="git-commit-outline" size={14} color="#0284C7" style={localStyles.coordIcon} />
-                  <Text style={[localStyles.coordValueText, localStyles.latitudeTextAccent]}>{latitude}</Text>
-                </View>
-              </View>
-              <View style={localStyles.coordinateHalf}>
-                <Text style={localStyles.coordLabel}>Longitude</Text>
-                <View style={[localStyles.coordValueBox, localStyles.longitudeBoxAccent]}>
-                  <Ionicons name="git-commit-outline" size={14} color="#0284C7" style={localStyles.coordIcon} />
-                  <Text style={[localStyles.coordValueText, localStyles.longitudeTextAccent]}>{longitude}</Text>
-                </View>
-              </View>
-            </View>
-
-            {/* SECTION 3: Business Hours */}
-            <Text style={localStyles.sectionHeading}>Business Hours</Text>
-            <View style={localStyles.card}>
-              <Text style={localStyles.fieldLabel}>Timings</Text>
-              <View style={[localStyles.inputWrapper, !isEditMode && localStyles.disabledWrapper]}>
-                <Ionicons name="time-outline" size={20} color={isEditMode ? "#64748B" : "#94A3B8"} style={localStyles.inputIcon} />
-                <TextInput
-                  placeholder="e.g., Monday - Sunday 9:00 AM - 6:00 PM"
-                  placeholderTextColor="#94A3B8"
-                  value={timing}
-                  onChangeText={setTiming}
-                  editable={isEditMode}
-                  style={[localStyles.baseInputOverride, !isEditMode && localStyles.disabledTextOverride]}
-                />
-              </View>
-            </View>
-
-            {/* SECTION 4: Description Details */}
-            <Text style={localStyles.sectionHeading}>Description</Text>
-            <View style={localStyles.card}>
-              <Text style={localStyles.fieldLabel}>About Shop</Text>
-              <View style={[localStyles.inputWrapper, !isEditMode && localStyles.disabledWrapper, localStyles.textAreaWrapper]}>
-                <TextInput
-                  placeholder="Enter details about your shop items..."
-                  placeholderTextColor="#94A3B8"
-                  value={description}
-                  onChangeText={setDescription}
-                  editable={isEditMode}
-                  multiline={true}
-                  numberOfLines={4}
-                  style={[localStyles.baseInputOverride, !isEditMode && localStyles.disabledTextOverride, localStyles.textAreaInput]}
-                />
-              </View>
-            </View>
-
-            {/* Action Row Buttons */}
-            {isEditMode ? (
-              <View style={localStyles.actionRow}>
-                {hasExistingProfile ? (
-                  <>
-                    <TouchableOpacity onPress={() => setIsEditMode(false)} style={[localStyles.actionButtonHalf, localStyles.cancelButtonColor]}>
-                      <Text style={localStyles.actionButtonText}>Cancel</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={handleSaveOrUpdate} style={[localStyles.actionButtonHalf, localStyles.saveButtonColor]} disabled={saving}>
-                      {saving ? <ActivityIndicator color="white" /> : <Text style={localStyles.actionButtonText}>Save Changes</Text>}
-                    </TouchableOpacity>
-                  </>
-                ) : (
-                  <TouchableOpacity onPress={handleSaveOrUpdate} style={[localStyles.fullEditButton, localStyles.saveButtonColor]} disabled={saving}>
-                    {saving ? <ActivityIndicator color="white" /> : <Text style={localStyles.fullEditButtonText}>Save Shop Details</Text>}
+                  <TouchableOpacity onPress={() => fetchCurrentGPSLocation(false)} disabled={locating} style={localStyles.gpsButton} activeOpacity={0.7}>
+                    <Ionicons name="locate" size={14} color="#0284C7" style={{ marginRight: 4 }} />
+                    <Text style={localStyles.gpsButtonText}>{locating ? "Locating..." : "Use GPS"}</Text>
                   </TouchableOpacity>
                 )}
               </View>
-            ) : (
-              <TouchableOpacity onPress={() => setIsEditMode(true)} style={localStyles.fullEditButton}>
-                <Ionicons name="create-outline" size={20} color="white" style={{ marginRight: 8 }} />
-                <Text style={localStyles.fullEditButtonText}>Edit Shop Details</Text>
-              </TouchableOpacity>
-            )}
+
+              <View style={localStyles.mapCardWrapper}>
+                {Platform.OS === "web" ? (
+                  <iframe id="leaflet-iframe" srcDoc={leafletHTML} style={{ width: "100%", height: "100%", border: "none" }} title="Map" />
+                ) : (
+                  <WebView ref={webViewRef} originWhitelist={["*"]} source={{ html: leafletHTML }} onMessage={handleMapMessage} style={{ flex: 1 }} />
+                )}
+              </View>
+
+              {/* Coordinate Grid UI */}
+              <View style={localStyles.coordinatesGrid}>
+                <View style={localStyles.coordinateHalf}>
+                  <Text style={localStyles.coordLabel}>Latitude</Text>
+                  <View style={[localStyles.coordValueBox, localStyles.latitudeBoxAccent]}>
+                    <Ionicons name="git-commit-outline" size={14} color="#0284C7" style={localStyles.coordIcon} />
+                    <Text style={[localStyles.coordValueText, localStyles.latitudeTextAccent]}>{latitude}</Text>
+                  </View>
+                </View>
+                <View style={localStyles.coordinateHalf}>
+                  <Text style={localStyles.coordLabel}>Longitude</Text>
+                  <View style={[localStyles.coordValueBox, localStyles.longitudeBoxAccent]}>
+                    <Ionicons name="git-commit-outline" size={14} color="#0284C7" style={localStyles.coordIcon} />
+                    <Text style={[localStyles.coordValueText, localStyles.longitudeTextAccent]}>{longitude}</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* SECTION 3: Business Hours */}
+              <Text style={localStyles.sectionHeading}>Business Hours</Text>
+              <View style={localStyles.card}>
+                <Text style={localStyles.fieldLabel}>Timings</Text>
+                <View style={[localStyles.inputWrapper, !isEditMode && localStyles.disabledWrapper]}>
+                  <Ionicons name="time-outline" size={20} color={isEditMode ? "#64748B" : "#94A3B8"} style={localStyles.inputIcon} />
+                  <TextInput
+                    placeholder="e.g., Monday - Sunday 9:00 AM - 6:00 PM"
+                    placeholderTextColor="#94A3B8"
+                    value={timing}
+                    onChangeText={setTiming}
+                    editable={isEditMode}
+                    style={[localStyles.baseInputOverride, !isEditMode && localStyles.disabledTextOverride]}
+                  />
+                </View>
+              </View>
+
+              {/* SECTION 4: Description Details */}
+              <Text style={localStyles.sectionHeading}>Description</Text>
+              <View style={localStyles.card}>
+                <Text style={localStyles.fieldLabel}>About Shop</Text>
+                <View style={[localStyles.inputWrapper, !isEditMode && localStyles.disabledWrapper, localStyles.textAreaWrapper]}>
+                  <TextInput
+                    placeholder="Enter details about your shop items..."
+                    placeholderTextColor="#94A3B8"
+                    value={description}
+                    onChangeText={setDescription}
+                    editable={isEditMode}
+                    multiline={true}
+                    numberOfLines={4}
+                    style={[localStyles.baseInputOverride, !isEditMode && localStyles.disabledTextOverride, localStyles.textAreaInput]}
+                  />
+                </View>
+              </View>
+
+              {/* Action Row Buttons */}
+              {isEditMode ? (
+                <View style={localStyles.actionRow}>
+                  {hasExistingProfile ? (
+                    <>
+                      <TouchableOpacity onPress={() => setIsEditMode(false)} style={[localStyles.actionButtonHalf, localStyles.cancelButtonColor]}>
+                        <Text style={localStyles.actionButtonText}>Cancel</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={handleSaveOrUpdate} style={[localStyles.actionButtonHalf, localStyles.saveButtonColor]} disabled={saving}>
+                        {saving ? <ActivityIndicator color="white" /> : <Text style={localStyles.actionButtonText}>Save Changes</Text>}
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    <TouchableOpacity onPress={handleSaveOrUpdate} style={[localStyles.fullEditButton, localStyles.saveButtonColor]} disabled={saving}>
+                      {saving ? <ActivityIndicator color="white" /> : <Text style={localStyles.fullEditButtonText}>Save Shop Details</Text>}
+                    </TouchableOpacity>
+                  )}
+                </View>
+              ) : (
+                <TouchableOpacity onPress={() => setIsEditMode(true)} style={localStyles.fullEditButton}>
+                  <Ionicons name="create-outline" size={20} color="white" style={{ marginRight: 8 }} />
+                  <Text style={localStyles.fullEditButtonText}>Edit Shop Details</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+
+        {/* ORANGE WARNING BANNER */}
+        {warningMessage ? (
+          <View style={localStyles.warningBox}>
+            <Ionicons name={warningMessage.startsWith("Success") ? "checkmark-circle-outline" : "warning-outline"} size={22} color="#fff" />
+            <Text style={localStyles.warningText}>{warningMessage}</Text>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        ) : null}
 
-      {/* ORANGE WARNING BANNER */}
-      {warningMessage ? (
-        <View style={localStyles.warningBox}>
-          <Ionicons name={warningMessage.startsWith("Success") ? "checkmark-circle-outline" : "warning-outline"} size={22} color="#fff" />
-          <Text style={localStyles.warningText}>{warningMessage}</Text>
-        </View>
-      ) : null}
-
-      {/* FIXED BOTTOM NAVIGATION BAR */}
-      <BottomNav />
-    </View>
+        {/* FIXED BOTTOM NAVIGATION BAR */}
+        <BottomNav />
+      </View>
+    </SafeAreaView>
   );
 }
 
 const localStyles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: '#F8FAFC' },
   flexContainer: { flex: 1 },
-  
-  // Clean padding that keeps content viewable without giant empty gutters
   scrollContainer: {
-  paddingVertical: 12,
-  paddingBottom: 85,
-},
-  
+    paddingVertical: 12,
+    paddingBottom: 95, // Clean bumper area spacing past absolute bottom bars
+  },
   contentBody: { paddingHorizontal: 20 },
   centered: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: '#FFFFFF' },
   loadingText: { marginTop: 12, color: "#64748B", fontWeight: "500", fontSize: 15 },
@@ -564,7 +580,7 @@ const localStyles = StyleSheet.create({
 
   warningBox: {
     position: 'absolute',
-    bottom: 85, 
+    bottom: 85, // Shifted clearly overhead absolute overlay components
     left: 20,
     right: 20,
     backgroundColor: '#e67e22',

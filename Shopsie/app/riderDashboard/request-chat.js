@@ -13,6 +13,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StatusBar,
 } from "react-native";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -149,7 +150,6 @@ export default function RiderChat(props) {
 
     try {
       const token = await AsyncStorage.getItem("token");
-      // Use API_URLS.RIDER_CHAT which is BASE/api/rider/requests
       const res = await axios.get(`${API_URLS.RIDER_CHAT}/${requestId}/chat`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -157,7 +157,6 @@ export default function RiderChat(props) {
       setMessages(Array.isArray(res.data.messages) ? res.data.messages : []);
       setViewerUserId(res.data.viewerUserId ?? null);
       
-      // Hardened data extraction to fix the invisible list issue
       const info = res.data.request || res.data;
       setRequestInfo(info && info.id ? info : null);
 
@@ -388,11 +387,8 @@ export default function RiderChat(props) {
   }
 
   return (
-  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-    <KeyboardAvoidingView
-      style={styles.page}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+
       <LinearGradient colors={["#eef4fe", "#2e4466"]} start={{ x: 1, y: 0 }} end={{ x: 0, y: 0 }} style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={28} color="#eef4fe" />
@@ -408,43 +404,49 @@ export default function RiderChat(props) {
         </View>
       )}
 
-      <View style={styles.container}>
-        <FlatList
-          data={chatData}
-          keyExtractor={(item) => String(item.id)}
-          renderItem={renderItem}
-          contentContainerStyle={styles.messagesList}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={<Text style={styles.emptyText}>No messages yet.</Text>}
-        />
-
-        <View style={styles.quickRow}>
+      <KeyboardAvoidingView
+        style={styles.keyboardContainer}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 85 : 0}
+      >
+        <View style={styles.container}>
           <FlatList
-            data={quickMessages}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={({ item }) => (
-              <TouchableOpacity style={styles.quickBtn} onPress={() => setText(item)}>
-                <Text style={styles.quickText}>{item}</Text>
-              </TouchableOpacity>
-            )}
+            data={chatData}
+            keyExtractor={(item) => String(item.id)}
+            renderItem={renderItem}
+            contentContainerStyle={styles.messagesList}
+            showsVerticalScrollIndicator={false}
+            ListEmptyComponent={<Text style={styles.emptyText}>No messages yet.</Text>}
           />
-        </View>
 
-        <View style={styles.inputRow}>
-          <TextInput
-            value={text}
-            onChangeText={setText}
-            placeholder="Type message..."
-            placeholderTextColor="#999"
-            style={styles.input}
-          />
-          <TouchableOpacity onPress={sendMessage}>
-            <Text style={styles.send}>Send</Text>
-          </TouchableOpacity>
+          <View style={styles.quickRow}>
+            <FlatList
+              data={quickMessages}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity style={styles.quickBtn} onPress={() => setText(item)}>
+                  <Text style={styles.quickText}>{item}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+
+          <View style={styles.inputRow}>
+            <TextInput
+              value={text}
+              onChangeText={setText}
+              placeholder="Type message..."
+              placeholderTextColor="#999"
+              style={styles.input}
+            />
+            <TouchableOpacity onPress={sendMessage} style={styles.sendBtn}>
+              <Text style={styles.send}>Send</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
 
       {selectedList && (
         <View style={styles.modalOverlay}>
@@ -528,31 +530,30 @@ export default function RiderChat(props) {
           <Text style={styles.warningText}>{toastMessage}</Text>
         </View>
       )}
-      </KeyboardAvoidingView>
-  </SafeAreaView>
-);
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "#f1f1f1" },
-  center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#f1f1f1" },
+  center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#ffffff" },
   header: { height: 85, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  headerTitle: { flex: 1, textAlign: "center", fontSize: 22, fontWeight: "800", color: "#eef4fe" },
+  headerTitle: { flex: 1, textAlign: "center", fontSize: 22, fontWeight: "700", color: "#2e4466" },
+  keyboardContainer: { flex: 1, backgroundColor: "#ffffff" },
   container: { flex: 1 },
   completedBanner: { margin: 10, marginBottom: 0, backgroundColor: "#d1fae5", borderColor: "#6ee7b7", borderWidth: 1, padding: 10, borderRadius: 12, flexDirection: "row", alignItems: "center", justifyContent: "center" },
   completedText: { color: "#047857", textAlign: "center", fontWeight: "800", marginLeft: 8 },
-  messagesList: { padding: 10, paddingBottom: 20 },
+  messagesList: { padding: 10, paddingBottom: 10 },
   messageContainer: { flexDirection: "row", marginVertical: 6, alignItems: "flex-end" },
   alignRight: { justifyContent: "flex-end" },
   alignLeft: { justifyContent: "flex-start" },
   bubble: { maxWidth: "78%", borderRadius: 16, paddingHorizontal: 14, paddingVertical: 10 },
   bubbleMe: { backgroundColor: "#2e4466", borderBottomRightRadius: 4 },
-  bubbleOther: { backgroundColor: "#fff", borderBottomLeftRadius: 4 },
+  bubbleOther: { backgroundColor: "#f1f5f9", borderWidth: 1, borderColor: "#cbd5e1", borderBottomLeftRadius: 4 },
   textMe: { color: "#fff", fontSize: 14, lineHeight: 20 },
-  textOther: { color: "#1e293b", fontSize: 14, lineHeight: 20 },
+  textOther: { color: "#0f172a", fontSize: 14, lineHeight: 20, fontWeight: "500" },
   listBox: { maxWidth: "86%", borderRadius: 16, padding: 12, elevation: 2 },
   listMe: { backgroundColor: "#2e4466", borderBottomRightRadius: 4 },
-  listOther: { backgroundColor: "#fff", borderBottomLeftRadius: 4 },
+  listOther: { backgroundColor: "#fff", borderBottomLeftRadius: 4, borderWidth: 1, borderColor: "#e2e8f0" },
   listHeaderRow: { flexDirection: "row", alignItems: "center", marginBottom: 6 },
   listTitleMe: { color: "#fff", fontWeight: "800", fontSize: 15, flex: 1 },
   listTitleOther: { color: "#1e3a8a", fontWeight: "800", fontSize: 15, flex: 1 },
@@ -574,8 +575,9 @@ const styles = StyleSheet.create({
   quickRow: { paddingHorizontal: 8, paddingVertical: 8, backgroundColor: "#f8fafc", borderTopWidth: 1, borderTopColor: "#e2e8f0" },
   quickBtn: { backgroundColor: "#eef4fe", borderRadius: 16, paddingHorizontal: 14, paddingVertical: 8, marginRight: 8 },
   quickText: { color: "#2e4466", fontWeight: "700", fontSize: 13 },
-  inputRow: { flexDirection: "row", alignItems: "center", padding: 10, backgroundColor: "#fff", borderTopWidth: 1, borderTopColor: "#e2e8f0" },
-  input: { flex: 1, backgroundColor: "#f1f5f9", borderRadius: 18, paddingHorizontal: 14, paddingVertical: 10, color: "#1e293b" },
+  inputRow: { flexDirection: "row", alignItems: "center", padding: 12, backgroundColor: "#fff", borderTopWidth: 1, borderTopColor: "#e2e8f0" },
+  input: { flex: 1, backgroundColor: "#f1f5f9", borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10, color: "#1e293b", fontSize: 15 },
+  sendBtn: { paddingVertical: 6, paddingHorizontal: 4 },
   send: { color: "#2e4466", fontWeight: "800", marginLeft: 12, fontSize: 15 },
   modalOverlay: { position: "absolute", top: 0, bottom: 0, left: 0, right: 0, backgroundColor: "rgba(15,23,42,0.6)", justifyContent: "center", alignItems: "center", padding: 20 },
   modalBoxLarge: { width: "100%", maxWidth: 470, maxHeight: "85%", backgroundColor: "#fff", borderRadius: 20, padding: 16 },
@@ -590,7 +592,7 @@ const styles = StyleSheet.create({
   modalCategory: { color: "#2e4466", fontSize: 14, fontWeight: "800", marginBottom: 4 },
   modalItemNameRow: { flexDirection: "row", alignItems: "center" },
   modalItemName: { color: "#334155", fontSize: 14, fontWeight: "700" },
-  modalDoneText: { color: "#10b981", textDecorationLine: "line-through" },
+  modalDoneText: { color: "#10b981", textDecorationLine: "line-through", opacity: 0.65 },
   modalMeta: { color: "#64748b", marginTop: 3, fontSize: 12, lineHeight: 18 },
   modalShop: { color: "#10b981", marginTop: 3, fontSize: 12, lineHeight: 18, fontWeight: "800" },
   modalTotal: { color: "#10b981", marginTop: 3, fontSize: 12, fontWeight: "800" },
@@ -599,9 +601,6 @@ const styles = StyleSheet.create({
   billValue: { color: "#10b981", fontSize: 17, fontWeight: "900" },
   modalCloseButton: { backgroundColor: "#2e4466", borderRadius: 14, paddingVertical: 12, alignItems: "center", marginTop: 14 },
   modalCloseButtonText: { color: "#fff", fontWeight: "800", fontSize: 14 },
-  warningBox: {
-  position: "absolute",
-  bottom: 30,
-   left: 15, right: 15, backgroundColor: "#e67e22", padding: 14, borderRadius: 14, flexDirection: "row", alignItems: "center", zIndex: 9999 },
+  warningBox: { position: "absolute", bottom: 30, left: 15, right: 15, backgroundColor: "#e67e22", padding: 14, borderRadius: 14, flexDirection: "row", alignItems: "center", zIndex: 9999 },
   warningText: { color: "#fff", marginLeft: 10, fontSize: 14, fontWeight: "700", flex: 1 },
 });

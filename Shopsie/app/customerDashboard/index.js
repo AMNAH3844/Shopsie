@@ -230,15 +230,6 @@ export default function DashboardCustomer() {
 
       {/* NAVBAR */}
       <View style={styles.bottomNav}>
-     {/* <View
-  style={[
-    styles.bottomNav,
-    {
-      paddingBottom: Math.max(insets.bottom, 8),
-      minHeight: 65 + insets.bottom,
-    },
-  ]}
-> */}
         <TouchableOpacity
           style={styles.tabItem}
           onPress={() => {
@@ -344,7 +335,7 @@ bottomNav: {
   right: 0,
   bottom: 0,
 
-  height: 55, // was 60
+  height: 75, 
 
   backgroundColor: "#2e4466",
   flexDirection: "row",

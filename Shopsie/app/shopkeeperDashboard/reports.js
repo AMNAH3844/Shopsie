@@ -74,7 +74,6 @@ export default function ShopkeeperReports() {
   return (
   <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <View style={styles.mainContainer}>
-      <StatusBar barStyle="light-content" />
       <LinearGradient
         colors={["#eef4fe", "#2e4466"]}
         start={{ x: 1, y: 0 }}
