@@ -85,38 +85,50 @@
 //     throw error;
 //   }
 // }
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import axios from "axios";
 
 export async function sendEmail({ to, subject, text, html }) {
   try {
-    console.log("=== SENDING EMAIL WITH RESEND ===");
-    console.log("To:", to);
-    console.log("Subject:", subject);
-    console.log("From:", process.env.EMAIL_FROM);
+    console.log("=== SENDING EMAIL WITH BREVO ===");
 
-    const { data, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM || "onboarding@resend.dev",
-      to,
-      subject,
-      text,
-      html,
-    });
-
-    if (error) {
-      console.error("=== RESEND ERROR ===");
-      console.error(error);
-      throw new Error(error.message);
-    }
+    const response = await axios.post(
+      "https://api.brevo.com/v3/smtp/email",
+      {
+        sender: {
+          name: "Shopsie",
+          email: process.env.EMAIL_FROM,
+        },
+        to: [
+          {
+            email: to,
+          },
+        ],
+        subject,
+        htmlContent: html,
+        textContent: text,
+      },
+      {
+        headers: {
+          accept: "application/json",
+          "api-key": process.env.BREVO_API_KEY,
+          "content-type": "application/json",
+        },
+      }
+    );
 
     console.log("=== EMAIL SENT SUCCESSFULLY ===");
-    console.log(data);
+    console.log(response.data);
 
-    return data;
+    return response.data;
   } catch (error) {
-    console.error("=== EMAIL SEND ERROR ===");
-    console.error(error);
+    console.error("=== BREVO ERROR ===");
+
+    if (error.response) {
+      console.error(error.response.data);
+    } else {
+      console.error(error.message);
+    }
+
     throw error;
   }
 }
