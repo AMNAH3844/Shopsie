@@ -18,7 +18,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import styles from "../styles/dashboardAdmin";
-import { API_URLS } from '../../src/services/apiConfig';
+import { API_URLS } from "../../src/services/apiConfig";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
 
@@ -48,20 +48,12 @@ function ConfirmationModal({
             onPress={closeConfirmModal}
             style={styles.closeCornerBtn}
           >
-            <Ionicons
-              name="close"
-              size={24}
-              color="#94a3b8"
-            />
+            <Ionicons name="close" size={24} color="#94a3b8" />
           </TouchableOpacity>
 
-          <Text style={styles.confirmModalTitle}>
-            {confirmModal.title}
-          </Text>
+          <Text style={styles.confirmModalTitle}>{confirmModal.title}</Text>
 
-          <Text style={styles.modalSubtitle}>
-            {confirmModal.message}
-          </Text>
+          <Text style={styles.modalSubtitle}>{confirmModal.message}</Text>
 
           {confirmModal.reasonRequired && (
             <>
@@ -86,9 +78,7 @@ function ConfirmationModal({
                 spellCheck={false}
                 maxLength={800}
                 value={suspensionReason}
-                onChangeText={(text) =>
-                  setSuspensionReason(text)
-                }
+                onChangeText={(text) => setSuspensionReason(text)}
               />
 
               <Text
@@ -110,9 +100,7 @@ function ConfirmationModal({
               style={styles.cancelModalBtn}
               onPress={closeConfirmModal}
             >
-              <Text style={styles.cancelModalText}>
-                Cancel
-              </Text>
+              <Text style={styles.cancelModalText}>Cancel</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -176,23 +164,28 @@ export default function AdminDashboard() {
       const onBackPress = () => {
         if (activeScreen !== "dashboard") {
           setActiveScreen("dashboard");
-          return true; 
+          return true;
         }
-        return false; 
+        return false;
       };
 
       const subscription = BackHandler.addEventListener(
         "hardwareBackPress",
-        onBackPress
+        onBackPress,
       );
 
       return () => subscription.remove();
-    }, [activeScreen])
+    }, [activeScreen]),
   );
 
   const getProfileImageUri = (image) => {
     if (!image) return null;
-    if (image.startsWith("http") || image.startsWith("data:") || image.startsWith("file:")) return image;
+    if (
+      image.startsWith("http") ||
+      image.startsWith("data:") ||
+      image.startsWith("file:")
+    )
+      return image;
 
     const normalized = image.replace(/\\/g, "/").replace(/^\/+/, "");
     const cleanPath = normalized.startsWith("uploads/")
@@ -255,7 +248,7 @@ export default function AdminDashboard() {
       {
         method: "PATCH",
         headers,
-      }
+      },
     );
 
     const data = await res.json();
@@ -288,7 +281,9 @@ export default function AdminDashboard() {
         const parsedData = JSON.parse(data);
         setCurrentAdminId(parsedData.id);
         setAdminUsername(parsedData.username || "Admin");
-        setAdminProfileImage(getProfileImageUri(parsedData.profileImage) || DEFAULT_IMAGE);
+        setAdminProfileImage(
+          getProfileImageUri(parsedData.profileImage) || DEFAULT_IMAGE,
+        );
       }
     };
     loadAdmin();
@@ -437,7 +432,7 @@ export default function AdminDashboard() {
       const headers = await getAuthHeaders();
       const res = await fetch(`${API}/pending-riders`, { headers });
       const data = await res.json();
-      
+
       if (Array.isArray(data)) {
         setRiders(data);
       } else {
@@ -457,7 +452,7 @@ export default function AdminDashboard() {
         headers,
         body: JSON.stringify({ status }),
       });
-      
+
       if (res.ok) {
         showMessage(`Rider ${status} successfully`);
         loadPendingRiders();
@@ -484,7 +479,11 @@ export default function AdminDashboard() {
 
       if (!res.ok) {
         const serverMsg = (data.message || "").toLowerCase();
-        if (serverMsg.includes("exist") || serverMsg.includes("already taken") || serverMsg.includes("registered")) {
+        if (
+          serverMsg.includes("exist") ||
+          serverMsg.includes("already taken") ||
+          serverMsg.includes("registered")
+        ) {
           showWarning("Username exist");
         } else {
           showWarning(data.message || "Error creating admin");
@@ -541,7 +540,7 @@ export default function AdminDashboard() {
     return "SHOPSIE";
   };
 
-  const formatReportTitle = (title) => 
+  const formatReportTitle = (title) =>
     title === "OTHER_REASON" ? "Other reason" : "Shop doesn't exist";
 
   const formatDateTime = (value) => {
@@ -561,7 +560,7 @@ export default function AdminDashboard() {
       });
       setNotificationCount(0);
       setAdminNotifications((prev) =>
-        prev.map((n) => ({ ...n, isRead: true }))
+        prev.map((n) => ({ ...n, isRead: true })),
       );
     } catch (err) {
       console.log("Mark read error:", err);
@@ -582,7 +581,7 @@ export default function AdminDashboard() {
         <View style={styles.icons}>
           <TouchableOpacity onPress={() => router.push("/notifications")}>
             <Ionicons name="notifications" size={24} color="#2e4466" />
-          
+
             {notificationCount > 0 && (
               <View
                 style={{
@@ -598,7 +597,9 @@ export default function AdminDashboard() {
                   paddingHorizontal: 4,
                 }}
               >
-                <Text style={{ color: "#fff", fontSize: 10, fontWeight: "800" }}>
+                <Text
+                  style={{ color: "#fff", fontSize: 10, fontWeight: "800" }}
+                >
                   {notificationCount > 9 ? "9+" : notificationCount}
                 </Text>
               </View>
@@ -624,7 +625,10 @@ export default function AdminDashboard() {
         end={{ x: 0, y: 0 }}
         style={[styles.header, styles.linkedHeader]}
       >
-        <TouchableOpacity onPress={() => setActiveScreen("dashboard")} style={styles.headerSide}>
+        <TouchableOpacity
+          onPress={() => setActiveScreen("dashboard")}
+          style={styles.headerSide}
+        >
           <Ionicons name="chevron-back" size={28} color="#eef4fe" />
         </TouchableOpacity>
 
@@ -636,7 +640,10 @@ export default function AdminDashboard() {
   const DashboardView = () => (
     <>
       <View style={styles.profileCard}>
-        <Image source={{ uri: adminProfileImage }} style={styles.profileImage} />
+        <Image
+          source={{ uri: adminProfileImage }}
+          style={styles.profileImage}
+        />
         <Text style={styles.username}>{adminUsername}</Text>
       </View>
 
@@ -684,7 +691,11 @@ export default function AdminDashboard() {
               setActiveScreen("admins");
             }}
           >
-            <MaterialCommunityIcons name="account-cog-outline" size={35} color="white" />
+            <MaterialCommunityIcons
+              name="account-cog-outline"
+              size={35}
+              color="white"
+            />
             <Text style={styles.boxText}>Admin Management</Text>
           </TouchableOpacity>
         </View>
@@ -709,8 +720,10 @@ export default function AdminDashboard() {
 
     const roleOptions = ["rider", "customer", "shopkeeper", "admin"];
     const filtered = users.filter((u) => {
-      if (filterType === "username") return u.username?.toLowerCase().includes(query.toLowerCase());
-      if (filterType === "role") return u.role?.toLowerCase().includes(query.toLowerCase());
+      if (filterType === "username")
+        return u.username?.toLowerCase().includes(query.toLowerCase());
+      if (filterType === "role")
+        return u.role?.toLowerCase().includes(query.toLowerCase());
       return false;
     });
 
@@ -723,18 +736,29 @@ export default function AdminDashboard() {
         .toUpperCase() || "U";
 
     return (
-      <ScrollView style={styles.screenScroll} contentContainerStyle={styles.screenContent}>
+      <ScrollView
+        style={styles.screenScroll}
+        contentContainerStyle={styles.screenContent}
+      >
         <View style={styles.dropdown}>
           {["username", "role"].map((t) => (
             <TouchableOpacity
               key={t}
-              style={[styles.dropdownItem, filterType === t && styles.dropdownItemActive]}
+              style={[
+                styles.dropdownItem,
+                filterType === t && styles.dropdownItemActive,
+              ]}
               onPress={() => {
                 setFilterType(t);
                 setQuery("");
               }}
             >
-              <Text style={[styles.dropdownText, filterType === t && styles.dropdownTextActive]}>
+              <Text
+                style={[
+                  styles.dropdownText,
+                  filterType === t && styles.dropdownTextActive,
+                ]}
+              >
                 {t.toUpperCase()}
               </Text>
             </TouchableOpacity>
@@ -746,10 +770,18 @@ export default function AdminDashboard() {
             {roleOptions.map((r) => (
               <TouchableOpacity
                 key={r}
-                style={[styles.dropdownItem, query === r && styles.dropdownItemActive]}
+                style={[
+                  styles.dropdownItem,
+                  query === r && styles.dropdownItemActive,
+                ]}
                 onPress={() => setQuery(r)}
               >
-                <Text style={[styles.dropdownText, query === r && styles.dropdownTextActive]}>
+                <Text
+                  style={[
+                    styles.dropdownText,
+                    query === r && styles.dropdownTextActive,
+                  ]}
+                >
                   {r.toUpperCase()}
                 </Text>
               </TouchableOpacity>
@@ -778,7 +810,9 @@ export default function AdminDashboard() {
                   />
                 ) : (
                   <View style={styles.userAvatar}>
-                    <Text style={styles.userAvatarText}>{getInitials(u.username)}</Text>
+                    <Text style={styles.userAvatarText}>
+                      {getInitials(u.username)}
+                    </Text>
                   </View>
                 )}
                 <View>
@@ -805,7 +839,10 @@ export default function AdminDashboard() {
   };
 
   const RiderRequestsView = () => (
-    <ScrollView style={styles.screenScroll} contentContainerStyle={styles.screenContent}>
+    <ScrollView
+      style={styles.screenScroll}
+      contentContainerStyle={styles.screenContent}
+    >
       {riders.length === 0 ? (
         <Text style={styles.emptyText}>No Rider Requests Found</Text>
       ) : (
@@ -845,19 +882,37 @@ export default function AdminDashboard() {
                         }}
                       />
                     ) : (
-                      <Image source={{ uri: img }} style={styles.docImg} resizeMode="cover" />
+                      <Image
+                        source={{ uri: img }}
+                        style={styles.docImg}
+                        resizeMode="cover"
+                      />
                     )}
                   </TouchableOpacity>
                 ))}
               </View>
 
-              <View style={[styles.actionRow, { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 12 }]}>
+              <View
+                style={[
+                  styles.actionRow,
+                  {
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 12,
+                    marginTop: 12,
+                  },
+                ]}
+              >
                 <TouchableOpacity
-                  style={[styles.approveBtn, { flex: 1, justifyContent: "center", alignItems: "center" }]}
+                  style={[
+                    styles.approveBtn,
+                    { flex: 1, justifyContent: "center", alignItems: "center" },
+                  ]}
                   onPress={() =>
                     openConfirmModal({
                       title: "Approve Rider",
-                      message: "Are you sure you want to approve this rider request?",
+                      message:
+                        "Are you sure you want to approve this rider request?",
                       confirmText: "Approve",
                       isDanger: false,
                       onConfirm: () => updateRiderStatus(r.id, "approved"),
@@ -868,11 +923,15 @@ export default function AdminDashboard() {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.rejectBtn, { flex: 1, justifyContent: "center", alignItems: "center" }]}
+                  style={[
+                    styles.rejectBtn,
+                    { flex: 1, justifyContent: "center", alignItems: "center" },
+                  ]}
                   onPress={() =>
                     openConfirmModal({
                       title: "Reject Rider",
-                      message: "Are you sure you want to reject this rider? This will delete the account.",
+                      message:
+                        "Are you sure you want to reject this rider? This will delete the account.",
                       confirmText: "Reject",
                       isDanger: true,
                       onConfirm: () => updateRiderStatus(r.id, "rejected"),
@@ -887,19 +946,38 @@ export default function AdminDashboard() {
         })
       )}
 
-      <Modal 
-        visible={imageModal} 
+      <Modal
+        visible={imageModal}
         animationType="fade"
         transparent
         onRequestClose={() => setImageModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <SafeAreaView style={{ flex: 1, width: "100%", backgroundColor: "rgba(0,0,0,0.95)", justifyContent: 'center' }}>
-            <View style={[styles.imageHeader, { paddingHorizontal: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}>
+          <SafeAreaView
+            style={{
+              flex: 1,
+              width: "100%",
+              backgroundColor: "rgba(0,0,0,0.95)",
+              justifyContent: "center",
+            }}
+          >
+            <View
+              style={[
+                styles.imageHeader,
+                {
+                  paddingHorizontal: 16,
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                },
+              ]}
+            >
               <TouchableOpacity onPress={() => setImageModal(false)}>
                 <Ionicons name="close" size={28} color="#fff" />
               </TouchableOpacity>
-              <Text style={[styles.imageCounter, { color: '#fff', fontSize: 16 }]}>
+              <Text
+                style={[styles.imageCounter, { color: "#fff", fontSize: 16 }]}
+              >
                 {imageIndex + 1} / {images.length}
               </Text>
             </View>
@@ -918,8 +996,13 @@ export default function AdminDashboard() {
                     }}
                   />
                 ) : (
-                  <Image key={i} source={{ uri: img }} style={styles.fullImage} resizeMode="contain" />
-                )
+                  <Image
+                    key={i}
+                    source={{ uri: img }}
+                    style={styles.fullImage}
+                    resizeMode="contain"
+                  />
+                ),
               )}
             </ScrollView>
           </SafeAreaView>
@@ -929,7 +1012,10 @@ export default function AdminDashboard() {
   );
 
   const StatsView = () => (
-    <ScrollView style={styles.screenScroll} contentContainerStyle={styles.screenContent}>
+    <ScrollView
+      style={styles.screenScroll}
+      contentContainerStyle={styles.screenContent}
+    >
       {stats && (
         <>
           <View style={styles.statBox}>
@@ -947,7 +1033,10 @@ export default function AdminDashboard() {
   );
 
   const ShopReportsView = () => (
-    <ScrollView style={styles.screenScroll} contentContainerStyle={styles.screenContent}>
+    <ScrollView
+      style={styles.screenScroll}
+      contentContainerStyle={styles.screenContent}
+    >
       {shopReports.length === 0 ? (
         <Text style={styles.emptyText}>No Shop Reports Found</Text>
       ) : (
@@ -956,7 +1045,9 @@ export default function AdminDashboard() {
             <View style={styles.reportHeader}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.cardTitle}>
-                  {report.shopkeeper?.shopDetails?.shopName || report.shopkeeper?.shopName || "Shop"}
+                  {report.shopkeeper?.shopDetails?.shopName ||
+                    report.shopkeeper?.shopName ||
+                    "Shop"}
                 </Text>
                 <Text style={styles.cardSubText}>
                   Reported by: {report.reporter?.username || "Unknown user"}
@@ -983,24 +1074,34 @@ export default function AdminDashboard() {
                 Time and date: {formatDateTime(report.createdAt)}
               </Text>
 
-              {warningShopkeeperIds.includes(report.shopkeeperId) && !report.shopkeeper?.isSuspended && (
-                <TouchableOpacity
-                  style={styles.warningSuspendBtn}
-                  onPress={() =>
-                    openConfirmModal({
-                      title: "Suspend Shopkeeper",
-                      message: "Suspend this shopkeeper account? The shop data will stay in the database but will be hidden from customers and riders.",
-                      confirmText: "Suspend",
-                      isDanger: true,
-                      reasonRequired: true,
-                      onConfirm: (reason) => suspendShopkeeper(report.shopkeeperId, reason),
-                    })
-                  }
-                >
-                  <Ionicons name="ban-outline" size={16} color="#fff" style={{ marginRight: 6 }} />
-                  <Text style={styles.warningSuspendText}>Suspend Shopkeeper</Text>
-                </TouchableOpacity>
-              )}
+              {warningShopkeeperIds.includes(report.shopkeeperId) &&
+                !report.shopkeeper?.isSuspended && (
+                  <TouchableOpacity
+                    style={styles.warningSuspendBtn}
+                    onPress={() =>
+                      openConfirmModal({
+                        title: "Suspend Shopkeeper",
+                        message:
+                          "Suspend this shopkeeper account? The shop data will stay in the database but will be hidden from customers and riders.",
+                        confirmText: "Suspend",
+                        isDanger: true,
+                        reasonRequired: true,
+                        onConfirm: (reason) =>
+                          suspendShopkeeper(report.shopkeeperId, reason),
+                      })
+                    }
+                  >
+                    <Ionicons
+                      name="ban-outline"
+                      size={16}
+                      color="#fff"
+                      style={{ marginRight: 6 }}
+                    />
+                    <Text style={styles.warningSuspendText}>
+                      Suspend Shopkeeper
+                    </Text>
+                  </TouchableOpacity>
+                )}
             </View>
           </View>
         ))
@@ -1010,7 +1111,10 @@ export default function AdminDashboard() {
 
   const BottomNav = () => (
     <View style={styles.bottomNav}>
-      <TouchableOpacity style={styles.tabItem} onPress={() => setActiveScreen("dashboard")}>
+      <TouchableOpacity
+        style={styles.tabItem}
+        onPress={() => setActiveScreen("dashboard")}
+      >
         <Ionicons name="home" size={22} color="white" />
         <Text style={styles.navText}>Home</Text>
       </TouchableOpacity>
@@ -1022,7 +1126,11 @@ export default function AdminDashboard() {
           setActiveScreen("admins");
         }}
       >
-        <MaterialCommunityIcons name="account-cog-outline" size={22} color="white" />
+        <MaterialCommunityIcons
+          name="account-cog-outline"
+          size={22}
+          color="white"
+        />
         <Text style={styles.navText}>Admins</Text>
       </TouchableOpacity>
 
@@ -1065,57 +1173,57 @@ export default function AdminDashboard() {
 
   /* ================= MAIN RENDER ================= */
   return (
-   <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-  <View style={styles.scrollContainer}>
-      <Header />
-      {activeScreen === "dashboard" && <DashboardView />}
-      {activeScreen === "filter" && <FilterUsersView />}
-      {activeScreen === "riders" && <RiderRequestsView />}
-      {activeScreen === "admins" && (
-        <AdminManagementView 
-          users={users}
-          currentAdminId={currentAdminId}
-          formUsername={formUsername}
-          setFormUsername={setFormUsername}
-          formPassword={formPassword}
-          setFormPassword={setFormPassword}
-          openConfirmModal={openConfirmModal}
-          createAdmin={createAdmin}
-          removeAdmin={removeAdmin}
-          showWarning={showWarning}
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      <View style={styles.scrollContainer}>
+        <Header />
+        {activeScreen === "dashboard" && <DashboardView />}
+        {activeScreen === "filter" && <FilterUsersView />}
+        {activeScreen === "riders" && <RiderRequestsView />}
+        {activeScreen === "admins" && (
+          <AdminManagementView
+            users={users}
+            currentAdminId={currentAdminId}
+            formUsername={formUsername}
+            setFormUsername={setFormUsername}
+            formPassword={formPassword}
+            setFormPassword={setFormPassword}
+            openConfirmModal={openConfirmModal}
+            createAdmin={createAdmin}
+            removeAdmin={removeAdmin}
+            showWarning={showWarning}
+            styles={styles}
+          />
+        )}
+        {activeScreen === "stats" && <StatsView />}
+        {activeScreen === "shopReports" && <ShopReportsView />}
+
+        <ConfirmationModal
+          confirmModal={confirmModal}
+          suspensionReason={suspensionReason}
+          setSuspensionReason={setSuspensionReason}
+          closeConfirmModal={closeConfirmModal}
+          handleConfirmAction={handleConfirmAction}
           styles={styles}
         />
-      )}
-      {activeScreen === "stats" && <StatsView />}
-      {activeScreen === "shopReports" && <ShopReportsView />}
-      
-      <ConfirmationModal
-        confirmModal={confirmModal}
-        suspensionReason={suspensionReason}
-        setSuspensionReason={setSuspensionReason}
-        closeConfirmModal={closeConfirmModal}
-        handleConfirmAction={handleConfirmAction}
-        styles={styles}
-      />
 
-      {/* ================= FLOATING TOAST NOTIFICATIONS ================= */}
-      {warningMessage !== "" && (
-        <View style={styles.warningBox}>
-          <Ionicons name="warning-outline" size={22} color="#fff" />
-          <Text style={styles.warningText}>{warningMessage}</Text>
-        </View>
-      )}
+        {/* ================= FLOATING TOAST NOTIFICATIONS ================= */}
+        {warningMessage !== "" && (
+          <View style={styles.warningBox}>
+            <Ionicons name="warning-outline" size={22} color="#fff" />
+            <Text style={styles.warningText}>{warningMessage}</Text>
+          </View>
+        )}
 
-      {message !== "" && (
-        <View style={styles.warningBox}>
-          <Ionicons name="checkmark-circle-outline" size={22} color="#fff" />
-          <Text style={styles.warningText}>{message}</Text>
-        </View>
-      )}
-      
-      <BottomNav />
+        {message !== "" && (
+          <View style={styles.warningBox}>
+            <Ionicons name="checkmark-circle-outline" size={22} color="#fff" />
+            <Text style={styles.warningText}>{message}</Text>
+          </View>
+        )}
+
+        <BottomNav />
       </View>
-</SafeAreaView>
+    </SafeAreaView>
   );
 }
 
@@ -1136,7 +1244,10 @@ function AdminManagementView({
   const admins = users.filter((u) => u.role === "admin");
 
   return (
-    <ScrollView style={styles.screenScroll} contentContainerStyle={styles.screenContent}>
+    <ScrollView
+      style={styles.screenScroll}
+      contentContainerStyle={styles.screenContent}
+    >
       {admins.map((a) => (
         <View
           key={a.id}

@@ -20,7 +20,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import * as Location from "expo-location";
-import { API_URLS } from '../../src/services/apiConfig';
+import { API_URLS } from "../../src/services/apiConfig";
 
 const DEFAULT_LAT = 31.5204;
 const DEFAULT_LNG = 74.3587;
@@ -85,14 +85,18 @@ export default function RiderSetLocation() {
   useFocusEffect(
     useCallback(() => {
       loadLocation();
-    }, [loadLocation])
+    }, [loadLocation]),
   );
 
   // ==========================================
   // WEB & MOBILE WEBVIEW POST-MESSAGE BRIDGE
   // ==========================================
   useEffect(() => {
-    const payload = { type: "UPDATE_LOCATION", lat: Number(lat), lng: Number(lng) };
+    const payload = {
+      type: "UPDATE_LOCATION",
+      lat: Number(lat),
+      lng: Number(lng),
+    };
 
     if (Platform.OS === "web") {
       document
@@ -117,7 +121,10 @@ export default function RiderSetLocation() {
       const nextLng = Number(lng);
 
       if (!Number.isFinite(nextLat) || !Number.isFinite(nextLng)) {
-        return Alert.alert("Invalid location", "Please select a valid rider location.");
+        return Alert.alert(
+          "Invalid location",
+          "Please select a valid rider location.",
+        );
       }
 
       setSaving(true);
@@ -136,7 +143,7 @@ export default function RiderSetLocation() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       setLat(Number(res.data.currentLat));
@@ -147,14 +154,16 @@ export default function RiderSetLocation() {
       setSuccessMsg(
         Boolean(res.data.isLocationOn)
           ? "Location saved. You are now on duty."
-          : "Location saved. You are off duty."
+          : "Location saved. You are off duty.",
       );
 
       setTimeout(() => {
         setSuccessMsg("");
       }, 2500);
     } catch (e) {
-      triggerWarning(e.response?.data?.message || e.message || "Could not save location");
+      triggerWarning(
+        e.response?.data?.message || e.message || "Could not save location",
+      );
     } finally {
       setSaving(false);
     }
@@ -186,7 +195,7 @@ export default function RiderSetLocation() {
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`,
-        { headers: { "User-Agent": "ShoppingRiderApp/1.0" } }
+        { headers: { "User-Agent": "ShoppingRiderApp/1.0" } },
       );
       const data = await res.json();
 
@@ -285,8 +294,12 @@ export default function RiderSetLocation() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <View style={styles.container}>
-        
-        <LinearGradient colors={["#eef4fe", "#2e4466"]} start={{ x: 1, y: 0 }} end={{ x: 0, y: 0 }} style={styles.header}>
+        <LinearGradient
+          colors={["#eef4fe", "#2e4466"]}
+          start={{ x: 1, y: 0 }}
+          end={{ x: 0, y: 0 }}
+          style={styles.header}
+        >
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="chevron-back" size={28} color="#eef4fe" />
           </TouchableOpacity>
@@ -294,12 +307,12 @@ export default function RiderSetLocation() {
           <View style={{ width: 28 }} />
         </LinearGradient>
 
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === "ios" ? "padding" : "height"} 
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={{ flex: 1 }}
         >
-          <ScrollView 
-            contentContainerStyle={styles.scrollBody} 
+          <ScrollView
+            contentContainerStyle={styles.scrollBody}
             showsVerticalScrollIndicator={false}
           >
             {!!successMsg && (
@@ -340,7 +353,9 @@ export default function RiderSetLocation() {
               )}
             </View>
 
-            <Text style={styles.labelText} numberOfLines={1}>{label}</Text>
+            <Text style={styles.labelText} numberOfLines={1}>
+              {label}
+            </Text>
             <Text style={styles.coordsText}>{formatCoords(lat, lng)}</Text>
 
             <TouchableOpacity style={styles.gpsBtn} onPress={useGps}>
@@ -350,9 +365,13 @@ export default function RiderSetLocation() {
 
             <View style={styles.toggleRow}>
               <View style={{ flex: 1, paddingRight: 8 }}>
-                <Text style={styles.toggleTitle}>Show location to customers</Text>
+                <Text style={styles.toggleTitle}>
+                  Show location to customers
+                </Text>
                 <Text style={styles.toggleSub}>
-                  {isLocationOn ? "You are online for rider requests." : "You are off duty."}
+                  {isLocationOn
+                    ? "You are online for rider requests."
+                    : "You are off duty."}
                 </Text>
               </View>
               <Switch
@@ -408,7 +427,6 @@ export default function RiderSetLocation() {
             <Text style={styles.navText}>Downloads</Text>
           </TouchableOpacity>
         </View>
-
       </View>
     </SafeAreaView>
   );
@@ -419,11 +437,33 @@ export default function RiderSetLocation() {
 // ==========================================
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8fafc" },
-  centered: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#f8fafc" },
-  header: { height: 85, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  headerTitle: { flex: 1, color: "#2e4466", fontSize: 22, fontWeight: "700", textAlign: "center" },
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f8fafc",
+  },
+  header: {
+    height: 85,
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  headerTitle: {
+    flex: 1,
+    color: "#2e4466",
+    fontSize: 22,
+    fontWeight: "700",
+    textAlign: "center",
+  },
   scrollBody: { padding: 16, paddingBottom: 100 },
-  successBox: { backgroundColor: "#d1fae5", padding: 10, borderRadius: 10, marginBottom: 12 },
+  successBox: {
+    backgroundColor: "#d1fae5",
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 12,
+  },
   successText: { color: "#065f46", fontWeight: "700", textAlign: "center" },
   searchRow: { flexDirection: "row", marginBottom: 12 },
   input: {
@@ -443,8 +483,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  mapBox: { height: 250, borderRadius: 16, overflow: "hidden", backgroundColor: "#e2e8f0" },
-  labelText: { marginTop: 12, fontWeight: "700", color: "#1e293b", fontSize: 14 },
+  mapBox: {
+    height: 250,
+    borderRadius: 16,
+    overflow: "hidden",
+    backgroundColor: "#e2e8f0",
+  },
+  labelText: {
+    marginTop: 12,
+    fontWeight: "700",
+    color: "#1e293b",
+    fontSize: 14,
+  },
   coordsText: { color: "#64748b", fontSize: 12, marginTop: 2 },
   gpsBtn: {
     marginTop: 12,
@@ -506,17 +556,23 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   warningBox: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 90,
     left: 20,
     right: 20,
-    backgroundColor: '#e67e22',
+    backgroundColor: "#e67e22",
     padding: 14,
     borderRadius: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     zIndex: 9999,
     elevation: 6,
   },
-  warningText: { color: '#fff', marginLeft: 10, fontSize: 14, fontWeight: '600', flex: 1 },
+  warningText: {
+    color: "#fff",
+    marginLeft: 10,
+    fontSize: 14,
+    fontWeight: "600",
+    flex: 1,
+  },
 });

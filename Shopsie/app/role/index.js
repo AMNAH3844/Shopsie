@@ -1,6 +1,12 @@
 import { useRouter } from "expo-router";
 import { useState, useRef } from "react";
-import { Text, TouchableOpacity, View, ScrollView, Animated } from "react-native";
+import {
+  Text,
+  TouchableOpacity,
+  View,
+  ScrollView,
+  Animated,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import styles from "../styles/Authstyle";
 
@@ -37,13 +43,13 @@ export default function Roleselection() {
       triggerToast("Please select a role before submitting");
       return;
     }
-    
+
     router.push({ pathname: "/signup", params: { selectedRole } });
   };
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView 
+      <ScrollView
         style={styles.scrollContainer}
         contentContainerStyle={{ paddingTop: 60 }}
       >
@@ -83,32 +89,31 @@ export default function Roleselection() {
                 </View>
               </TouchableOpacity>
             ))}
-            
-            <TouchableOpacity
-              style={styles.button}
-              onPress={handleSubmit}
-            >
+
+            <TouchableOpacity style={styles.button} onPress={handleSubmit}>
               <Text style={styles.buttonText}>SUBMIT</Text>
             </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => router.push("/signin")}>
-            <Text style={styles.link}>
-              Already have an Account?{" "}
-              <Text style={styles.linkBold}>Sign In</Text>
-            </Text>
-          </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push("/signin")}>
+              <Text style={styles.link}>
+                Already have an Account?{" "}
+                <Text style={styles.linkBold}>Sign In</Text>
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
 
-    {/* ⚠️ ORANGE TOAST MODAL SYSTEM NOTIFICATION BAR */}
-    {alertVisible && (
-      <Animated.View style={[customStyles.orangeToastContainer, { opacity: fadeAnim }]}>
-        <Ionicons name="alert-circle" size={20} color="white" />
-        <Text style={customStyles.orangeToastText}>{alertMessage}</Text>
-      </Animated.View>
-    )}
-  </View>
+      {/* ⚠️ ORANGE TOAST MODAL SYSTEM NOTIFICATION BAR */}
+      {alertVisible && (
+        <Animated.View
+          style={[customStyles.orangeToastContainer, { opacity: fadeAnim }]}
+        >
+          <Ionicons name="alert-circle" size={20} color="white" />
+          <Text style={customStyles.orangeToastText}>{alertMessage}</Text>
+        </Animated.View>
+      )}
+    </View>
   );
 }
 
@@ -130,13 +135,13 @@ const customStyles = {
     shadowOpacity: 0.15,
     shadowRadius: 6,
     elevation: 6,
-    zIndex: 99999
+    zIndex: 99999,
   },
   orangeToastText: {
     color: "white",
     fontSize: 13,
     fontWeight: "600",
     marginLeft: 10,
-    flex: 1
-  }
+    flex: 1,
+  },
 };

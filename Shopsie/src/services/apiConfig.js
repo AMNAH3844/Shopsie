@@ -1,4 +1,3 @@
-
 const BASE_URL = "https://shopsie-production.up.railway.app";
 const API_BASE = `${BASE_URL}/api`;
 
@@ -58,11 +57,8 @@ export const API_URLS = {
     NOTIFICATIONS: `${API_BASE}/shopkeeper/notifications`,
     NOTIFICATIONS_READ_ALL: `${API_BASE}/shopkeeper/notifications/read-all`,
     REVERT_REQUEST: `${API_BASE}/shopkeeper/revert-request`,
-    
   },
-  SHOP_ORDER_NOTIFICATION_COUNT:
-  `${API_BASE}/shopkeeper/order-notification-count`,
+  SHOP_ORDER_NOTIFICATION_COUNT: `${API_BASE}/shopkeeper/order-notification-count`,
 
-SHOP_ORDER_NOTIFICATIONS_READ_ALL:
-  `${API_BASE}/shopkeeper/order-notifications/read-all`,
+  SHOP_ORDER_NOTIFICATIONS_READ_ALL: `${API_BASE}/shopkeeper/order-notifications/read-all`,
 };

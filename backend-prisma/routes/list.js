@@ -8,7 +8,9 @@ const router = express.Router();
 // --- HELPERS ---
 const normalize = (str) => (str ? str.trim().toLowerCase() : "");
 const format = (str) =>
-  str ? str.trim().charAt(0).toUpperCase() + str.trim().slice(1).toLowerCase() : "";
+  str
+    ? str.trim().charAt(0).toUpperCase() + str.trim().slice(1).toLowerCase()
+    : "";
 
 // ==========================================
 // 1. STATIC GET ROUTES (Must be at the top)
@@ -103,13 +105,13 @@ router.post("/save-list", verifyToken, async (req, res) => {
         userId,
         items: {
           create: items.map((i) => ({
-           name: i.name,
-quantity: i.quantity ? parseInt(i.quantity) : 1,
-specification:
-  i.specification && i.specification.trim()
-    ? i.specification.trim()
-    : "None",
-categoryName: i.categoryName || "Uncategorized",
+            name: i.name,
+            quantity: i.quantity ? parseInt(i.quantity) : 1,
+            specification:
+              i.specification && i.specification.trim()
+                ? i.specification.trim()
+                : "None",
+            categoryName: i.categoryName || "Uncategorized",
           })),
         },
       },
@@ -159,7 +161,11 @@ router.post("/add-item", verifyToken, async (req, res) => {
       data: { name: format(name), categoryId: cat.id, userId, isGlobal: false },
     });
 
-    res.json({ id: newItem.id, name: newItem.name, categoryName: format(cat.name) });
+    res.json({
+      id: newItem.id,
+      name: newItem.name,
+      categoryName: format(cat.name),
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -175,7 +181,9 @@ router.post("/favorite", verifyToken, async (req, res) => {
     });
 
     if (existing) {
-      await prisma.favoriteItem.delete({ where: { userId_itemId: { userId, itemId } } });
+      await prisma.favoriteItem.delete({
+        where: { userId_itemId: { userId, itemId } },
+      });
       return res.json({ removed: true });
     }
 
@@ -230,22 +238,24 @@ router.delete("/:id", verifyToken, async (req, res) => {
 
     // 2. Now delete the list itself
     const deletedList = await prisma.list.delete({
-      where: { 
+      where: {
         id: listId,
-        userId: userId // Safety check: only delete if it belongs to this user
+        userId: userId, // Safety check: only delete if it belongs to this user
       },
     });
 
     res.status(200).json({ message: "List and items deleted successfully" });
   } catch (error) {
     console.error("Delete Error:", error);
-    res.status(500).json({ message: "Failed to delete list", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to delete list", error: error.message });
   }
 });
 
 // ✅ BACKEND: Update list name
 router.put("/:id", verifyToken, async (req, res) => {
-    try {
+  try {
     const listId = parseInt(req.params.id);
     const userId = req.user.id;
     const { name, items } = req.body;
@@ -268,12 +278,12 @@ router.put("/:id", verifyToken, async (req, res) => {
           data: items.map((i) => ({
             listId: listId,
             name: i.name,
-quantity: i.quantity ? parseInt(i.quantity) : 1,
-specification:
-  i.specification && i.specification.trim()
-    ? i.specification.trim()
-    : "None",
-categoryName: i.categoryName || "Uncategorized",
+            quantity: i.quantity ? parseInt(i.quantity) : 1,
+            specification:
+              i.specification && i.specification.trim()
+                ? i.specification.trim()
+                : "None",
+            categoryName: i.categoryName || "Uncategorized",
           })),
         });
       }

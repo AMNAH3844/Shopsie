@@ -11,7 +11,9 @@ export async function lookupResetEmail(req, res) {
     const { username, userId } = req.body;
 
     if (!username && !userId) {
-      return res.status(400).json({ message: "Username or user ID is required" });
+      return res
+        .status(400)
+        .json({ message: "Username or user ID is required" });
     }
 
     const user = await prisma.user.findFirst({
@@ -26,7 +28,9 @@ export async function lookupResetEmail(req, res) {
     });
 
     if (!user) {
-      return res.status(404).json({ message: "No account found for this username" });
+      return res
+        .status(404)
+        .json({ message: "No account found for this username" });
     }
 
     return res.json({
@@ -47,13 +51,18 @@ export async function forgotPassword(req, res) {
     await requestPasswordReset({ prisma, email, req });
 
     return res.json({
-      message: "If an account exists for this email, a reset email has been sent.",
+      message:
+        "If an account exists for this email, a reset email has been sent.",
     });
   } catch (error) {
     console.error("Forgot password error:", error);
     return res
       .status(error.statusCode || 500)
-      .json({ message: error.statusCode ? error.message : "Unable to send reset email" });
+      .json({
+        message: error.statusCode
+          ? error.message
+          : "Unable to send reset email",
+      });
   }
 }
 
@@ -70,6 +79,8 @@ export async function resetPassword(req, res) {
     console.error("Reset password error:", error);
     return res
       .status(error.statusCode || 500)
-      .json({ message: error.statusCode ? error.message : "Unable to reset password" });
+      .json({
+        message: error.statusCode ? error.message : "Unable to reset password",
+      });
   }
 }

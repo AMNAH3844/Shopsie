@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { API_URLS } from '../../src/services/apiConfig';
+import { API_URLS } from "../../src/services/apiConfig";
 import {
   View,
   Text,
@@ -34,7 +34,7 @@ const normalize = (str) => str.trim().toLowerCase();
 export default function CreateList() {
   const router = useRouter();
   const { editData } = useLocalSearchParams();
-  
+
   // --- Core State Management ---
   const [token, setToken] = useState("");
   const [listName, setListName] = useState("");
@@ -47,7 +47,7 @@ export default function CreateList() {
   const [showDB, setShowDB] = useState(false);
   const [showFav, setShowFav] = useState(false);
   const [database, setDatabase] = useState([]);
-  const [dbSearch, setDbSearch] = useState(""); 
+  const [dbSearch, setDbSearch] = useState("");
   const [favorites, setFavorites] = useState([]);
   const [expandedCategoryId, setExpandedCategoryId] = useState(null);
   const [filteredItems, setFilteredItems] = useState([]);
@@ -61,7 +61,11 @@ export default function CreateList() {
 
   // --- Interactive Choice Modal States ---
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [selectedItemToDelete, setSelectedItemToDelete] = useState({ catId: null, itemId: null, name: "" });
+  const [selectedItemToDelete, setSelectedItemToDelete] = useState({
+    catId: null,
+    itemId: null,
+    name: "",
+  });
   const [shareModalVisible, setShareModalVisible] = useState(false);
 
   const animations = useRef({}).current;
@@ -82,8 +86,8 @@ export default function CreateList() {
       const data = JSON.parse(editData);
       setListName(data.name);
       setListItems(data.items || []);
-      setListId(data.id); 
-      setIsEditing(true); 
+      setListId(data.id);
+      setIsEditing(true);
     }
   }, [editData]);
 
@@ -120,7 +124,7 @@ export default function CreateList() {
       if (!query) return cat;
 
       const matchedItems = cat.items.filter((i) =>
-        normalize(i.name).startsWith(query)
+        normalize(i.name).startsWith(query),
       );
 
       if (matchedItems.length === 0) return null;
@@ -148,21 +152,31 @@ export default function CreateList() {
 
   // --- Favorite Operations ---
   const toggleFavorite = async (item) => {
-    const isFav = favorites.some((f) => normalize(f.item.name) === normalize(item.name));
+    const isFav = favorites.some(
+      (f) => normalize(f.item.name) === normalize(item.name),
+    );
     try {
       await axios.post(
         `${API_URLS.LIST}/favorite`,
         { itemId: item.id },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       if (isFav) {
-        setFavorites((prev) => prev.filter((f) => normalize(f.item.name) !== normalize(item.name)));
+        setFavorites((prev) =>
+          prev.filter((f) => normalize(f.item.name) !== normalize(item.name)),
+        );
         triggerWarning(`${item.name} removed from favorites`);
       } else {
         setFavorites((prev) => [
           ...prev,
-          { id: Date.now(), item: { ...item, category: { name: formatCategory(item.categoryName) } } },
+          {
+            id: Date.now(),
+            item: {
+              ...item,
+              category: { name: formatCategory(item.categoryName) },
+            },
+          },
         ]);
         triggerWarning(`${item.name} added to favorites`);
       }
@@ -174,14 +188,16 @@ export default function CreateList() {
   // --- Item Creation Handler ---
   const addItem = async () => {
     if (!name || !category) {
-      return triggerWarning("Please configure both Item Name and Category fields");
+      return triggerWarning(
+        "Please configure both Item Name and Category fields",
+      );
     }
 
     try {
       const res = await axios.post(
         `${API_URLS.LIST}/add-item`,
         { name, category, quantity, specification: spec },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       const newItem = {
@@ -193,17 +209,22 @@ export default function CreateList() {
       };
 
       setListItems((prev) => {
-        if (prev.some((i) => normalize(i.name) === normalize(name))) return prev;
+        if (prev.some((i) => normalize(i.name) === normalize(name)))
+          return prev;
         return [newItem, ...prev];
       });
 
       setDatabase((prev) => {
         const updated = [...prev];
         const catIndex = updated.findIndex(
-          (c) => normalize(c.name) === normalize(res.data.categoryName)
+          (c) => normalize(c.name) === normalize(res.data.categoryName),
         );
 
-        const dbItem = { id: res.data.id, name: res.data.name, isGlobal: !!res.data.alreadyExists };
+        const dbItem = {
+          id: res.data.id,
+          name: res.data.name,
+          isGlobal: !!res.data.alreadyExists,
+        };
 
         if (catIndex !== -1) {
           if (!updated[catIndex].items.some((i) => i.id === dbItem.id)) {
@@ -224,13 +245,13 @@ export default function CreateList() {
       setQuantity("");
       setSpec("");
       setFilteredItems([]);
-
     } catch (err) {
       triggerWarning("Could not register product item.");
     }
   };
 
-  const removeItem = (index) => setListItems((prev) => prev.filter((_, i) => i !== index));
+  const removeItem = (index) =>
+    setListItems((prev) => prev.filter((_, i) => i !== index));
 
   const finalizeList = () => {
     const grouped = {};
@@ -259,27 +280,37 @@ export default function CreateList() {
     }
 
     if (listItems.length === 0) {
-      return triggerWarning("Cannot save an empty list. Please add some items first.");
+      return triggerWarning(
+        "Cannot save an empty list. Please add some items first.",
+      );
     }
 
     try {
       const t = await AsyncStorage.getItem("token");
       const config = { headers: { Authorization: `Bearer ${t}` } };
-      
-      const payload = { 
-        name: listName, 
-        items: listItems 
+
+      const payload = {
+        name: listName,
+        items: listItems,
       };
 
       if (isEditing && listId) {
         await axios.put(`${API_URLS.LIST}/${listId}`, payload, config);
         triggerWarning("List updated successfully!");
       } else {
-        const response = await axios.post(`${API_URLS.LIST}/save-list`, payload, config);
-        
+        const response = await axios.post(
+          `${API_URLS.LIST}/save-list`,
+          payload,
+          config,
+        );
+
         if (response.data && response.data.id) {
           setListId(response.data.id);
-        } else if (response.data && response.data.list && response.data.list.id) {
+        } else if (
+          response.data &&
+          response.data.list &&
+          response.data.list.id
+        ) {
           setListId(response.data.list.id);
         }
         setIsEditing(true);
@@ -303,14 +334,17 @@ export default function CreateList() {
     try {
       const t = await AsyncStorage.getItem("token");
       await axios.delete(`${API_URLS.LIST}/item/${itemId}`, {
-          headers: { Authorization: `Bearer ${t}` }
+        headers: { Authorization: `Bearer ${t}` },
       });
 
-      setDatabase((prev) => 
-        prev.map(c => c.id === catId 
-          ? { ...c, items: c.items.filter(i => i.id !== itemId) } 
-          : c
-        ).filter(c => c.items.length > 0)
+      setDatabase((prev) =>
+        prev
+          .map((c) =>
+            c.id === catId
+              ? { ...c, items: c.items.filter((i) => i.id !== itemId) }
+              : c,
+          )
+          .filter((c) => c.items.length > 0),
       );
     } catch (err) {
       triggerWarning("Database permissions blocked entry removal.");
@@ -334,7 +368,9 @@ export default function CreateList() {
 
   // --- Render Framework Components ---
   const renderItem = ({ item, index }) => {
-    const isFavorite = favorites.some((f) => normalize(f.item.name) === normalize(item.name));
+    const isFavorite = favorites.some(
+      (f) => normalize(f.item.name) === normalize(item.name),
+    );
     return (
       <View style={styles.listItem}>
         <View style={styles.itemInfo}>
@@ -373,7 +409,11 @@ export default function CreateList() {
 
           <View style={styles.listRowActions}>
             <TouchableOpacity onPress={() => toggleFavorite(item)}>
-              <Ionicons name={isFavorite ? "heart" : "heart-outline"} size={22} color="red" />
+              <Ionicons
+                name={isFavorite ? "heart" : "heart-outline"}
+                size={22}
+                color="red"
+              />
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => removeItem(index)}>
@@ -399,20 +439,36 @@ export default function CreateList() {
           <Text>{isOpen ? "▲" : "▼"}</Text>
         </TouchableOpacity>
 
-        <Animated.View 
-          style={{ height, overflow: "hidden" }} 
-          pointerEvents={isOpen ? "auto" : "none"} 
+        <Animated.View
+          style={{ height, overflow: "hidden" }}
+          pointerEvents={isOpen ? "auto" : "none"}
         >
           {cat.items.map((i) => {
-            const isFav = favorites.some((f) => normalize(f.item.name) === normalize(i.name));
+            const isFav = favorites.some(
+              (f) => normalize(f.item.name) === normalize(i.name),
+            );
             return (
               <View key={i.id} style={styles.categoryItemRow}>
                 <TouchableOpacity
                   style={styles.categoryItemBtn}
                   onPress={() => {
                     setListItems((prev) => {
-                      if (prev.find((li) => normalize(li.name) === normalize(i.name))) return prev;
-                      return [{ id: i.id, name: i.name, categoryName: formatCategory(cat.name), quantity: "", specification: "" }, ...prev];
+                      if (
+                        prev.find(
+                          (li) => normalize(li.name) === normalize(i.name),
+                        )
+                      )
+                        return prev;
+                      return [
+                        {
+                          id: i.id,
+                          name: i.name,
+                          categoryName: formatCategory(cat.name),
+                          quantity: "",
+                          specification: "",
+                        },
+                        ...prev,
+                      ];
                     });
                   }}
                 >
@@ -420,15 +476,29 @@ export default function CreateList() {
                 </TouchableOpacity>
 
                 <View style={styles.categoryItemActions}>
-                  <TouchableOpacity onPress={() => toggleFavorite({ id: i.id, name: i.name, categoryName: cat.name })}>
-                    <Ionicons name={isFav ? "heart" : "heart-outline"} size={22} color="red" />
+                  <TouchableOpacity
+                    onPress={() =>
+                      toggleFavorite({
+                        id: i.id,
+                        name: i.name,
+                        categoryName: cat.name,
+                      })
+                    }
+                  >
+                    <Ionicons
+                      name={isFav ? "heart" : "heart-outline"}
+                      size={22}
+                      color="red"
+                    />
                   </TouchableOpacity>
 
-                  <TouchableOpacity 
-                     onPress={() => confirmDatabaseDelete(cat.id, i.id, i.name)}
-                     hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  <TouchableOpacity
+                    onPress={() => confirmDatabaseDelete(cat.id, i.id, i.name)}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   >
-                    <Text style={[styles.removeBtn, { paddingHorizontal: 10 }]}>✕</Text>
+                    <Text style={[styles.removeBtn, { paddingHorizontal: 10 }]}>
+                      ✕
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -442,343 +512,480 @@ export default function CreateList() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <View style={{ flex: 1 }}>
-
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
         >
           <View style={styles.container}>
-
-          {/* 1. FIXED HEADER */}
-          <LinearGradient colors={["#eef4fe", "#2e4466"]} start={{ x: 1, y: 0 }} end={{ x: 0, y: 0 }} style={styles.header}>
-            <TouchableOpacity 
-              onPress={() => router.canGoBack() ? router.back() : router.replace("/customerDashboard")}
+            {/* 1. FIXED HEADER */}
+            <LinearGradient
+              colors={["#eef4fe", "#2e4466"]}
+              start={{ x: 1, y: 0 }}
+              end={{ x: 0, y: 0 }}
+              style={styles.header}
             >
-              <Ionicons name="chevron-back" size={28} color="#eef4fe" />
-            </TouchableOpacity>
-            <Text style={styles.headerTitleText}>Create Lists</Text>
-          </LinearGradient>
-
-          {/* NON-DECISION LAYOUT WARNING BANNER */}
-          {fetchError && (
-            <View style={{
-              flexDirection: "row",
-              alignItems: "center",
-              backgroundColor: "#fff7ed", 
-              borderColor: "#fed7aa",     
-              borderWidth: 1,
-              borderRadius: 12,
-              padding: 12,
-              marginHorizontal: 20,
-              marginTop: 15,
-              gap: 10,
-            }}>
-              <Ionicons name="alert-circle" size={20} color="#f97316" />
-              <Text style={{ color: "#c2410c", fontSize: 14, fontWeight: "500", flex: 1 }}>
-                Could not update local system configurations. Verify sync settings.
-              </Text>
-            </View>
-          )}
-
-          {/* 2. THE MAIN SCROLLER */}
-          <FlatList
-            ref={listRef}
-            data={listItems}
-            keyExtractor={(item, index) => item.id?.toString() || index.toString()}
-            renderItem={renderItem}
-            contentContainerStyle={{ paddingBottom: 220 }} 
-            keyboardShouldPersistTaps="handled"
-
-            ListHeaderComponent={
-              <View style={{ paddingBottom: 10 }}>
-                <TextInput 
-                  style={styles.input} 
-                  placeholder="List name" 
-                  value={listName} 
-                  onChangeText={setListName} 
-                />
-
-                <View style={styles.row}>
-                  <TouchableOpacity
-                    style={styles.dbBtn}
-                    onPress={() => {
-                      setShowDB(!showDB);
-                      setShowFav(false);
-                      setFinalizedData(null);
-                      setExpandedCategoryId(null);
-                    }}
-                  >
-                    <Text style={styles.buttonText}>Database</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={styles.favBtn}
-                    onPress={() => {
-                      setShowFav(!showFav);
-                      setShowDB(false);
-                      setFinalizedData(null);
-                    }}
-                  >
-                    <Text style={styles.buttonText}>Favorites</Text>
-                  </TouchableOpacity>
-                </View>
-
-                <TextInput 
-                  style={styles.input} 
-                  placeholder="Item" 
-                  value={name} 
-                  onChangeText={setName} 
-                />
-
-                {name.trim().length > 0 && filteredItems.length > 0 && (
-                  <View style={styles.recommendationContainer}>
-                    <FlatList
-                      data={filteredItems}
-                      keyExtractor={(item) => item.id.toString()}
-                      style={styles.suggestionList}
-                      keyboardShouldPersistTaps="handled"
-                      nestedScrollEnabled={true}
-                      renderItem={({ item }) => (
-                        <TouchableOpacity
-                          style={styles.suggestionItem}
-                          onPress={() => {
-                            setName(item.name);
-                            setCategory(formatCategory(item.categoryName));
-                            setFilteredItems([]);
-                          }}
-                        >
-                          <Text style={styles.suggestionText}>
-                            {item.name} <Text style={{color: '#666'}}>({formatCategory(item.categoryName)})</Text>
-                          </Text>
-                        </TouchableOpacity>
-                      )}
-                    />
-                  </View>
-                )}
-
-                <TextInput style={styles.input} placeholder="Quantity" value={quantity} onChangeText={setQuantity} />
-                <TextInput style={styles.input} placeholder="Specification" value={spec} onChangeText={setSpec} />
-                <TextInput style={styles.input} placeholder="Category" value={category} onChangeText={setCategory} />
-
-                <TouchableOpacity style={styles.addBtn} onPress={addItem}>
-                  <Text style={styles.buttonText}>Add Item</Text>
-                </TouchableOpacity>
-
-                {listItems.length > 0 && (
-                  <Text style={styles.sectionHeader}>Items in your list</Text>
-                )}
-              </View>
-            }
-          />
-
-        
-          {/* 4. OVERLAY PANELS */}
-          
-          {/* DATABASE PANEL */}
-          {showDB && (
-            <View style={styles.panel}>
-              <TouchableOpacity onPress={() => { setShowDB(false); setDbSearch(""); }} style={styles.panelCloseBtn}>
-                <Text style={styles.panelCloseText}>✕</Text>
+              <TouchableOpacity
+                onPress={() =>
+                  router.canGoBack()
+                    ? router.back()
+                    : router.replace("/customerDashboard")
+                }
+              >
+                <Ionicons name="chevron-back" size={28} color="#eef4fe" />
               </TouchableOpacity>
-              <TextInput
-                style={[styles.input, { marginHorizontal: 10, marginBottom: 10 }]}
-                placeholder="Search database..."
-                value={dbSearch}
-                onChangeText={setDbSearch}
-              />
+              <Text style={styles.headerTitleText}>Create Lists</Text>
+            </LinearGradient>
 
-              {dbSearch.length > 0 && filteredDatabase.length === 0 && (
-                <View style={{
+            {/* NON-DECISION LAYOUT WARNING BANNER */}
+            {fetchError && (
+              <View
+                style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  backgroundColor: "#fff7ed", 
-                  borderColor: "#fed7aa",     
+                  backgroundColor: "#fff7ed",
+                  borderColor: "#fed7aa",
                   borderWidth: 1,
                   borderRadius: 12,
                   padding: 12,
-                  marginHorizontal: 10,
-                  marginBottom: 15,
+                  marginHorizontal: 20,
+                  marginTop: 15,
                   gap: 10,
-                }}>
-                  <Ionicons name="search-outline" size={20} color="#f97316" />
-                  <Text style={{ color: "#c2410c", fontSize: 14, fontWeight: "500", flex: 1 }}>
-                    No configuration profiles match data text "{dbSearch}".
-                  </Text>
-                </View>
-              )}
-
-              <FlatList
-                data={filteredDatabase}
-                keyExtractor={(cat) => cat.id.toString()}
-                renderItem={renderCategoryItem}
-                nestedScrollEnabled
-                ListEmptyComponent={
-                  dbSearch.length === 0 ? (
-                    <Text style={{ textAlign: "center", color: "gray", marginTop: 20 }}>No items found</Text>
-                  ) : null
-                }
-              />
-            </View>
-          )}
-
-          {/* FAVORITES PANEL */}
-          {showFav && (
-            <View style={styles.panel}>
-              <TouchableOpacity onPress={() => setShowFav(false)} style={styles.panelCloseBtn}>
-                <Text style={styles.panelCloseText}>✕</Text>
-              </TouchableOpacity>
-              <ScrollView nestedScrollEnabled={true}>
-                {Object.entries(
-                  favorites.reduce((acc, f) => {
-                    const cat = formatCategory(f.item?.category?.name || "Uncategorized");
-                    if (!acc[cat]) acc[cat] = [];
-                    acc[cat].push(f.item);
-                    return acc;
-                  }, {})
-                ).map(([categoryName, items]) => (
-                  <View key={categoryName} style={{ marginBottom: 12 }}>
-                    <Text style={styles.favPanelTitle}>{categoryName}</Text>
-                    {items.map((item) => (
-                      <View key={item.id} style={styles.favItemRow}>
-                        <TouchableOpacity
-                          style={styles.categoryItemBtn}
-                          onPress={() => {
-                            setListItems((prev) => {
-                              if (prev.find((li) => normalize(li.name) === normalize(item.name))) return prev;
-                              return [{ id: item.id, name: item.name, categoryName: categoryName, quantity: "", specification: "" }, ...prev];
-                            });
-                          }}
-                        >
-                          <Text style={styles.favItemText}>{item.name}</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => toggleFavorite(item)}>
-                          <Text style={styles.removeBtn}>✕</Text>
-                        </TouchableOpacity>
-                      </View>
-                    ))}
-                  </View>
-                ))}
-              </ScrollView>
-            </View>
-          )}
-
-          {/* FINALIZED LIST PANEL */}
-          {finalizedData && (
-            <View style={[styles.panel, { padding: 12 }]}>
-              <TouchableOpacity onPress={() => setFinalizedData(null)} style={styles.panelCloseBtn}>
-                <Text style={styles.panelCloseText}>✕</Text>
-              </TouchableOpacity>
-              
-              <FlatList
-                data={Object.keys(finalizedData)}
-                keyExtractor={(cat) => cat}
-                renderItem={({ item: cat }) => (
-                  <View style={styles.finalPanelContainer}>
-                    <Text style={styles.finalPanelCategory}>{cat}</Text>
-                    {finalizedData[cat].map((i) => (
-                      <View key={i.id} style={styles.finalPanelItemRow}>
-                        <View style={{ flex: 1 }}>
-                          <Text style={styles.finalPanelItemName}>
-                            {i.name}
-                          </Text>
-                          <Text style={{ fontSize: 12, color: "#666", marginTop: 2 }}>
-                            Qty: {i.quantity || 1} | Spec: {i.specification?.trim() || "None"}
-                          </Text>
-                        </View>
-                      </View>
-                    ))}
-                  </View>
-                )}
-              />
-
-              <TouchableOpacity
-                style={styles.addBtn}
-                onPress={() => {
-                  if (!listName.trim()) {
-                    return triggerWarning("Your list doesn't have a name. Please enter one at the top.");
-                  }
-                  if (listItems.length === 0) {
-                    return triggerWarning("Your list is empty. Please add some items first.");
-                  }
-                  setShareModalVisible(true);
                 }}
               >
-                <Text style={styles.buttonText}>Share List</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {/* 5. INTERACTIVE DECISION OVERLAYS & MODALS */}
-
-          {/* FLOATING ACTION TOAST */}
-          {showWarningBox && (
-            <View style={styles.warningBox}>
-              <Ionicons name="alert-circle-outline" size={20} color="#fff" />
-              <Text style={styles.warningText}>{warningMessage}</Text>
-            </View>
-          )}
-
-          {/* DESTRUCTIVE MODAL: STRUCTURAL DATABASE REMOVAL */}
-          <Modal animationType="fade" transparent visible={deleteModalVisible} onRequestClose={() => setDeleteModalVisible(false)}>
-            <View style={styles.modalOverlay}>
-              <View style={styles.modalBox}>
-                <TouchableOpacity onPress={() => setDeleteModalVisible(false)} style={styles.closeCornerBtn}>
-                  <Text style={styles.closeX}>✕</Text>
-                </TouchableOpacity>
-
-                <Text style={[styles.modalTitle, { color: '#d45a3a' }]}>Delete Item</Text>
-                <Text style={styles.modalSubtitle}>Are you sure you want to permanently delete "{selectedItemToDelete.name}" from your custom database?</Text>
-                
-                <View style={styles.shareButtonsRow}>
-                  <TouchableOpacity style={[styles.friendBtn, { backgroundColor: '#e5e5e5' }]} onPress={() => setDeleteModalVisible(false)}>
-                    <Text style={[styles.friendBtnText, { color: '#333' }]}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={[styles.riderBtn, { backgroundColor: '#d45a3a' }]} onPress={executeDatabaseDelete}>
-                    <Text style={styles.riderBtnText}>Delete</Text>
-                  </TouchableOpacity>
-                </View>
+                <Ionicons name="alert-circle" size={20} color="#f97316" />
+                <Text
+                  style={{
+                    color: "#c2410c",
+                    fontSize: 14,
+                    fontWeight: "500",
+                    flex: 1,
+                  }}
+                >
+                  Could not update local system configurations. Verify sync
+                  settings.
+                </Text>
               </View>
-            </View>
-          </Modal>
+            )}
 
-          {/* CONSTRUCTIVE MODAL: WORKFLOW VALIDATION ROUTING */}
-          <Modal animationType="fade" transparent visible={shareModalVisible} onRequestClose={() => setShareModalVisible(false)}>
-            <View style={styles.modalOverlay}>
-              <View style={styles.modalBox}>
-                <TouchableOpacity onPress={() => setShareModalVisible(false)} style={styles.closeCornerBtn}>
-                  <Text style={styles.closeX}>✕</Text>
-                </TouchableOpacity>
+            {/* 2. THE MAIN SCROLLER */}
+            <FlatList
+              ref={listRef}
+              data={listItems}
+              keyExtractor={(item, index) =>
+                item.id?.toString() || index.toString()
+              }
+              renderItem={renderItem}
+              contentContainerStyle={{ paddingBottom: 220 }}
+              keyboardShouldPersistTaps="handled"
+              ListHeaderComponent={
+                <View style={{ paddingBottom: 10 }}>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="List name"
+                    value={listName}
+                    onChangeText={setListName}
+                  />
 
-                <Text style={styles.modalTitle}>Share Active List</Text>
-                <Text style={styles.modalSubtitle}>Are you ready to share your current list "{listName}" with selected partners?</Text>
-                
-                <View style={styles.shareButtonsRow}>
-                  <TouchableOpacity style={[styles.friendBtn, { backgroundColor: '#e5e5e5' }]} onPress={() => setShareModalVisible(false)}>
-                    <Text style={[styles.friendBtnText, { color: '#333' }]}>Cancel</Text>
+                  <View style={styles.row}>
+                    <TouchableOpacity
+                      style={styles.dbBtn}
+                      onPress={() => {
+                        setShowDB(!showDB);
+                        setShowFav(false);
+                        setFinalizedData(null);
+                        setExpandedCategoryId(null);
+                      }}
+                    >
+                      <Text style={styles.buttonText}>Database</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.favBtn}
+                      onPress={() => {
+                        setShowFav(!showFav);
+                        setShowDB(false);
+                        setFinalizedData(null);
+                      }}
+                    >
+                      <Text style={styles.buttonText}>Favorites</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Item"
+                    value={name}
+                    onChangeText={setName}
+                  />
+
+                  {name.trim().length > 0 && filteredItems.length > 0 && (
+                    <View style={styles.recommendationContainer}>
+                      <FlatList
+                        data={filteredItems}
+                        keyExtractor={(item) => item.id.toString()}
+                        style={styles.suggestionList}
+                        keyboardShouldPersistTaps="handled"
+                        nestedScrollEnabled={true}
+                        renderItem={({ item }) => (
+                          <TouchableOpacity
+                            style={styles.suggestionItem}
+                            onPress={() => {
+                              setName(item.name);
+                              setCategory(formatCategory(item.categoryName));
+                              setFilteredItems([]);
+                            }}
+                          >
+                            <Text style={styles.suggestionText}>
+                              {item.name}{" "}
+                              <Text style={{ color: "#666" }}>
+                                ({formatCategory(item.categoryName)})
+                              </Text>
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+                      />
+                    </View>
+                  )}
+
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Quantity"
+                    value={quantity}
+                    onChangeText={setQuantity}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Specification"
+                    value={spec}
+                    onChangeText={setSpec}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Category"
+                    value={category}
+                    onChangeText={setCategory}
+                  />
+
+                  <TouchableOpacity style={styles.addBtn} onPress={addItem}>
+                    <Text style={styles.buttonText}>Add Item</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.riderBtn, { backgroundColor: '#10b981' }]} 
-                    onPress={() => {
-                      setShareModalVisible(false);
-                      setFinalizedData(null);
-                      router.push({
-                        pathname: "/customerDashboard/cart",
-                        params: { items: JSON.stringify(listItems), listName: listName },
-                      });
+
+                  {listItems.length > 0 && (
+                    <Text style={styles.sectionHeader}>Items in your list</Text>
+                  )}
+                </View>
+              }
+            />
+
+            {/* 4. OVERLAY PANELS */}
+
+            {/* DATABASE PANEL */}
+            {showDB && (
+              <View style={styles.panel}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowDB(false);
+                    setDbSearch("");
+                  }}
+                  style={styles.panelCloseBtn}
+                >
+                  <Text style={styles.panelCloseText}>✕</Text>
+                </TouchableOpacity>
+                <TextInput
+                  style={[
+                    styles.input,
+                    { marginHorizontal: 10, marginBottom: 10 },
+                  ]}
+                  placeholder="Search database..."
+                  value={dbSearch}
+                  onChangeText={setDbSearch}
+                />
+
+                {dbSearch.length > 0 && filteredDatabase.length === 0 && (
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      backgroundColor: "#fff7ed",
+                      borderColor: "#fed7aa",
+                      borderWidth: 1,
+                      borderRadius: 12,
+                      padding: 12,
+                      marginHorizontal: 10,
+                      marginBottom: 15,
+                      gap: 10,
                     }}
                   >
-                    <Text style={styles.riderBtnText}>Proceed</Text>
+                    <Ionicons name="search-outline" size={20} color="#f97316" />
+                    <Text
+                      style={{
+                        color: "#c2410c",
+                        fontSize: 14,
+                        fontWeight: "500",
+                        flex: 1,
+                      }}
+                    >
+                      No configuration profiles match data text "{dbSearch}".
+                    </Text>
+                  </View>
+                )}
+
+                <FlatList
+                  data={filteredDatabase}
+                  keyExtractor={(cat) => cat.id.toString()}
+                  renderItem={renderCategoryItem}
+                  nestedScrollEnabled
+                  ListEmptyComponent={
+                    dbSearch.length === 0 ? (
+                      <Text
+                        style={{
+                          textAlign: "center",
+                          color: "gray",
+                          marginTop: 20,
+                        }}
+                      >
+                        No items found
+                      </Text>
+                    ) : null
+                  }
+                />
+              </View>
+            )}
+
+            {/* FAVORITES PANEL */}
+            {showFav && (
+              <View style={styles.panel}>
+                <TouchableOpacity
+                  onPress={() => setShowFav(false)}
+                  style={styles.panelCloseBtn}
+                >
+                  <Text style={styles.panelCloseText}>✕</Text>
+                </TouchableOpacity>
+                <ScrollView nestedScrollEnabled={true}>
+                  {Object.entries(
+                    favorites.reduce((acc, f) => {
+                      const cat = formatCategory(
+                        f.item?.category?.name || "Uncategorized",
+                      );
+                      if (!acc[cat]) acc[cat] = [];
+                      acc[cat].push(f.item);
+                      return acc;
+                    }, {}),
+                  ).map(([categoryName, items]) => (
+                    <View key={categoryName} style={{ marginBottom: 12 }}>
+                      <Text style={styles.favPanelTitle}>{categoryName}</Text>
+                      {items.map((item) => (
+                        <View key={item.id} style={styles.favItemRow}>
+                          <TouchableOpacity
+                            style={styles.categoryItemBtn}
+                            onPress={() => {
+                              setListItems((prev) => {
+                                if (
+                                  prev.find(
+                                    (li) =>
+                                      normalize(li.name) ===
+                                      normalize(item.name),
+                                  )
+                                )
+                                  return prev;
+                                return [
+                                  {
+                                    id: item.id,
+                                    name: item.name,
+                                    categoryName: categoryName,
+                                    quantity: "",
+                                    specification: "",
+                                  },
+                                  ...prev,
+                                ];
+                              });
+                            }}
+                          >
+                            <Text style={styles.favItemText}>{item.name}</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            onPress={() => toggleFavorite(item)}
+                          >
+                            <Text style={styles.removeBtn}>✕</Text>
+                          </TouchableOpacity>
+                        </View>
+                      ))}
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+
+            {/* FINALIZED LIST PANEL */}
+            {finalizedData && (
+              <View style={[styles.panel, { padding: 12 }]}>
+                <TouchableOpacity
+                  onPress={() => setFinalizedData(null)}
+                  style={styles.panelCloseBtn}
+                >
+                  <Text style={styles.panelCloseText}>✕</Text>
+                </TouchableOpacity>
+
+                <FlatList
+                  data={Object.keys(finalizedData)}
+                  keyExtractor={(cat) => cat}
+                  renderItem={({ item: cat }) => (
+                    <View style={styles.finalPanelContainer}>
+                      <Text style={styles.finalPanelCategory}>{cat}</Text>
+                      {finalizedData[cat].map((i) => (
+                        <View key={i.id} style={styles.finalPanelItemRow}>
+                          <View style={{ flex: 1 }}>
+                            <Text style={styles.finalPanelItemName}>
+                              {i.name}
+                            </Text>
+                            <Text
+                              style={{
+                                fontSize: 12,
+                                color: "#666",
+                                marginTop: 2,
+                              }}
+                            >
+                              Qty: {i.quantity || 1} | Spec:{" "}
+                              {i.specification?.trim() || "None"}
+                            </Text>
+                          </View>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                />
+
+                <TouchableOpacity
+                  style={styles.addBtn}
+                  onPress={() => {
+                    if (!listName.trim()) {
+                      return triggerWarning(
+                        "Your list doesn't have a name. Please enter one at the top.",
+                      );
+                    }
+                    if (listItems.length === 0) {
+                      return triggerWarning(
+                        "Your list is empty. Please add some items first.",
+                      );
+                    }
+                    setShareModalVisible(true);
+                  }}
+                >
+                  <Text style={styles.buttonText}>Share List</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* 5. INTERACTIVE DECISION OVERLAYS & MODALS */}
+
+            {/* FLOATING ACTION TOAST */}
+            {showWarningBox && (
+              <View style={styles.warningBox}>
+                <Ionicons name="alert-circle-outline" size={20} color="#fff" />
+                <Text style={styles.warningText}>{warningMessage}</Text>
+              </View>
+            )}
+
+            {/* DESTRUCTIVE MODAL: STRUCTURAL DATABASE REMOVAL */}
+            <Modal
+              animationType="fade"
+              transparent
+              visible={deleteModalVisible}
+              onRequestClose={() => setDeleteModalVisible(false)}
+            >
+              <View style={styles.modalOverlay}>
+                <View style={styles.modalBox}>
+                  <TouchableOpacity
+                    onPress={() => setDeleteModalVisible(false)}
+                    style={styles.closeCornerBtn}
+                  >
+                    <Text style={styles.closeX}>✕</Text>
                   </TouchableOpacity>
+
+                  <Text style={[styles.modalTitle, { color: "#d45a3a" }]}>
+                    Delete Item
+                  </Text>
+                  <Text style={styles.modalSubtitle}>
+                    Are you sure you want to permanently delete "
+                    {selectedItemToDelete.name}" from your custom database?
+                  </Text>
+
+                  <View style={styles.shareButtonsRow}>
+                    <TouchableOpacity
+                      style={[styles.friendBtn, { backgroundColor: "#e5e5e5" }]}
+                      onPress={() => setDeleteModalVisible(false)}
+                    >
+                      <Text style={[styles.friendBtnText, { color: "#333" }]}>
+                        Cancel
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.riderBtn, { backgroundColor: "#d45a3a" }]}
+                      onPress={executeDatabaseDelete}
+                    >
+                      <Text style={styles.riderBtnText}>Delete</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
-            </View>
-          </Modal>
+            </Modal>
+
+            {/* CONSTRUCTIVE MODAL: WORKFLOW VALIDATION ROUTING */}
+            <Modal
+              animationType="fade"
+              transparent
+              visible={shareModalVisible}
+              onRequestClose={() => setShareModalVisible(false)}
+            >
+              <View style={styles.modalOverlay}>
+                <View style={styles.modalBox}>
+                  <TouchableOpacity
+                    onPress={() => setShareModalVisible(false)}
+                    style={styles.closeCornerBtn}
+                  >
+                    <Text style={styles.closeX}>✕</Text>
+                  </TouchableOpacity>
+
+                  <Text style={styles.modalTitle}>Share Active List</Text>
+                  <Text style={styles.modalSubtitle}>
+                    Are you ready to share your current list "{listName}" with
+                    selected partners?
+                  </Text>
+
+                  <View style={styles.shareButtonsRow}>
+                    <TouchableOpacity
+                      style={[styles.friendBtn, { backgroundColor: "#e5e5e5" }]}
+                      onPress={() => setShareModalVisible(false)}
+                    >
+                      <Text style={[styles.friendBtnText, { color: "#333" }]}>
+                        Cancel
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.riderBtn, { backgroundColor: "#10b981" }]}
+                      onPress={() => {
+                        setShareModalVisible(false);
+                        setFinalizedData(null);
+                        router.push({
+                          pathname: "/customerDashboard/cart",
+                          params: {
+                            items: JSON.stringify(listItems),
+                            listName: listName,
+                          },
+                        });
+                      }}
+                    >
+                      <Text style={styles.riderBtnText}>Proceed</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </Modal>
           </View>
         </KeyboardAvoidingView>
 
-      
-         <View style={styles.footerContainer}>
+        <View style={styles.footerContainer}>
           <TouchableOpacity style={styles.saveBtn} onPress={saveList}>
             <Text style={styles.buttonText}>Save for Later</Text>
           </TouchableOpacity>
@@ -787,7 +994,6 @@ export default function CreateList() {
             <Text style={styles.buttonText}>Finalize & Share</Text>
           </TouchableOpacity>
         </View>
-
       </View>
     </SafeAreaView>
   );

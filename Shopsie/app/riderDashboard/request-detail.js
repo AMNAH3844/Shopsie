@@ -1,6 +1,14 @@
 import React, { useCallback, useState } from "react";
-import { API_URLS } from '../../src/services/apiConfig';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Modal } from "react-native";
+import { API_URLS } from "../../src/services/apiConfig";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  Modal,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -11,7 +19,7 @@ import axios from "axios";
 export default function RiderRequestDetail() {
   const router = useRouter();
   const { requestId } = useLocalSearchParams();
-  
+
   // ==========================================
   // STATE MANAGEMENT ENTRIES
   // ==========================================
@@ -22,7 +30,7 @@ export default function RiderRequestDetail() {
   const [toastMessage, setToastMessage] = useState("");
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [pendingAction, setPendingAction] = useState(null); 
+  const [pendingAction, setPendingAction] = useState(null);
 
   // ==========================================
   // UTILITY NOTIFICATION HANDLERS
@@ -52,7 +60,11 @@ export default function RiderRequestDetail() {
     }
   }, [requestId]);
 
-  useFocusEffect(useCallback(() => { loadDetail(); }, [loadDetail]));
+  useFocusEffect(
+    useCallback(() => {
+      loadDetail();
+    }, [loadDetail]),
+  );
 
   const confirmAction = (action) => {
     setPendingAction(action);
@@ -62,20 +74,23 @@ export default function RiderRequestDetail() {
   const handleConfirmSubmit = async () => {
     setModalVisible(false);
     const action = pendingAction;
-    
+
     try {
       setSaving(true);
       const token = await AsyncStorage.getItem("token");
       await axios.post(
         `${API_URLS.RIDER_CHAT}/${requestId}/respond`,
         { action },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
-      
+
       if (action === "accept") {
         triggerWarning("You accepted this request!");
         setTimeout(() => {
-          router.replace({ pathname: "/riderDashboard/request-chat", params: { requestId } });
+          router.replace({
+            pathname: "/riderDashboard/request-chat",
+            params: { requestId },
+          });
         }, 1500);
       } else {
         triggerWarning("Request rejected.");
@@ -91,13 +106,13 @@ export default function RiderRequestDetail() {
   };
 
   if (loading)
-  return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#2e4466" />
-      </View>
-    </SafeAreaView>
-  );
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color="#2e4466" />
+        </View>
+      </SafeAreaView>
+    );
 
   // ==========================================
   // ROOT UI SCREEN PRESENTATION ENGINE
@@ -105,8 +120,12 @@ export default function RiderRequestDetail() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <View style={styles.container}>
-        
-        <LinearGradient colors={["#eef4fe", "#2e4466"]} start={{ x: 1, y: 0 }} end={{ x: 0, y: 0 }} style={styles.header}>
+        <LinearGradient
+          colors={["#eef4fe", "#2e4466"]}
+          start={{ x: 1, y: 0 }}
+          end={{ x: 0, y: 0 }}
+          style={styles.header}
+        >
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="chevron-back" size={28} color="#eef4fe" />
           </TouchableOpacity>
@@ -117,35 +136,72 @@ export default function RiderRequestDetail() {
         <ScrollView contentContainerStyle={styles.body}>
           <View style={styles.card}>
             <Text style={styles.title}>{request?.listName}</Text>
-            <Text style={styles.meta}>Customer: {request?.customer?.username || "Customer"}</Text>
+            <Text style={styles.meta}>
+              Customer: {request?.customer?.username || "Customer"}
+            </Text>
             <Text style={styles.meta}>Status: {request?.status}</Text>
-            {!!request?.buyingLocationLabel && <Text style={styles.location}>Buy from: {request.buyingLocationLabel}</Text>}
-            {!!request?.deliveryLocationLabel && <Text style={styles.location}>Deliver to: {request.deliveryLocationLabel}</Text>}
+            {!!request?.buyingLocationLabel && (
+              <Text style={styles.location}>
+                Buy from: {request.buyingLocationLabel}
+              </Text>
+            )}
+            {!!request?.deliveryLocationLabel && (
+              <Text style={styles.location}>
+                Deliver to: {request.deliveryLocationLabel}
+              </Text>
+            )}
           </View>
 
           <Text style={styles.sectionTitle}>List Items</Text>
           {request?.items?.map((item) => (
             <View key={item.id} style={styles.itemRow}>
               <Text style={styles.itemName}>{item.name}</Text>
-              <Text style={styles.meta}>Qty: {item.quantity || 1} | Spec: {item.specification || "None"}</Text>
-              {!!item.selectedShopName && <Text style={styles.shopText}>Shop: {item.selectedShopName} | Rs. {item.selectedShopPrice || 0}</Text>}
+              <Text style={styles.meta}>
+                Qty: {item.quantity || 1} | Spec: {item.specification || "None"}
+              </Text>
+              {!!item.selectedShopName && (
+                <Text style={styles.shopText}>
+                  Shop: {item.selectedShopName} | Rs.{" "}
+                  {item.selectedShopPrice || 0}
+                </Text>
+              )}
             </View>
           ))}
 
           {request?.status === "PENDING" && (
             <View style={styles.actionRow}>
-              <TouchableOpacity style={[styles.actionBtn, styles.rejectBtn]} onPress={() => confirmAction("reject")} disabled={saving}>
+              <TouchableOpacity
+                style={[styles.actionBtn, styles.rejectBtn]}
+                onPress={() => confirmAction("reject")}
+                disabled={saving}
+              >
                 <Text style={styles.actionText}>Reject</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.actionBtn, styles.acceptBtn]} onPress={() => confirmAction("accept")} disabled={saving}>
+              <TouchableOpacity
+                style={[styles.actionBtn, styles.acceptBtn]}
+                onPress={() => confirmAction("accept")}
+                disabled={saving}
+              >
                 <Text style={styles.actionText}>Accept</Text>
               </TouchableOpacity>
             </View>
           )}
 
           {request?.status === "ACCEPTED" && (
-            <TouchableOpacity style={styles.chatBtn} onPress={() => router.push({ pathname: "/riderDashboard/request-chat", params: { requestId } })}>
-              <Ionicons name="chatbubble-ellipses-outline" size={18} color="#fff" />
+            <TouchableOpacity
+              style={styles.chatBtn}
+              onPress={() =>
+                router.push({
+                  pathname: "/riderDashboard/request-chat",
+                  params: { requestId },
+                })
+              }
+            >
+              <Ionicons
+                name="chatbubble-ellipses-outline"
+                size={18}
+                color="#fff"
+              />
               <Text style={styles.chatText}>Open Chat</Text>
             </TouchableOpacity>
           )}
@@ -161,14 +217,27 @@ export default function RiderRequestDetail() {
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>Are you sure?</Text>
               <Text style={styles.modalMessage}>
-                Do you want to {pendingAction === "accept" ? "accept" : "reject"} this delivery request?
+                Do you want to{" "}
+                {pendingAction === "accept" ? "accept" : "reject"} this delivery
+                request?
               </Text>
-              
+
               <View style={styles.modalButtons}>
-                <TouchableOpacity style={[styles.modalBtn, styles.modalCancelBtn]} onPress={() => setModalVisible(false)}>
+                <TouchableOpacity
+                  style={[styles.modalBtn, styles.modalCancelBtn]}
+                  onPress={() => setModalVisible(false)}
+                >
                   <Text style={styles.modalCancelText}>Cancel</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.modalBtn, pendingAction === "accept" ? styles.modalAcceptBtn : styles.modalRejectBtn]} onPress={handleConfirmSubmit}>
+                <TouchableOpacity
+                  style={[
+                    styles.modalBtn,
+                    pendingAction === "accept"
+                      ? styles.modalAcceptBtn
+                      : styles.modalRejectBtn,
+                  ]}
+                  onPress={handleConfirmSubmit}
+                >
                   <Text style={styles.modalConfirmText}>Confirm</Text>
                 </TouchableOpacity>
               </View>
@@ -184,17 +253,26 @@ export default function RiderRequestDetail() {
         )}
 
         <View style={styles.bottomNav}>
-          <TouchableOpacity style={styles.tabItem} onPress={() => router.replace("/riderDashboard")}>
+          <TouchableOpacity
+            style={styles.tabItem}
+            onPress={() => router.replace("/riderDashboard")}
+          >
             <Ionicons name="home" size={22} color="white" />
             <Text style={styles.navText}>Home</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.tabItem} onPress={() => router.push("/riderDashboard/history")}>
+          <TouchableOpacity
+            style={styles.tabItem}
+            onPress={() => router.push("/riderDashboard/history")}
+          >
             <Ionicons name="time-outline" size={22} color="white" />
             <Text style={styles.navText}>History</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.tabItem} onPress={() => router.push("/riderDashboard/downladedlistsrider")}>
+          <TouchableOpacity
+            style={styles.tabItem}
+            onPress={() => router.push("/riderDashboard/downladedlistsrider")}
+          >
             <Ionicons name="download-outline" size={22} color="white" />
             <Text style={styles.navText}>Downloads</Text>
           </TouchableOpacity>
@@ -210,18 +288,49 @@ export default function RiderRequestDetail() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8fafc" },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
-  header: { height: 85, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  headerTitle: { flex: 1, color: "#2e4466", fontSize: 22, fontWeight: "800", textAlign: "center" },
+  header: {
+    height: 85,
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  headerTitle: {
+    flex: 1,
+    color: "#2e4466",
+    fontSize: 22,
+    fontWeight: "800",
+    textAlign: "center",
+  },
   body: {
     padding: 16,
     paddingBottom: 90,
   },
-  card: { backgroundColor: "#fff", borderRadius: 16, padding: 14, borderWidth: 1, borderColor: "#e2e8f0", marginBottom: 16 },
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    marginBottom: 16,
+  },
   title: { color: "#1e293b", fontSize: 18, fontWeight: "900" },
   meta: { color: "#64748b", fontSize: 12, marginTop: 4 },
   location: { color: "#334155", fontSize: 12, marginTop: 6, fontWeight: "800" },
-  sectionTitle: { color: "#1e293b", fontSize: 16, fontWeight: "900", marginBottom: 10 },
-  itemRow: { backgroundColor: "#fff", borderRadius: 14, padding: 12, borderWidth: 1, borderColor: "#e2e8f0", marginBottom: 10 },
+  sectionTitle: {
+    color: "#1e293b",
+    fontSize: 16,
+    fontWeight: "900",
+    marginBottom: 10,
+  },
+  itemRow: {
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    marginBottom: 10,
+  },
   itemName: { color: "#1e293b", fontSize: 15, fontWeight: "900" },
   shopText: { color: "#047857", fontSize: 12, fontWeight: "800", marginTop: 5 },
   actionRow: {
@@ -249,18 +358,26 @@ const styles = StyleSheet.create({
   rejectBtn: { backgroundColor: "#ef4444" },
   acceptBtn: { backgroundColor: "#10b981" },
   actionText: { color: "#fff", fontSize: 15, fontWeight: "900" },
-  chatBtn: { height: 50, borderRadius: 14, backgroundColor: "#2e4466", flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: 18 },
+  chatBtn: {
+    height: 50,
+    borderRadius: 14,
+    backgroundColor: "#2e4466",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 18,
+  },
   chatText: { color: "#fff", fontSize: 15, fontWeight: "900", marginLeft: 8 },
   warningBox: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 80,
     left: 20,
     right: 20,
-    backgroundColor: '#e67e22',
+    backgroundColor: "#e67e22",
     padding: 12,
     borderRadius: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     zIndex: 9999,
     elevation: 5,
     shadowColor: "#000",
@@ -268,10 +385,10 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
   },
   warningText: {
-    color: '#fff',
+    color: "#fff",
     marginLeft: 10,
     fontSize: 14,
-    fontWeight: '600'
+    fontWeight: "600",
   },
   bottomNav: {
     position: "absolute",

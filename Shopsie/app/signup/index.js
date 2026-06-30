@@ -9,7 +9,7 @@ import {
   Animated,
   StyleSheet,
 } from "react-native";
-import { ScrollView } from "react-native"; 
+import { ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -93,14 +93,14 @@ export default function Signup() {
       triggerToast("Empty field: Username cannot be blank");
       return;
     }
-    
+
     // Email basic and format validation
     const emailTrimmed = signUpData.email.trim().toLowerCase();
     if (!emailTrimmed) {
       triggerToast("Empty field: Email cannot be blank");
       return;
     }
-    
+
     // Checks if email matches exactly standard text followed by @gmail.com
     const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
     if (!gmailRegex.test(emailTrimmed)) {
@@ -127,15 +127,24 @@ export default function Signup() {
         triggerToast("Empty field: Phone number required");
         return;
       }
-      if (signUpData.phoneNo.includes("-") || signUpData.phoneNo.includes(".")) {
-        triggerToast("Invalid format: Phone number cannot contain negative signs or decimals");
+      if (
+        signUpData.phoneNo.includes("-") ||
+        signUpData.phoneNo.includes(".")
+      ) {
+        triggerToast(
+          "Invalid format: Phone number cannot contain negative signs or decimals",
+        );
         return;
       }
       if (signUpData.phoneNo.length !== 11) {
         triggerToast("Invalid Phone Number: Must be exactly 11 digits long.");
         return;
       }
-      if (!signUpData.cnicFront || !signUpData.cnicBack || !signUpData.vehicleDoc) {
+      if (
+        !signUpData.cnicFront ||
+        !signUpData.cnicBack ||
+        !signUpData.vehicleDoc
+      ) {
         triggerToast("Missing documents: All files required");
         return;
       }
@@ -205,7 +214,9 @@ export default function Signup() {
         <View style={[styles.container, customStyles.fixedContainer]}>
           <View style={[styles.header, styles.riderHeader]}>
             <Text style={styles.logo}>🛍️</Text>
-            <Text style={[styles.title, styles.riderTitle]}>Shop. Smile. Repeat.</Text>
+            <Text style={[styles.title, styles.riderTitle]}>
+              Shop. Smile. Repeat.
+            </Text>
           </View>
 
           <View style={styles.form}>
@@ -217,7 +228,9 @@ export default function Signup() {
                 autoCapitalize="none"
                 autoCorrect={false}
                 value={signUpData.username}
-                onChangeText={(t) => setSignUpData({ ...signUpData, username: t })}
+                onChangeText={(t) =>
+                  setSignUpData({ ...signUpData, username: t })
+                }
               />
               <TextInput
                 style={styles.input}
@@ -235,7 +248,9 @@ export default function Signup() {
                 secureTextEntry
                 autoCapitalize="none"
                 value={signUpData.password}
-                onChangeText={(t) => setSignUpData({ ...signUpData, password: t })}
+                onChangeText={(t) =>
+                  setSignUpData({ ...signUpData, password: t })
+                }
               />
               <TextInput
                 style={styles.input}
@@ -244,7 +259,9 @@ export default function Signup() {
                 secureTextEntry
                 autoCapitalize="none"
                 value={signUpData.confirmPassword}
-                onChangeText={(t) => setSignUpData({ ...signUpData, confirmPassword: t })}
+                onChangeText={(t) =>
+                  setSignUpData({ ...signUpData, confirmPassword: t })
+                }
               />
 
               {selectedRole === "rider" && (
@@ -263,7 +280,11 @@ export default function Signup() {
                   />
 
                   {["cnicFront", "cnicBack", "vehicleDoc"].map((f, i) => (
-                    <TouchableOpacity key={i} style={styles.uploadButton} onPress={() => pickImage(f)}>
+                    <TouchableOpacity
+                      key={i}
+                      style={styles.uploadButton}
+                      onPress={() => pickImage(f)}
+                    >
                       <Text style={styles.uploadText}>
                         {signUpData[f]
                           ? `✓ ${formatLabel(f)} Uploaded`
@@ -283,18 +304,28 @@ export default function Signup() {
                   placeholder="Shop Name"
                   placeholderTextColor="#000000"
                   value={signUpData.shopName}
-                  onChangeText={(t) => setSignUpData({ ...signUpData, shopName: t })}
+                  onChangeText={(t) =>
+                    setSignUpData({ ...signUpData, shopName: t })
+                  }
                 />
               )}
             </View>
 
-            <TouchableOpacity style={[styles.button, styles.riderButton]} onPress={handleSignUp}>
-              {loading ? <ActivityIndicator color="#0a0c47" /> : <Text style={styles.buttonText}>SIGN UP</Text>}
+            <TouchableOpacity
+              style={[styles.button, styles.riderButton]}
+              onPress={handleSignUp}
+            >
+              {loading ? (
+                <ActivityIndicator color="#0a0c47" />
+              ) : (
+                <Text style={styles.buttonText}>SIGN UP</Text>
+              )}
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => router.push("/signin")}>
               <Text style={styles.link}>
-                Already have an Account? <Text style={styles.linkBold}>Sign In</Text>
+                Already have an Account?{" "}
+                <Text style={styles.linkBold}>Sign In</Text>
               </Text>
             </TouchableOpacity>
           </View>
@@ -302,7 +333,9 @@ export default function Signup() {
       </ScrollView>
 
       {alertVisible && (
-        <Animated.View style={[customStyles.orangeToastContainer, { opacity: fadeAnim }]}>
+        <Animated.View
+          style={[customStyles.orangeToastContainer, { opacity: fadeAnim }]}
+        >
           <Ionicons name="alert-circle" size={20} color="white" />
           <Text style={customStyles.orangeToastText}>{alertMessage}</Text>
         </Animated.View>

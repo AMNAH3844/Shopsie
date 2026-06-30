@@ -25,7 +25,7 @@ export default function Notifications() {
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState(null);
   const [actionLoadingId, setActionLoadingId] = useState(null);
-  
+
   // Custom Restoration Request Modal State
   const [revertModalVisible, setRevertModalVisible] = useState(false);
   const [revertMessage, setRevertMessage] = useState("");
@@ -108,7 +108,7 @@ export default function Notifications() {
   useFocusEffect(
     useCallback(() => {
       fetchNotifications();
-    }, [fetchNotifications])
+    }, [fetchNotifications]),
   );
 
   const markAllRead = async () => {
@@ -131,7 +131,7 @@ export default function Notifications() {
         prev.map((item) => ({
           ...item,
           isRead: true,
-        }))
+        })),
       );
       showWarningToast("All items marked as read");
     } catch {
@@ -156,19 +156,16 @@ export default function Notifications() {
 
       const token = await AsyncStorage.getItem("token");
 
-      const res = await fetch(
-        API_URLS.SHOPKEEPER.REVERT_REQUEST,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            revertMessage,
-          }),
-        }
-      );
+      const res = await fetch(API_URLS.SHOPKEEPER.REVERT_REQUEST, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          revertMessage,
+        }),
+      });
 
       const data = await res.json();
 
@@ -210,7 +207,7 @@ export default function Notifications() {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
-            }
+            },
           );
 
           const data = await res.json();
@@ -219,14 +216,16 @@ export default function Notifications() {
             throw new Error(data.message || "Could not approve request");
           }
 
-          showWarningToast(data.message || "Revert request accepted successfully.");
+          showWarningToast(
+            data.message || "Revert request accepted successfully.",
+          );
           fetchNotifications();
         } catch (error) {
           showWarningToast(error.message || "Could not approve request");
         } finally {
           setActionLoadingId(null);
         }
-      }
+      },
     );
   };
 
@@ -254,7 +253,7 @@ export default function Notifications() {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
-            }
+            },
           );
 
           const data = await res.json();
@@ -270,313 +269,406 @@ export default function Notifications() {
         } finally {
           setActionLoadingId(null);
         }
-      }
+      },
     );
   };
 
-return (
-  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-    <View style={localStyles.mainContainer}>
-      <LinearGradient
-        colors={["#eef4fe", "#2e4466"]}
-        start={{ x: 1, y: 0 }}
-        end={{ x: 0, y: 0 }}
-        style={localStyles.gradientHeader}
-      >
-        <TouchableOpacity onPress={() => (router.canGoBack() ? router.back() : router.replace("/shopkeeperDashboard"))}>
-          <Ionicons name="chevron-back" size={28} color="#eef4fe" />
-        </TouchableOpacity>
-        <View style={localStyles.headerCenterContainer}>
-          <Text style={localStyles.headerTitleText}>Notifications</Text>
-        </View>
-        <TouchableOpacity onPress={markAllRead}>
-          <Ionicons name="checkmark-done" size={24} color="#2e4466" />
-        </TouchableOpacity>
-      </LinearGradient>
-
-      {loading ? (
-        <View style={localStyles.center}>
-          <ActivityIndicator size="large" color="#2e4466" />
-        </View>
-      ) : (
-        <FlatList
-          data={notifications}
-          keyExtractor={(item) => `${item.source || "notification"}-${item.id}`}
-          contentContainerStyle={localStyles.scrollContainer}
-          ListEmptyComponent={
-            <Text style={localStyles.emptyText}>
-              No notifications yet.
-            </Text>
-          }
-          renderItem={({ item }) => {
-            const iconName =
-              item.type === "FRIEND_REQUEST"
-                ? "person-add"
-                : item.type === "FRIEND_ACCEPTED"
-                ? "people"
-                : item.type === "MESSAGE"
-                ? "chatbubble"
-                : item.type === "LIST_SHARED"
-                ? "list"
-                : item.type === "RIDER_REQUEST"
-                ? "bicycle"
-                : item.type === "RIDER_ACCEPTED"
-                ? "checkmark-circle"
-                : item.type === "RIDER_REJECTED"
-                ? "close-circle"
-                : item.type === "DELIVERY_COMPLETED"
-                ? "cube"
-                : item.type === "DELIVERY_CONFIRMED"
-                ? "shield-checkmark"
-                : item.type === "SHOP_SUSPENDED"
-                ? "ban"
-                : item.type === "SHOP_REVERT_REQUEST"
-                ? "refresh-circle"
-                : item.type === "SHOP_REVERT_APPROVED"
-                ? "checkmark-circle"
-                : item.type === "SHOP_REVERT_REJECTED"
-                ? "close-circle"
-                : "notifications";
-
-            let suspensionData = null;
-            try {
-              suspensionData =
-                item.type === "SHOP_SUSPENDED"
-                  ? JSON.parse(item.message)
-                  : null;
-            } catch {
-              suspensionData = null;
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      <View style={localStyles.mainContainer}>
+        <LinearGradient
+          colors={["#eef4fe", "#2e4466"]}
+          start={{ x: 1, y: 0 }}
+          end={{ x: 0, y: 0 }}
+          style={localStyles.gradientHeader}
+        >
+          <TouchableOpacity
+            onPress={() =>
+              router.canGoBack()
+                ? router.back()
+                : router.replace("/shopkeeperDashboard")
             }
+          >
+            <Ionicons name="chevron-back" size={28} color="#eef4fe" />
+          </TouchableOpacity>
+          <View style={localStyles.headerCenterContainer}>
+            <Text style={localStyles.headerTitleText}>Notifications</Text>
+          </View>
+          <TouchableOpacity onPress={markAllRead}>
+            <Ionicons name="checkmark-done" size={24} color="#2e4466" />
+          </TouchableOpacity>
+        </LinearGradient>
 
-            const canRequestRevert =
-              role === "shopkeeper" &&
-              item.type === "SHOP_SUSPENDED" &&
-              (
-                suspensionData?.status === "NONE" ||
-                suspensionData?.status === "REJECTED"
-              );
+        {loading ? (
+          <View style={localStyles.center}>
+            <ActivityIndicator size="large" color="#2e4466" />
+          </View>
+        ) : (
+          <FlatList
+            data={notifications}
+            keyExtractor={(item) =>
+              `${item.source || "notification"}-${item.id}`
+            }
+            contentContainerStyle={localStyles.scrollContainer}
+            ListEmptyComponent={
+              <Text style={localStyles.emptyText}>No notifications yet.</Text>
+            }
+            renderItem={({ item }) => {
+              const iconName =
+                item.type === "FRIEND_REQUEST"
+                  ? "person-add"
+                  : item.type === "FRIEND_ACCEPTED"
+                    ? "people"
+                    : item.type === "MESSAGE"
+                      ? "chatbubble"
+                      : item.type === "LIST_SHARED"
+                        ? "list"
+                        : item.type === "RIDER_REQUEST"
+                          ? "bicycle"
+                          : item.type === "RIDER_ACCEPTED"
+                            ? "checkmark-circle"
+                            : item.type === "RIDER_REJECTED"
+                              ? "close-circle"
+                              : item.type === "DELIVERY_COMPLETED"
+                                ? "cube"
+                                : item.type === "DELIVERY_CONFIRMED"
+                                  ? "shield-checkmark"
+                                  : item.type === "SHOP_SUSPENDED"
+                                    ? "ban"
+                                    : item.type === "SHOP_REVERT_REQUEST"
+                                      ? "refresh-circle"
+                                      : item.type === "SHOP_REVERT_APPROVED"
+                                        ? "checkmark-circle"
+                                        : item.type === "SHOP_REVERT_REJECTED"
+                                          ? "close-circle"
+                                          : "notifications";
 
-            const canApproveRevert =
-              role === "admin" &&
-              item.type === "SHOP_REVERT_REQUEST" &&
-              !item.isRead;
+              let suspensionData = null;
+              try {
+                suspensionData =
+                  item.type === "SHOP_SUSPENDED"
+                    ? JSON.parse(item.message)
+                    : null;
+              } catch {
+                suspensionData = null;
+              }
 
-            const formattedMessage = item.message
-              ? item.message.replace(/Reason:\s*\n/gi, "Reason: ")
-              : "";
+              const canRequestRevert =
+                role === "shopkeeper" &&
+                item.type === "SHOP_SUSPENDED" &&
+                (suspensionData?.status === "NONE" ||
+                  suspensionData?.status === "REJECTED");
 
-            return (
-              <View
-                style={[
-                  localStyles.card,
-                  !item.isRead && localStyles.unreadCard,
-                ]}
-              >
-                <View style={localStyles.iconCircle}>
-                  <Ionicons
-                    name={role === "shopkeeper" ? "alert-circle" : iconName}
-                    size={22}
-                    color={role === "shopkeeper" ? "#EF4444" : "#2e4466"}
-                  />
-                </View>
+              const canApproveRevert =
+                role === "admin" &&
+                item.type === "SHOP_REVERT_REQUEST" &&
+                !item.isRead;
 
-                <View style={{ flex: 1 }}>
-                  {item.type === "SHOP_SUSPENDED" ? (
-                    <>
+              const formattedMessage = item.message
+                ? item.message.replace(/Reason:\s*\n/gi, "Reason: ")
+                : "";
+
+              return (
+                <View
+                  style={[
+                    localStyles.card,
+                    !item.isRead && localStyles.unreadCard,
+                  ]}
+                >
+                  <View style={localStyles.iconCircle}>
+                    <Ionicons
+                      name={role === "shopkeeper" ? "alert-circle" : iconName}
+                      size={22}
+                      color={role === "shopkeeper" ? "#EF4444" : "#2e4466"}
+                    />
+                  </View>
+
+                  <View style={{ flex: 1 }}>
+                    {item.type === "SHOP_SUSPENDED" ? (
+                      <>
+                        <Text style={localStyles.messageText}>
+                          Your account has been suspended by the Admin because
+                          the reports limit was crossed. Your shop is no longer
+                          visible on the map.
+                        </Text>
+
+                        <Text
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                          style={{
+                            marginTop: 8,
+                            color: "#64748B",
+                            fontSize: 13,
+                          }}
+                        >
+                          <Text style={{ fontWeight: "700" }}>
+                            Suspension Reason:{" "}
+                          </Text>
+                          <Text style={{ fontWeight: "500" }}>
+                            {suspensionData?.reason || "None specified"}
+                          </Text>
+                        </Text>
+                      </>
+                    ) : (
                       <Text style={localStyles.messageText}>
-                        Your account has been suspended by the Admin because the reports limit was crossed.
-                        Your shop is no longer visible on the map.
+                        {formattedMessage}
                       </Text>
+                    )}
 
+                    {item.type === "SHOP_REVERT_APPROVED" && (
                       <Text
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
                         style={{
+                          color: "#15803D",
+                          fontWeight: "900",
                           marginTop: 8,
-                          color: "#64748B",
-                          fontSize: 13,
                         }}
                       >
-                        <Text style={{ fontWeight: "700" }}>Suspension Reason: </Text>
-                        <Text style={{ fontWeight: "500" }}>{suspensionData?.reason || "None specified"}</Text>
+                        ✓ Your restoration request was approved. Shop access has
+                        been restored.
                       </Text>
-                    </>
-                  ) : (
-                    <Text style={localStyles.messageText}>
-                      {formattedMessage}
-                    </Text>
-                  )}
+                    )}
 
-                  {item.type === "SHOP_REVERT_APPROVED" && (
-                    <Text style={{ color: "#15803D", fontWeight: "900", marginTop: 8 }}>
-                      ✓ Your restoration request was approved. Shop access has been restored.
-                    </Text>
-                  )}
-
-                  {item.type === "SHOP_REVERT_REJECTED" && (
-                    <Text style={{ color: "#DC2626", fontWeight: "900", marginTop: 8 }}>
-                      ⚠ Please correct the issue and submit another request.
-                    </Text>
-                  )}
-
-                  {role === "shopkeeper" && item.source === "stock" ? (
-                    <Text style={localStyles.metaText}>
-                      Stock: {item.quantity} | Threshold: {item.threshold}
-                    </Text>
-                  ) : (
-                    <Text style={localStyles.metaText}>
-                      {new Date(item.createdAt).toLocaleString()}
-                    </Text>
-                  )}
-
-                  {canRequestRevert && (
-                    <TouchableOpacity
-                      style={localStyles.actionButton}
-                      disabled={actionLoadingId === item.id}
-                      onPress={() => openRevertModal(item)}
-                    >
-                      <Text style={localStyles.actionButtonText}>
-                        {actionLoadingId === item.id ? "Sending..." : "Request Revert"}
+                    {item.type === "SHOP_REVERT_REJECTED" && (
+                      <Text
+                        style={{
+                          color: "#DC2626",
+                          fontWeight: "900",
+                          marginTop: 8,
+                        }}
+                      >
+                        ⚠ Please correct the issue and submit another request.
                       </Text>
-                    </TouchableOpacity>
-                  )}
+                    )}
 
-                  {suspensionData?.status === "PENDING" && (
-                    <Text style={{ color: "#D97706", fontWeight: "900", marginTop: 10 }}>
-                      Request Pending Approval
-                    </Text>
-                  )}
+                    {role === "shopkeeper" && item.source === "stock" ? (
+                      <Text style={localStyles.metaText}>
+                        Stock: {item.quantity} | Threshold: {item.threshold}
+                      </Text>
+                    ) : (
+                      <Text style={localStyles.metaText}>
+                        {new Date(item.createdAt).toLocaleString()}
+                      </Text>
+                    )}
 
-                  {suspensionData?.status === "APPROVED" && (
-                    <Text style={{ color: "#15803D", fontWeight: "900", marginTop: 10 }}>
-                      ✓ Restoration Request Approved
-                    </Text>
-                  )}
-
-                  {canApproveRevert && (
-                    <View style={{ flexDirection: "row", width: "100%", gap: 10, marginTop: 10 }}>
+                    {canRequestRevert && (
                       <TouchableOpacity
-                        style={[localStyles.actionButton, { flex: 1, alignItems: "center" }]}
+                        style={localStyles.actionButton}
                         disabled={actionLoadingId === item.id}
-                        onPress={() => approveRevertRequest(item)}
+                        onPress={() => openRevertModal(item)}
                       >
-                        <Text style={localStyles.actionButtonText}>Approve</Text>
+                        <Text style={localStyles.actionButtonText}>
+                          {actionLoadingId === item.id
+                            ? "Sending..."
+                            : "Request Revert"}
+                        </Text>
                       </TouchableOpacity>
+                    )}
 
-                      <TouchableOpacity
-                        style={[localStyles.actionButton, { backgroundColor: "#DC2626", flex: 1, alignItems: "center" }]}
-                        disabled={actionLoadingId === item.id}
-                        onPress={() => rejectRevertRequest(item)}
+                    {suspensionData?.status === "PENDING" && (
+                      <Text
+                        style={{
+                          color: "#D97706",
+                          fontWeight: "900",
+                          marginTop: 10,
+                        }}
                       >
-                        <Text style={localStyles.actionButtonText}>Reject</Text>
-                      </TouchableOpacity>
-                    </View>
-                  )}
+                        Request Pending Approval
+                      </Text>
+                    )}
 
-                  {role === "admin" && item.type === "SHOP_REVERT_REQUEST_APPROVED" && (
-                    <Text style={{ color: "#15803D", fontWeight: "900", marginTop: 10 }}>
-                      ✓ APPROVED BY ADMIN
-                    </Text>
-                  )}
+                    {suspensionData?.status === "APPROVED" && (
+                      <Text
+                        style={{
+                          color: "#15803D",
+                          fontWeight: "900",
+                          marginTop: 10,
+                        }}
+                      >
+                        ✓ Restoration Request Approved
+                      </Text>
+                    )}
 
-                  {role === "admin" && item.type === "SHOP_REVERT_REQUEST_REJECTED" && (
-                    <Text style={{ color: "#DC2626", fontWeight: "900", marginTop: 10 }}>
-                      ✗ REJECTED BY ADMIN
-                    </Text>
-                  )}
+                    {canApproveRevert && (
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          width: "100%",
+                          gap: 10,
+                          marginTop: 10,
+                        }}
+                      >
+                        <TouchableOpacity
+                          style={[
+                            localStyles.actionButton,
+                            { flex: 1, alignItems: "center" },
+                          ]}
+                          disabled={actionLoadingId === item.id}
+                          onPress={() => approveRevertRequest(item)}
+                        >
+                          <Text style={localStyles.actionButtonText}>
+                            Approve
+                          </Text>
+                        </TouchableOpacity>
 
-                  {suspensionData?.status === "REJECTED" && (
-                    <Text style={{ color: "#DC2626", fontWeight: "900", marginTop: 10 }}>
-                      ✗ Restoration Request Rejected
-                    </Text>
-                  )}
+                        <TouchableOpacity
+                          style={[
+                            localStyles.actionButton,
+                            {
+                              backgroundColor: "#DC2626",
+                              flex: 1,
+                              alignItems: "center",
+                            },
+                          ]}
+                          disabled={actionLoadingId === item.id}
+                          onPress={() => rejectRevertRequest(item)}
+                        >
+                          <Text style={localStyles.actionButtonText}>
+                            Reject
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+
+                    {role === "admin" &&
+                      item.type === "SHOP_REVERT_REQUEST_APPROVED" && (
+                        <Text
+                          style={{
+                            color: "#15803D",
+                            fontWeight: "900",
+                            marginTop: 10,
+                          }}
+                        >
+                          ✓ APPROVED BY ADMIN
+                        </Text>
+                      )}
+
+                    {role === "admin" &&
+                      item.type === "SHOP_REVERT_REQUEST_REJECTED" && (
+                        <Text
+                          style={{
+                            color: "#DC2626",
+                            fontWeight: "900",
+                            marginTop: 10,
+                          }}
+                        >
+                          ✗ REJECTED BY ADMIN
+                        </Text>
+                      )}
+
+                    {suspensionData?.status === "REJECTED" && (
+                      <Text
+                        style={{
+                          color: "#DC2626",
+                          fontWeight: "900",
+                          marginTop: 10,
+                        }}
+                      >
+                        ✗ Restoration Request Rejected
+                      </Text>
+                    )}
+                  </View>
                 </View>
+              );
+            }}
+          />
+        )}
+
+        {/* ⚠️ INLINE SYSTEM WARNING TOAST DESIGN ELEMENT */}
+        {warningState.visible && (
+          <View style={localStyles.warningBox}>
+            <Ionicons name="warning" size={20} color="#fff" />
+            <Text style={localStyles.warningText}>{warningState.message}</Text>
+            <TouchableOpacity
+              onPress={() => setWarningState({ visible: false, message: "" })}
+            >
+              <Ionicons name="close-circle" size={18} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* DECISIONS & INTERACTIVE CONFIRMATION MODAL LAYER */}
+        <Modal visible={decisionModal.visible} transparent animationType="fade">
+          <View style={localStyles.modalOverlay}>
+            <View style={[localStyles.modalBox, { paddingTop: 25 }]}>
+              <Text style={localStyles.confirmModalTitle}>
+                {decisionModal.title}
+              </Text>
+              <Text style={localStyles.modalSubtitle}>
+                {decisionModal.message}
+              </Text>
+
+              <View style={localStyles.shareButtonsRow}>
+                <TouchableOpacity
+                  style={localStyles.cancelModalBtn}
+                  onPress={() =>
+                    setDecisionModal((prev) => ({ ...prev, visible: false }))
+                  }
+                >
+                  <Text style={localStyles.cancelModalText}>No</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    localStyles.successModalBtn,
+                    { backgroundColor: decisionModal.confirmColor },
+                  ]}
+                  onPress={() => {
+                    setDecisionModal((prev) => ({ ...prev, visible: false }));
+                    decisionModal.onConfirm();
+                  }}
+                >
+                  <Text style={localStyles.actionButtonText}>Yes</Text>
+                </TouchableOpacity>
               </View>
-            );
-          }}
-        />
-      )}
-
-      {/* ⚠️ INLINE SYSTEM WARNING TOAST DESIGN ELEMENT */}
-      {warningState.visible && (
-        <View style={localStyles.warningBox}>
-          <Ionicons name="warning" size={20} color="#fff" />
-          <Text style={localStyles.warningText}>{warningState.message}</Text>
-          <TouchableOpacity onPress={() => setWarningState({ visible: false, message: "" })}>
-            <Ionicons name="close-circle" size={18} color="#fff" />
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {/* DECISIONS & INTERACTIVE CONFIRMATION MODAL LAYER */}
-      <Modal
-        visible={decisionModal.visible}
-        transparent
-        animationType="fade"
-      >
-        <View style={localStyles.modalOverlay}>
-          <View style={[localStyles.modalBox, { paddingTop: 25 }]}>
-            <Text style={localStyles.confirmModalTitle}>{decisionModal.title}</Text>
-            <Text style={localStyles.modalSubtitle}>{decisionModal.message}</Text>
-
-            <View style={localStyles.shareButtonsRow}>
-              <TouchableOpacity
-                style={localStyles.cancelModalBtn}
-                onPress={() => setDecisionModal((prev) => ({ ...prev, visible: false }))}
-              >
-                <Text style={localStyles.cancelModalText}>No</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[localStyles.successModalBtn, { backgroundColor: decisionModal.confirmColor }]}
-                onPress={() => {
-                  setDecisionModal((prev) => ({ ...prev, visible: false }));
-                  decisionModal.onConfirm();
-                }}
-              >
-                <Text style={localStyles.actionButtonText}>Yes</Text>
-              </TouchableOpacity>
             </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
 
-      {/* SHOP REVERT INPUT ELEMENT LAYOUT */}
-      <Modal
-        visible={revertModalVisible}
-        transparent
-        animationType="slide"
-      >
-        <View style={localStyles.modalOverlay}>
-          <View style={[localStyles.modalBox, { width: "90%", paddingTop: 25 }]}>
-            <Text style={[localStyles.confirmModalTitle, { fontSize: 18, marginBottom: 12, marginTop: 0 }]}>
-              Request Shop Restoration
-            </Text>
-
-            <TextInput
-              multiline
-              value={revertMessage}
-              onChangeText={setRevertMessage}
-              placeholder="Explain what mistake was corrected..."
-              style={localStyles.inputTextArea}
-            />
-
-            <View style={[localStyles.shareButtonsRow, { marginTop: 15 }]}>
-              <TouchableOpacity
-                style={localStyles.cancelModalBtn}
-                onPress={() => setRevertModalVisible(false)}
+        {/* SHOP REVERT INPUT ELEMENT LAYOUT */}
+        <Modal visible={revertModalVisible} transparent animationType="slide">
+          <View style={localStyles.modalOverlay}>
+            <View
+              style={[localStyles.modalBox, { width: "90%", paddingTop: 25 }]}
+            >
+              <Text
+                style={[
+                  localStyles.confirmModalTitle,
+                  { fontSize: 18, marginBottom: 12, marginTop: 0 },
+                ]}
               >
-                <Text style={localStyles.cancelModalText}>Cancel</Text>
-              </TouchableOpacity>
+                Request Shop Restoration
+              </Text>
 
-              <TouchableOpacity style={[localStyles.successModalBtn, { backgroundColor: "#2e4466" }]} onPress={sendRevertRequest}>
-                <Text style={localStyles.actionButtonText}>Submit</Text>
-              </TouchableOpacity>
+              <TextInput
+                multiline
+                value={revertMessage}
+                onChangeText={setRevertMessage}
+                placeholder="Explain what mistake was corrected..."
+                style={localStyles.inputTextArea}
+              />
+
+              <View style={[localStyles.shareButtonsRow, { marginTop: 15 }]}>
+                <TouchableOpacity
+                  style={localStyles.cancelModalBtn}
+                  onPress={() => setRevertModalVisible(false)}
+                >
+                  <Text style={localStyles.cancelModalText}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    localStyles.successModalBtn,
+                    { backgroundColor: "#2e4466" },
+                  ]}
+                  onPress={sendRevertRequest}
+                >
+                  <Text style={localStyles.actionButtonText}>Submit</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
-    </View>
+        </Modal>
+      </View>
     </SafeAreaView>
   );
 }
@@ -595,8 +687,17 @@ const localStyles = StyleSheet.create({
     width: "100%",
     elevation: 3,
   },
-  headerCenterContainer: { flex: 1, alignItems: "center", justifyContent: "center" },
-  headerTitleText: { fontSize: 20, fontWeight: "700", color: "#2e4466", textAlign: "center" },
+  headerCenterContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerTitleText: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#2e4466",
+    textAlign: "center",
+  },
   card: {
     flexDirection: "row",
     backgroundColor: "#FFFFFF",
@@ -609,7 +710,15 @@ const localStyles = StyleSheet.create({
     elevation: 2,
   },
   unreadCard: { borderColor: "#FCA5A5", backgroundColor: "#FEF2F2" },
-  iconCircle: { width: 42, height: 42, borderRadius: 21, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center", marginRight: 12 },
+  iconCircle: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
   messageText: { color: "#475569", fontSize: 13, marginTop: 4, lineHeight: 18 },
   metaText: { color: "#991B1B", fontSize: 12, fontWeight: "800", marginTop: 5 },
   actionButton: {
@@ -620,19 +729,24 @@ const localStyles = StyleSheet.create({
     paddingVertical: 9,
     marginTop: 10,
   },
-  emptyText: { textAlign: "center", color: "#94A3B8", marginTop: 40, fontWeight: "700" },
-  
+  emptyText: {
+    textAlign: "center",
+    color: "#94A3B8",
+    marginTop: 40,
+    fontWeight: "700",
+  },
+
   /* ⚠️ PASSED WARNING BOX OVERLAY RULES */
   warningBox: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 40,
     left: 20,
     right: 20,
-    backgroundColor: '#e67e22',
+    backgroundColor: "#e67e22",
     padding: 14,
     borderRadius: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     zIndex: 9999,
     elevation: 6,
     shadowColor: "#000",
@@ -640,11 +754,11 @@ const localStyles = StyleSheet.create({
     shadowRadius: 5,
   },
   warningText: {
-    color: '#fff',
+    color: "#fff",
     marginLeft: 10,
     fontSize: 14,
-    fontWeight: '600',
-    flex: 1
+    fontWeight: "600",
+    flex: 1,
   },
 
   /* ---------------- MATURED MODAL STYLES ---------------- */
@@ -715,10 +829,10 @@ const localStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "700",
   },
-  actionButtonText: { 
-    color: "#FFFFFF", 
-    fontWeight: "700", 
-    fontSize: 14 
+  actionButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 14,
   },
   inputTextArea: {
     width: "100%",

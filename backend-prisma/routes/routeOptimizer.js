@@ -45,8 +45,10 @@ const namesMatch = (requestedName, productName) => {
   const product = normalizeText(productName);
   return Boolean(
     requested &&
-      product &&
-      (requested === product || requested.includes(product) || product.includes(requested))
+    product &&
+    (requested === product ||
+      requested.includes(product) ||
+      product.includes(requested)),
   );
 };
 
@@ -57,7 +59,9 @@ const specificationsMatch = (requestedSpec, productSpec) => {
   const productKeywords = getSpecKeywords(productSpec);
   if (productKeywords.length === 0) return false;
 
-  return requestedKeywords.every((keyword) => productKeywords.includes(keyword));
+  return requestedKeywords.every((keyword) =>
+    productKeywords.includes(keyword),
+  );
 };
 
 const buildTargetItemsFromRawItems = (items = []) => {
@@ -81,31 +85,28 @@ const buildItemsWithShopOptions = async ({
   if (targetItems.length === 0) return [];
 
   const matchingProducts = await prisma.product.findMany({
-  where: {
-    quantity: { gt: 0 },
+    where: {
+      quantity: { gt: 0 },
 
-    shopkeeper: {
-      isSuspended: false,
+      shopkeeper: {
+        isSuspended: false,
 
-      shopDetails: {
-        isNot: null,
+        shopDetails: {
+          isNot: null,
+        },
       },
     },
-  },
 
-  include: {
-    shopkeeper: {
-      include: {
-        shopDetails: true,
+    include: {
+      shopkeeper: {
+        include: {
+          shopDetails: true,
+        },
       },
     },
-  },
 
-  orderBy: [
-    { price: "asc" },
-    { createdAt: "desc" },
-  ],
-});
+    orderBy: [{ price: "asc" }, { createdAt: "desc" }],
+  });
 
   const groupedItems = {};
 
@@ -123,7 +124,8 @@ const buildItemsWithShopOptions = async ({
   targetItems.forEach((targetItem) => {
     matchingProducts.forEach((product) => {
       if (!namesMatch(targetItem.itemName, product.name)) return;
-      if (!specificationsMatch(targetItem.specification, product.specification)) return;
+      if (!specificationsMatch(targetItem.specification, product.specification))
+        return;
 
       const details = product.shopkeeper.shopDetails;
       if (!details) return;
@@ -175,7 +177,9 @@ router.post("/cart-options", verifyToken, async (req, res) => {
     const radiusKm = maxDistanceKm ? Number(maxDistanceKm) : 10;
 
     if (!Number.isFinite(originLat) || !Number.isFinite(originLng)) {
-      return res.status(400).json({ error: "Valid selected buying location is required." });
+      return res
+        .status(400)
+        .json({ error: "Valid selected buying location is required." });
     }
 
     const targetItems = buildTargetItemsFromRawItems(items);
@@ -221,7 +225,9 @@ router.post("/cart-options", verifyToken, async (req, res) => {
     });
   } catch (error) {
     console.error("CART OPTIONS ERROR:", error);
-    return res.status(500).json({ error: "Failed to gather cart shop choices." });
+    return res
+      .status(500)
+      .json({ error: "Failed to gather cart shop choices." });
   }
 });
 
@@ -243,24 +249,20 @@ router.post("/optimize", verifyToken, async (req, res) => {
     let targetItems = [];
 
     const standardIsDownloaded =
-      isDownloaded === true ||
-      String(isDownloaded) === "true";
+      isDownloaded === true || String(isDownloaded) === "true";
 
     if (standardIsDownloaded) {
-      const downloadedListData =
-        await prisma.downloadedList.findUnique({
-          where: {
-            id: Number(listId),
-          },
-          include: {
-            items: true,
-          },
-        });
+      const downloadedListData = await prisma.downloadedList.findUnique({
+        where: {
+          id: Number(listId),
+        },
+        include: {
+          items: true,
+        },
+      });
 
       if (downloadedListData?.items) {
-        targetItems = buildTargetItemsFromRawItems(
-          downloadedListData.items
-        );
+        targetItems = buildTargetItemsFromRawItems(downloadedListData.items);
       }
     } else {
       const listData = await prisma.list.findUnique({
@@ -273,9 +275,7 @@ router.post("/optimize", verifyToken, async (req, res) => {
       });
 
       if (listData?.items) {
-        targetItems = buildTargetItemsFromRawItems(
-          listData.items
-        );
+        targetItems = buildTargetItemsFromRawItems(listData.items);
       }
     }
 

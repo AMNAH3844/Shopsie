@@ -17,18 +17,26 @@ const createDownloadedItemPayload = (i) => ({
   categoryName: i.categoryName || i.category || "Uncategorized",
   selectedShopId: i.selectedShopId ? Number(i.selectedShopId) : null,
   selectedShopName: i.selectedShopName || null,
-  selectedShopPrice: i.selectedShopPrice != null ? Number(i.selectedShopPrice) : null,
-  selectedShopLatitude: i.selectedShopLatitude != null ? Number(i.selectedShopLatitude) : null,
-  selectedShopLongitude: i.selectedShopLongitude != null ? Number(i.selectedShopLongitude) : null,
+  selectedShopPrice:
+    i.selectedShopPrice != null ? Number(i.selectedShopPrice) : null,
+  selectedShopLatitude:
+    i.selectedShopLatitude != null ? Number(i.selectedShopLatitude) : null,
+  selectedShopLongitude:
+    i.selectedShopLongitude != null ? Number(i.selectedShopLongitude) : null,
   selectedShopPhone: i.selectedShopPhone || null,
   selectedShopTiming: i.selectedShopTiming || null,
-  availableQuantity: i.availableQuantity != null ? Number(i.availableQuantity) : null,
+  availableQuantity:
+    i.availableQuantity != null ? Number(i.availableQuantity) : null,
   lineTotal: i.lineTotal != null ? Number(i.lineTotal) : null,
-  buyingLocationLat: i.buyingLocationLat != null ? Number(i.buyingLocationLat) : null,
-  buyingLocationLng: i.buyingLocationLng != null ? Number(i.buyingLocationLng) : null,
+  buyingLocationLat:
+    i.buyingLocationLat != null ? Number(i.buyingLocationLat) : null,
+  buyingLocationLng:
+    i.buyingLocationLng != null ? Number(i.buyingLocationLng) : null,
   buyingLocationLabel: i.buyingLocationLabel || null,
-  deliveryLocationLat: i.deliveryLocationLat != null ? Number(i.deliveryLocationLat) : null,
-  deliveryLocationLng: i.deliveryLocationLng != null ? Number(i.deliveryLocationLng) : null,
+  deliveryLocationLat:
+    i.deliveryLocationLat != null ? Number(i.deliveryLocationLat) : null,
+  deliveryLocationLng:
+    i.deliveryLocationLng != null ? Number(i.deliveryLocationLng) : null,
   deliveryLocationLabel: i.deliveryLocationLabel || null,
 });
 
@@ -118,7 +126,7 @@ router.get("/", verifyToken, async (req, res) => {
       lists.map((list) => ({
         ...list,
         items: list.items.map(normalizeDownloadedItem),
-      }))
+      })),
     );
   } catch (error) {
     console.log("FETCH ERROR:", error);

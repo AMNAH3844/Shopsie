@@ -1,14 +1,13 @@
 import { StyleSheet } from "react-native";
 
 export default StyleSheet.create({
-
   /* -------------------- CONTAINER -------------------- */
   container: {
     flex: 1,
     backgroundColor: "#ffffffff",
   },
 
-/* -------------------- HEADER -------------------- */
+  /* -------------------- HEADER -------------------- */
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -30,11 +29,11 @@ export default StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 10,
-    gap: 12,                  // Adds clean, uniform spacing between your header icons
+    gap: 12, // Adds clean, uniform spacing between your header icons
   },
 
   iconSpacing: {
-    marginLeft: 4,            // Small fallback padding if needed
+    marginLeft: 4, // Small fallback padding if needed
   },
 
   /* -------------------- PROFILE CARD -------------------- */
@@ -47,7 +46,7 @@ export default StyleSheet.create({
     margin: 26,
     marginBottom: 60,
     shadowColor: "#000",
-    shadowOpacity: 0.40,
+    shadowOpacity: 0.4,
     shadowRadius: 6,
     elevation: 5,
     paddingHorizontal: 16,
@@ -66,28 +65,28 @@ export default StyleSheet.create({
     color: "black",
   },
 
-/* -------------------- TASK CARD -------------------- */
-taskCard: {
-  flexDirection: "row",
-  alignItems: "center",
-  padding: 20,
-  margin: 26,
-  marginBottom: 60,
-  backgroundColor: "#ffffff",
-  borderRadius: 18,
-  shadowColor: "#000",
-  shadowOpacity: 0.40,
-  shadowRadius: 6,
-  elevation: 5,
-  paddingHorizontal: 16,
-},
+  /* -------------------- TASK CARD -------------------- */
+  taskCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 20,
+    margin: 26,
+    marginBottom: 60,
+    backgroundColor: "#ffffff",
+    borderRadius: 18,
+    shadowColor: "#000",
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 5,
+    paddingHorizontal: 16,
+  },
 
-taskTitle: {
-  fontSize: 18,
-  fontWeight: "700",
-  color: "black",
-  marginLeft: 30,
-},
+  taskTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "black",
+    marginLeft: 30,
+  },
 
   /* -------------------- GRID CARDS -------------------- */
   grid: {
@@ -119,31 +118,30 @@ taskTitle: {
     fontSize: 14,
   },
 
+  //   /* -------------------- BOTTOM NAVIGATION -------------------- */
+  bottomNav: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
 
-//   /* -------------------- BOTTOM NAVIGATION -------------------- */
- bottomNav: {
-  position: "absolute",
-  left: 0,
-  right: 0,
-  bottom: 0,
+    height: 75,
 
-  height: 75,
+    backgroundColor: "#2e4466",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
 
-  backgroundColor: "#2e4466",
-  flexDirection: "row",
-  justifyContent: "space-around",
-  alignItems: "center",
+    elevation: 0,
+    borderTopWidth: 0,
+    zIndex: 1000,
+  },
 
-  elevation: 0,
-  borderTopWidth: 0,
-  zIndex: 1000,
-},
-
- tabItem: {
-  flex: 1,
-  justifyContent: "center",
-  alignItems: "center",
-},
+  tabItem: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   navText: {
     color: "white",
     fontSize: 12,
@@ -151,5 +149,4 @@ taskTitle: {
     textAlign: "center",
     fontWeight: 500,
   },
-
 });

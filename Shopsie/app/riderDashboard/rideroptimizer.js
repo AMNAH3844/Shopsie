@@ -1,5 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { API_URLS } from '../../src/services/apiConfig';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { API_URLS } from "../../src/services/apiConfig";
 import {
   View,
   Text,
@@ -26,7 +32,8 @@ export default function RiderOptimizer() {
   const router = useRouter();
   const webViewRef = useRef(null);
   const { requestId, downloadedListId, optimizerMode } = useLocalSearchParams();
-  const isDownloadedListMode = optimizerMode === "downloaded" || !!downloadedListId;
+  const isDownloadedListMode =
+    optimizerMode === "downloaded" || !!downloadedListId;
   const optimizerId = isDownloadedListMode ? downloadedListId : requestId;
 
   // ==========================================
@@ -37,8 +44,15 @@ export default function RiderOptimizer() {
   const [plan, setPlan] = useState(null);
   const [optimized, setOptimized] = useState(null);
   const [deliveryRoute, setDeliveryRoute] = useState(null);
-  const [routeOverview, setRouteOverview] = useState({ totalDistance: "0 km", travelTime: "0 mins" });
-  const [reportModal, setReportModal] = useState({ visible: false, shop: null, mode: null });
+  const [routeOverview, setRouteOverview] = useState({
+    totalDistance: "0 km",
+    travelTime: "0 mins",
+  });
+  const [reportModal, setReportModal] = useState({
+    visible: false,
+    shop: null,
+    mode: null,
+  });
   const [reportReason, setReportReason] = useState("");
   const [reportingShopId, setReportingShopId] = useState(null);
   const [showWarningBox, setShowWarningBox] = useState(false);
@@ -50,21 +64,41 @@ export default function RiderOptimizer() {
   const allItemsDone = useMemo(() => {
     const stops = optimized?.stops || plan?.stops || [];
     const items = stops.flatMap((stop) => stop.items || []);
-    return items.length > 0 && items.every((item) => item.optimizerDone || item.riderOptimizerDone || item.customerOptimizerDone);
+    return (
+      items.length > 0 &&
+      items.every(
+        (item) =>
+          item.optimizerDone ||
+          item.riderOptimizerDone ||
+          item.customerOptimizerDone,
+      )
+    );
   }, [optimized, plan]);
 
   const waypoints = useMemo(() => {
     if (deliveryRoute) {
       return [
-        { label: deliveryRoute.origin.label, lat: deliveryRoute.origin.lat, lng: deliveryRoute.origin.lng },
-        { label: deliveryRoute.destination.label, lat: deliveryRoute.destination.lat, lng: deliveryRoute.destination.lng },
+        {
+          label: deliveryRoute.origin.label,
+          lat: deliveryRoute.origin.lat,
+          lng: deliveryRoute.origin.lng,
+        },
+        {
+          label: deliveryRoute.destination.label,
+          lat: deliveryRoute.destination.lat,
+          lng: deliveryRoute.destination.lng,
+        },
       ];
     }
 
     if (!optimized) return [];
 
     return [
-      { label: optimized.origin.label, lat: optimized.origin.lat, lng: optimized.origin.lng },
+      {
+        label: optimized.origin.label,
+        lat: optimized.origin.lat,
+        lng: optimized.origin.lng,
+      },
       ...(optimized.stops || []).map((stop) => ({
         label: `Stop ${stop.stopNumber}: ${stop.shopName}`,
         lat: stop.latitude,
@@ -110,13 +144,18 @@ export default function RiderOptimizer() {
     if (status !== "granted") {
       Alert.alert(
         "Location access needed",
-        "Please allow live location access so the optimizer can build the shortest route from your current position."
+        "Please allow live location access so the optimizer can build the shortest route from your current position.",
       );
       throw new Error("LOCATION_PERMISSION_DENIED");
     }
 
-    const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-    return { riderLat: location.coords.latitude, riderLng: location.coords.longitude };
+    const location = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.Balanced,
+    });
+    return {
+      riderLat: location.coords.latitude,
+      riderLng: location.coords.longitude,
+    };
   };
 
   // ==========================================
@@ -124,7 +163,12 @@ export default function RiderOptimizer() {
   // ==========================================
   const loadPlan = useCallback(async () => {
     if (!optimizerId) {
-      Alert.alert("Error", isDownloadedListMode ? "Missing downloaded list id" : "Missing request id");
+      Alert.alert(
+        "Error",
+        isDownloadedListMode
+          ? "Missing downloaded list id"
+          : "Missing request id",
+      );
       setLoading(false);
       return;
     }
@@ -140,7 +184,10 @@ export default function RiderOptimizer() {
       });
       setPlan(response.data);
     } catch (error) {
-      Alert.alert("Error", error.response?.data?.message || "Could not load rider optimizer.");
+      Alert.alert(
+        "Error",
+        error.response?.data?.message || "Could not load rider optimizer.",
+      );
     } finally {
       setLoading(false);
     }
@@ -157,7 +204,7 @@ export default function RiderOptimizer() {
       const response = await axios.post(
         path,
         { riderLat, riderLng },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       setOptimized(response.data);
@@ -168,7 +215,10 @@ export default function RiderOptimizer() {
       });
     } catch (error) {
       if (error.message !== "LOCATION_PERMISSION_DENIED") {
-        Alert.alert("Error", error.response?.data?.message || "Could not optimize route.");
+        Alert.alert(
+          "Error",
+          error.response?.data?.message || "Could not optimize route.",
+        );
       }
     } finally {
       setLoading(false);
@@ -187,12 +237,16 @@ export default function RiderOptimizer() {
     stops.map((stop) => ({
       ...stop,
       items: (stop.items || []).map((item) => {
-        const updated = updatedItems.find((fresh) => String(fresh.id) === String(item.id));
+        const updated = updatedItems.find(
+          (fresh) => String(fresh.id) === String(item.id),
+        );
         if (!updated) return item;
         const merged = { ...item, ...updated };
         return {
           ...merged,
-          optimizerDone: Boolean(merged.riderOptimizerDone || merged.customerOptimizerDone),
+          optimizerDone: Boolean(
+            merged.riderOptimizerDone || merged.customerOptimizerDone,
+          ),
         };
       }),
     }));
@@ -207,10 +261,11 @@ export default function RiderOptimizer() {
       const response = await axios.patch(
         path,
         { done },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
-      const updatedItems = response.data.request?.items || response.data.list?.items || [];
+      const updatedItems =
+        response.data.request?.items || response.data.list?.items || [];
 
       setOptimized((prev) => {
         if (!prev) return prev;
@@ -227,7 +282,10 @@ export default function RiderOptimizer() {
         };
       });
     } catch (error) {
-      Alert.alert("Error", error.response?.data?.message || "Could not update item.");
+      Alert.alert(
+        "Error",
+        error.response?.data?.message || "Could not update item.",
+      );
     } finally {
       setSavingItemId(null);
     }
@@ -251,7 +309,10 @@ export default function RiderOptimizer() {
 
   const submitShopReport = async (shop, title, reason = "") => {
     if (!shop?.shopId) {
-      Alert.alert("Error", "This shop cannot be reported because its shop id is missing.");
+      Alert.alert(
+        "Error",
+        "This shop cannot be reported because its shop id is missing.",
+      );
       return;
     }
 
@@ -268,11 +329,15 @@ export default function RiderOptimizer() {
         {
           title,
           reason,
-          source: isDownloadedListMode ? "customer_optimizer" : "rider_optimizer",
+          source: isDownloadedListMode
+            ? "customer_optimizer"
+            : "rider_optimizer",
           riderRequestId: !isDownloadedListMode ? Number(requestId) : null,
-          downloadedListId: isDownloadedListMode ? Number(downloadedListId) : null,
+          downloadedListId: isDownloadedListMode
+            ? Number(downloadedListId)
+            : null,
         },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       closeReportModal();
       triggerWarning("Thank you for your feedback.");
@@ -294,7 +359,7 @@ export default function RiderOptimizer() {
       const response = await axios.post(
         path,
         { riderLat, riderLng },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       setDeliveryRoute(response.data);
@@ -304,16 +369,24 @@ export default function RiderOptimizer() {
       });
     } catch (error) {
       if (error.message !== "LOCATION_PERMISSION_DENIED") {
-        Alert.alert("Error", error.response?.data?.message || "Could not create delivery route.");
+        Alert.alert(
+          "Error",
+          error.response?.data?.message || "Could not create delivery route.",
+        );
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const wordCount = (value) => String(value || "").trim().split(/\s+/).filter(Boolean).length;
+  const wordCount = (value) =>
+    String(value || "")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean).length;
 
-  const mapHtmlTemplate = useMemo(() => `
+  const mapHtmlTemplate = useMemo(
+    () => `
     <!DOCTYPE html>
     <html>
     <head>
@@ -392,7 +465,9 @@ export default function RiderOptimizer() {
       </script>
     </body>
     </html>
-  `, [waypoints]);
+  `,
+    [waypoints],
+  );
 
   if (loading && !optimized) {
     return (
@@ -410,15 +485,20 @@ export default function RiderOptimizer() {
   // ==========================================
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f8fafc" }}>
-      
       <View style={styles.container}>
-        <LinearGradient 
-          colors={["#eef4fe", "#2e4466"]} 
-          start={{ x: 1, y: 0 }} 
-          end={{ x: 0, y: 0 }} 
+        <LinearGradient
+          colors={["#eef4fe", "#2e4466"]}
+          start={{ x: 1, y: 0 }}
+          end={{ x: 0, y: 0 }}
           style={styles.header}
         >
-          <TouchableOpacity onPress={() => (router.canGoBack() ? router.back() : router.replace("/riderDashboard"))}>
+          <TouchableOpacity
+            onPress={() =>
+              router.canGoBack()
+                ? router.back()
+                : router.replace("/riderDashboard")
+            }
+          >
             <Ionicons name="chevron-back" size={28} color="#eef4fe" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>
@@ -426,10 +506,19 @@ export default function RiderOptimizer() {
           </Text>
         </LinearGradient>
 
-        <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+        >
           <View style={styles.mapCard}>
             {Platform.OS === "web" ? (
-              <iframe key={deliveryRoute ? "delivery-route-map" : "pickup-route-map"} id="rider-optimizer-map-iframe" srcDoc={mapHtmlTemplate} style={{ width: "100%", height: "100%", border: "none" }} title="Rider Optimizer Map" />
+              <iframe
+                key={deliveryRoute ? "delivery-route-map" : "pickup-route-map"}
+                id="rider-optimizer-map-iframe"
+                srcDoc={mapHtmlTemplate}
+                style={{ width: "100%", height: "100%", border: "none" }}
+                title="Rider Optimizer Map"
+              />
             ) : (
               <WebView
                 key={deliveryRoute ? "delivery" : "pickup"}
@@ -444,52 +533,90 @@ export default function RiderOptimizer() {
           </View>
 
           <View style={styles.sectionCard}>
-            <Text style={styles.sectionTitle}>{deliveryRoute ? "Delivery Route" : "Pickup Route"}</Text>
+            <Text style={styles.sectionTitle}>
+              {deliveryRoute ? "Delivery Route" : "Pickup Route"}
+            </Text>
             <View style={styles.metricRow}>
               <Ionicons name="navigate-outline" size={20} color="#2e4466" />
               <Text style={styles.metricLabel}>Distance</Text>
-              <Text style={styles.metricValue}>{routeOverview.totalDistance}</Text>
+              <Text style={styles.metricValue}>
+                {routeOverview.totalDistance}
+              </Text>
             </View>
             <View style={styles.metricRow}>
               <Ionicons name="time-outline" size={20} color="#2e4466" />
               <Text style={styles.metricLabel}>Estimated Time</Text>
               <Text style={styles.metricValue}>{routeOverview.travelTime}</Text>
             </View>
-            {!!plan?.buyingLocation?.label && <Text style={styles.locationText}>Buy items from: {plan.buyingLocation.label}</Text>}
-            {!!plan?.deliveryLocation?.label && <Text style={styles.locationText}>Deliver to: {plan.deliveryLocation.label}</Text>}
+            {!!plan?.buyingLocation?.label && (
+              <Text style={styles.locationText}>
+                Buy items from: {plan.buyingLocation.label}
+              </Text>
+            )}
+            {!!plan?.deliveryLocation?.label && (
+              <Text style={styles.locationText}>
+                Deliver to: {plan.deliveryLocation.label}
+              </Text>
+            )}
           </View>
 
           {allItemsDone && !deliveryRoute && (
-            <TouchableOpacity style={styles.deliveryRouteBtn} onPress={createDeliveryRoute}>
+            <TouchableOpacity
+              style={styles.deliveryRouteBtn}
+              onPress={createDeliveryRoute}
+            >
               <Ionicons name="location-outline" size={18} color="#fff" />
-              <Text style={styles.deliveryRouteText}>Use Live Location For Delivery Route</Text>
+              <Text style={styles.deliveryRouteText}>
+                Use Live Location For Delivery Route
+              </Text>
             </TouchableOpacity>
           )}
 
           <View style={styles.sectionCard}>
             <Text style={styles.sectionTitle}>Stops and Purchases</Text>
             {visibleStops.length === 0 ? (
-              <Text style={styles.emptyText}>No selected shop locations found for this list.</Text>
+              <Text style={styles.emptyText}>
+                No selected shop locations found for this list.
+              </Text>
             ) : (
               visibleStops.map((stop, index) => {
-                const subtotal = (stop.items || []).reduce((sum, item) => sum + Number(item.lineTotal || 0), 0);
+                const subtotal = (stop.items || []).reduce(
+                  (sum, item) => sum + Number(item.lineTotal || 0),
+                  0,
+                );
                 return (
                   <View key={stop.shopKey || index} style={styles.stopCard}>
                     <View style={styles.stopHeader}>
                       <View style={{ flex: 1, paddingRight: 8 }}>
                         <View style={styles.stopTitleRow}>
                           <View style={styles.stopBadge}>
-                            <Text style={styles.stopBadgeText}>{stop.stopNumber || index + 1}</Text>
+                            <Text style={styles.stopBadgeText}>
+                              {stop.stopNumber || index + 1}
+                            </Text>
                           </View>
-                          <Text style={styles.stopTitle} numberOfLines={1}>Stop {stop.stopNumber || index + 1}: {stop.shopName}</Text>
+                          <Text style={styles.stopTitle} numberOfLines={1}>
+                            Stop {stop.stopNumber || index + 1}: {stop.shopName}
+                          </Text>
                         </View>
-                        <Text style={styles.stopMeta}>Subtotal: Rs. {subtotal}</Text>
+                        <Text style={styles.stopMeta}>
+                          Subtotal: Rs. {subtotal}
+                        </Text>
                       </View>
                       <TouchableOpacity
                         style={styles.reportShopBtn}
-                        onPress={() => setReportModal({ visible: true, shop: stop, mode: null })}
+                        onPress={() =>
+                          setReportModal({
+                            visible: true,
+                            shop: stop,
+                            mode: null,
+                          })
+                        }
                       >
-                        <Ionicons name="flag-outline" size={14} color="#ef4444" />
+                        <Ionicons
+                          name="flag-outline"
+                          size={14}
+                          color="#ef4444"
+                        />
                         <Text style={styles.reportShopText}>Report</Text>
                       </TouchableOpacity>
                     </View>
@@ -498,22 +625,57 @@ export default function RiderOptimizer() {
                       <TouchableOpacity
                         key={item.id}
                         style={styles.itemRow}
-                        onPress={() => updateItemDone(item.id, !(item.optimizerDone || item.riderOptimizerDone || item.customerOptimizerDone))}
+                        onPress={() =>
+                          updateItemDone(
+                            item.id,
+                            !(
+                              item.optimizerDone ||
+                              item.riderOptimizerDone ||
+                              item.customerOptimizerDone
+                            ),
+                          )
+                        }
                         disabled={savingItemId === item.id}
                         activeOpacity={0.7}
                       >
                         <Ionicons
-                          name={(item.optimizerDone || item.riderOptimizerDone || item.customerOptimizerDone) ? "checkbox" : "square-outline"}
+                          name={
+                            item.optimizerDone ||
+                            item.riderOptimizerDone ||
+                            item.customerOptimizerDone
+                              ? "checkbox"
+                              : "square-outline"
+                          }
                           size={22}
-                          color={(item.optimizerDone || item.riderOptimizerDone || item.customerOptimizerDone) ? "#10b981" : "#94a3b8"}
+                          color={
+                            item.optimizerDone ||
+                            item.riderOptimizerDone ||
+                            item.customerOptimizerDone
+                              ? "#10b981"
+                              : "#94a3b8"
+                          }
                         />
                         <View style={{ flex: 1, marginLeft: 10 }}>
-                          <Text style={[styles.itemName, (item.optimizerDone || item.riderOptimizerDone || item.customerOptimizerDone) && styles.doneText]}>{item.name}</Text>
+                          <Text
+                            style={[
+                              styles.itemName,
+                              (item.optimizerDone ||
+                                item.riderOptimizerDone ||
+                                item.customerOptimizerDone) &&
+                                styles.doneText,
+                            ]}
+                          >
+                            {item.name}
+                          </Text>
                           <Text style={styles.itemMeta}>
-                            Qty: {item.quantity || 1} | Spec: {item.specification || "None"} | Price: Rs. {item.selectedShopPrice || 0}
+                            Qty: {item.quantity || 1} | Spec:{" "}
+                            {item.specification || "None"} | Price: Rs.{" "}
+                            {item.selectedShopPrice || 0}
                           </Text>
                         </View>
-                        {savingItemId === item.id && <ActivityIndicator size="small" color="#2e4466" />}
+                        {savingItemId === item.id && (
+                          <ActivityIndicator size="small" color="#2e4466" />
+                        )}
                       </TouchableOpacity>
                     ))}
                   </View>
@@ -550,30 +712,57 @@ export default function RiderOptimizer() {
         </View>
       </View>
 
-      <Modal visible={reportModal.visible} transparent animationType="fade" onRequestClose={closeReportModal}>
+      <Modal
+        visible={reportModal.visible}
+        transparent
+        animationType="fade"
+        onRequestClose={closeReportModal}
+      >
         <View style={styles.modalOverlay}>
           <View style={styles.reportModalBox}>
-            <TouchableOpacity style={styles.modalCloseIcon} onPress={closeReportModal}>
+            <TouchableOpacity
+              style={styles.modalCloseIcon}
+              onPress={closeReportModal}
+            >
               <Ionicons name="close" size={20} color="#64748b" />
             </TouchableOpacity>
             <Text style={styles.reportModalTitle}>Report shop</Text>
-            <Text style={styles.reportModalSubtitle}>{reportModal.shop?.shopName || "Selected shop"}</Text>
+            <Text style={styles.reportModalSubtitle}>
+              {reportModal.shop?.shopName || "Selected shop"}
+            </Text>
 
             {!reportModal.mode && (
               <>
                 <TouchableOpacity
                   style={styles.reportOptionBtn}
-                  onPress={() => submitShopReport(reportModal.shop, "SHOP_DOES_NOT_EXIST")}
+                  onPress={() =>
+                    submitShopReport(reportModal.shop, "SHOP_DOES_NOT_EXIST")
+                  }
                   disabled={reportingShopId === reportModal.shop?.shopId}
                 >
-                  <Ionicons name="storefront-outline" size={18} color="#2e4466" />
-                  <Text style={styles.reportOptionText}>The shop does not exist</Text>
+                  <Ionicons
+                    name="storefront-outline"
+                    size={18}
+                    color="#2e4466"
+                  />
+                  <Text style={styles.reportOptionText}>
+                    The shop does not exist
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.reportOptionBtn}
-                  onPress={() => setReportModal((prev) => ({ ...prev, mode: "OTHER_REASON" }))}
+                  onPress={() =>
+                    setReportModal((prev) => ({
+                      ...prev,
+                      mode: "OTHER_REASON",
+                    }))
+                  }
                 >
-                  <Ionicons name="chatbox-ellipses-outline" size={18} color="#2e4466" />
+                  <Ionicons
+                    name="chatbox-ellipses-outline"
+                    size={18}
+                    color="#2e4466"
+                  />
                   <Text style={styles.reportOptionText}>Other reason</Text>
                 </TouchableOpacity>
               </>
@@ -589,16 +778,31 @@ export default function RiderOptimizer() {
                   multiline
                   style={styles.reportInput}
                 />
-                <Text style={[styles.wordCounter, wordCount(reportReason) > 500 && styles.wordCounterError]}>
+                <Text
+                  style={[
+                    styles.wordCounter,
+                    wordCount(reportReason) > 500 && styles.wordCounterError,
+                  ]}
+                >
                   {wordCount(reportReason)} / 500 words
                 </Text>
                 <TouchableOpacity
                   style={styles.sendReportBtn}
-                  onPress={() => submitShopReport(reportModal.shop, "OTHER_REASON", reportReason)}
+                  onPress={() =>
+                    submitShopReport(
+                      reportModal.shop,
+                      "OTHER_REASON",
+                      reportReason,
+                    )
+                  }
                   disabled={reportingShopId === reportModal.shop?.shopId}
                 >
                   <Ionicons name="send" size={17} color="#fff" />
-                  <Text style={styles.sendReportText}>{reportingShopId === reportModal.shop?.shopId ? "Sending..." : "Send"}</Text>
+                  <Text style={styles.sendReportText}>
+                    {reportingShopId === reportModal.shop?.shopId
+                      ? "Sending..."
+                      : "Send"}
+                  </Text>
                 </TouchableOpacity>
               </>
             )}
@@ -620,63 +824,242 @@ export default function RiderOptimizer() {
 // CENTRAL LAYOUT STYLES AND CONFIGURATION
 // ==========================================
 const styles = StyleSheet.create({
-  center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#f8fafc" },
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f8fafc",
+  },
   loadingText: { marginTop: 12, color: "#64748b", fontWeight: "600" },
   container: { flex: 1, backgroundColor: "#f8fafc" },
-  
-  header: { 
-    height: 85, 
-    paddingHorizontal: 20, 
-    flexDirection: "row", 
-    alignItems: "center", 
-    justifyContent: "space-between" 
+
+  header: {
+    height: 85,
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
-  headerTitle: { 
-    flex: 1, 
-    textAlign: "center", 
-    fontSize: 22, 
-    fontWeight: "700", 
-    color: "#2e4466" 
+  headerTitle: {
+    flex: 1,
+    textAlign: "center",
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#2e4466",
   },
-  
+
   scrollContainer: { padding: 16, paddingBottom: 110 },
-  mapCard: { width: "100%", height: 240, borderRadius: 16, overflow: "hidden", backgroundColor: "#e2e8f0", marginBottom: 16, borderWidth: 1, borderColor: "#e2e8f0" },
+  mapCard: {
+    width: "100%",
+    height: 240,
+    borderRadius: 16,
+    overflow: "hidden",
+    backgroundColor: "#e2e8f0",
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
   map: { flex: 1 },
-  sectionCard: { backgroundColor: "#fff", borderRadius: 16, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: "#e2e8f0" },
-  sectionTitle: { fontSize: 15, fontWeight: "700", color: "#1e293b", marginBottom: 12 },
+  sectionCard: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#1e293b",
+    marginBottom: 12,
+  },
   metricRow: { flexDirection: "row", alignItems: "center", paddingVertical: 6 },
-  metricLabel: { flex: 1, fontSize: 13, color: "#475569", marginLeft: 10, fontWeight: "500" },
+  metricLabel: {
+    flex: 1,
+    fontSize: 13,
+    color: "#475569",
+    marginLeft: 10,
+    fontWeight: "500",
+  },
   metricValue: { fontSize: 13, fontWeight: "600", color: "#1e293b" },
-  locationText: { color: "#475569", fontSize: 12, fontWeight: "500", marginTop: 6 },
-  deliveryRouteBtn: { backgroundColor: "#10b981", borderRadius: 12, paddingVertical: 14, marginBottom: 16, flexDirection: "row", alignItems: "center", justifyContent: "center" },
-  deliveryRouteText: { color: "#fff", fontWeight: "600", fontSize: 14, marginLeft: 8 },
-  emptyText: { textAlign: "center", color: "#94a3b8", paddingVertical: 20, fontSize: 14, fontWeight: "500" },
-  stopCard: { marginBottom: 12, backgroundColor: "#f8fafc", borderRadius: 12, borderWidth: 1, borderColor: "#e2e8f0", padding: 12 },
-  stopHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderBottomWidth: 1, borderBottomColor: "#e2e8f0", paddingBottom: 8, marginBottom: 8 },
+  locationText: {
+    color: "#475569",
+    fontSize: 12,
+    fontWeight: "500",
+    marginTop: 6,
+  },
+  deliveryRouteBtn: {
+    backgroundColor: "#10b981",
+    borderRadius: 12,
+    paddingVertical: 14,
+    marginBottom: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  deliveryRouteText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 14,
+    marginLeft: 8,
+  },
+  emptyText: {
+    textAlign: "center",
+    color: "#94a3b8",
+    paddingVertical: 20,
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  stopCard: {
+    marginBottom: 12,
+    backgroundColor: "#f8fafc",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    padding: 12,
+  },
+  stopHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderBottomWidth: 1,
+    borderBottomColor: "#e2e8f0",
+    paddingBottom: 8,
+    marginBottom: 8,
+  },
   stopTitleRow: { flexDirection: "row", alignItems: "center", flex: 1 },
-  stopBadge: { width: 24, height: 24, borderRadius: 12, backgroundColor: "#2e4466", alignItems: "center", justifyContent: "center", marginRight: 8 },
+  stopBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#2e4466",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 8,
+  },
   stopBadgeText: { color: "#fff", fontWeight: "600", fontSize: 12 },
   stopTitle: { color: "#1e293b", fontSize: 14, fontWeight: "600", flex: 1 },
   stopMeta: { color: "#10b981", fontSize: 11, marginTop: 2, fontWeight: "600" },
-  reportShopBtn: { flexDirection: "row", alignItems: "center", backgroundColor: "#fef2f2", borderRadius: 8, borderWidth: 1, borderColor: "#fecaca", paddingHorizontal: 8, paddingVertical: 4 },
-  reportShopText: { color: "#ef4444", fontSize: 11, fontWeight: "600", marginLeft: 4 },
-  itemRow: { flexDirection: "row", alignItems: "center", paddingVertical: 10, borderTopWidth: 1, borderTopColor: "#e2e8f0" },
+  reportShopBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fef2f2",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#fecaca",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  reportShopText: {
+    color: "#ef4444",
+    fontSize: 11,
+    fontWeight: "600",
+    marginLeft: 4,
+  },
+  itemRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#e2e8f0",
+  },
   itemName: { color: "#334155", fontSize: 13, fontWeight: "600" },
   doneText: { color: "#10b981", textDecorationLine: "line-through" },
   itemMeta: { color: "#64748b", fontSize: 11, marginTop: 2, lineHeight: 16 },
-  modalOverlay: { flex: 1, backgroundColor: "rgba(15,23,42,0.6)", justifyContent: "center", alignItems: "center", padding: 20 },
-  reportModalBox: { width: "100%", maxWidth: 400, backgroundColor: "#fff", borderRadius: 16, padding: 16, borderWidth: 1, borderColor: "#e2e8f0" },
-  modalCloseIcon: { position: "absolute", top: 12, right: 12, zIndex: 2, width: 28, height: 28, borderRadius: 14, backgroundColor: "#f8fafc", alignItems: "center", justifyContent: "center" },
-  reportModalTitle: { color: "#1e293b", fontSize: 17, fontWeight: "700", paddingRight: 34 },
-  reportModalSubtitle: { color: "#64748b", fontSize: 13, fontWeight: "500", marginTop: 4, marginBottom: 16 },
-  reportOptionBtn: { flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: "#dbeafe", backgroundColor: "#eff6ff", borderRadius: 12, padding: 12, marginTop: 10 },
-  reportOptionText: { color: "#2e4466", fontSize: 14, fontWeight: "600", marginLeft: 10 },
-  reportInput: { minHeight: 120, textAlignVertical: "top", borderWidth: 1, borderColor: "#cbd5e1", borderRadius: 12, padding: 12, color: "#1e293b", backgroundColor: "#f8fafc", fontSize: 14, lineHeight: 20 },
-  wordCounter: { textAlign: "right", color: "#64748b", fontSize: 11, fontWeight: "500", marginTop: 6 },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(15,23,42,0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  reportModalBox: {
+    width: "100%",
+    maxWidth: 400,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  modalCloseIcon: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    zIndex: 2,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#f8fafc",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  reportModalTitle: {
+    color: "#1e293b",
+    fontSize: 17,
+    fontWeight: "700",
+    paddingRight: 34,
+  },
+  reportModalSubtitle: {
+    color: "#64748b",
+    fontSize: 13,
+    fontWeight: "500",
+    marginTop: 4,
+    marginBottom: 16,
+  },
+  reportOptionBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#dbeafe",
+    backgroundColor: "#eff6ff",
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 10,
+  },
+  reportOptionText: {
+    color: "#2e4466",
+    fontSize: 14,
+    fontWeight: "600",
+    marginLeft: 10,
+  },
+  reportInput: {
+    minHeight: 120,
+    textAlignVertical: "top",
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    borderRadius: 12,
+    padding: 12,
+    color: "#1e293b",
+    backgroundColor: "#f8fafc",
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  wordCounter: {
+    textAlign: "right",
+    color: "#64748b",
+    fontSize: 11,
+    fontWeight: "500",
+    marginTop: 6,
+  },
   wordCounterError: { color: "#ef4444" },
-  sendReportBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: "#2e4466", borderRadius: 12, paddingVertical: 12, marginTop: 12 },
-  sendReportText: { color: "#fff", fontSize: 14, fontWeight: "600", marginLeft: 8 },
-  
+  sendReportBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#2e4466",
+    borderRadius: 12,
+    paddingVertical: 12,
+    marginTop: 12,
+  },
+  sendReportText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+    marginLeft: 8,
+  },
+
   bottomNav: {
     position: "absolute",
     left: 0,
@@ -704,7 +1087,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "500",
   },
-  
+
   warningBox: {
     position: "absolute",
     bottom: 90,

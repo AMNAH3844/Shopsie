@@ -20,7 +20,7 @@ import { WebView } from "react-native-webview";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Location from "expo-location";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { API_URLS } from '../../src/services/apiConfig';
+import { API_URLS } from "../../src/services/apiConfig";
 
 const { width } = Dimensions.get("window");
 
@@ -31,7 +31,7 @@ export default function ShopDetails() {
   // Form Fields State
   const [shopName, setShopName] = useState("");
   const [city, setCity] = useState("");
-  const [latitude, setLatitude] = useState("31.464836"); 
+  const [latitude, setLatitude] = useState("31.464836");
   const [longitude, setLongitude] = useState("74.289090");
   const [phone, setPhone] = useState("");
   const [timing, setTiming] = useState("");
@@ -43,7 +43,7 @@ export default function ShopDetails() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [locating, setLocating] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false); 
+  const [isEditMode, setIsEditMode] = useState(false);
   const [hasExistingProfile, setHasExistingProfile] = useState(false);
 
   // ─── TRANSIENT WARNING NOTIFICATION STATE ───────────────────
@@ -55,7 +55,7 @@ export default function ShopDetails() {
     setWarningMessage(msg);
     warningTimerRef.current = setTimeout(() => {
       setWarningMessage("");
-    }, 4500); 
+    }, 4500);
   };
 
   useEffect(() => {
@@ -66,7 +66,7 @@ export default function ShopDetails() {
   }, []);
 
   useEffect(() => {
-    if (Platform.OS !== 'web') return;
+    if (Platform.OS !== "web") return;
     const handleWebMessage = (e) => {
       try {
         const coords = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
@@ -89,10 +89,17 @@ export default function ShopDetails() {
         map.setView(newLatLng, map.getZoom());
       }
     `;
-    if (Platform.OS === 'web') {
+    if (Platform.OS === "web") {
       const iframe = document.getElementById("leaflet-iframe");
       if (iframe && iframe.contentWindow) {
-        iframe.contentWindow.postMessage(JSON.stringify({ type: 'UPDATE_COORDS', lat: latitude, lng: longitude }), "*");
+        iframe.contentWindow.postMessage(
+          JSON.stringify({
+            type: "UPDATE_COORDS",
+            lat: latitude,
+            lng: longitude,
+          }),
+          "*",
+        );
       }
     } else if (webViewRef.current) {
       webViewRef.current.injectJavaScript(jsCode);
@@ -145,15 +152,26 @@ export default function ShopDetails() {
       setLocating(true);
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        if (!quiet) triggerWarningNotification("Warning: Allow location access to find your shop.");
+        if (!quiet)
+          triggerWarningNotification(
+            "Warning: Allow location access to find your shop.",
+          );
         return;
       }
-      const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
       setLatitude(location.coords.latitude.toString());
       setLongitude(location.coords.longitude.toString());
-      if (!quiet) triggerWarningNotification("Success: Store pinpoint updated via live phone GPS!");
+      if (!quiet)
+        triggerWarningNotification(
+          "Success: Store pinpoint updated via live phone GPS!",
+        );
     } catch (err) {
-      if (!quiet) triggerWarningNotification("Warning: Could not detect location automatically.");
+      if (!quiet)
+        triggerWarningNotification(
+          "Warning: Could not detect location automatically.",
+        );
     } finally {
       setLocating(false);
     }
@@ -161,20 +179,30 @@ export default function ShopDetails() {
 
   const searchAndMovePin = async () => {
     if (!searchLocation.trim()) {
-      triggerWarningNotification("Warning: Please enter a location name before searching.");
+      triggerWarningNotification(
+        "Warning: Please enter a location name before searching.",
+      );
       return;
     }
     try {
       setSearchingLocation(true);
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchLocation)}`,
-        { headers: { "User-Agent": "ShopKeeperMobileApp/1.0", "Accept-Language": "en" } }
+        {
+          headers: {
+            "User-Agent": "ShopKeeperMobileApp/1.0",
+            "Accept-Language": "en",
+          },
+        },
       );
-      if (!response.ok) throw new Error(`HTTP Error Status: ${response.status}`);
+      if (!response.ok)
+        throw new Error(`HTTP Error Status: ${response.status}`);
       const results = await response.json();
 
       if (!results || results.length === 0) {
-        triggerWarningNotification("Warning: Location name not found. Try adding a city name.");
+        triggerWarningNotification(
+          "Warning: Location name not found. Try adding a city name.",
+        );
         return;
       }
       const lat = parseFloat(results[0].lat);
@@ -190,9 +218,13 @@ export default function ShopDetails() {
           true;
         `);
       }
-      triggerWarningNotification("Success: Found location and map marker shifted.");
+      triggerWarningNotification(
+        "Success: Found location and map marker shifted.",
+      );
     } catch (error) {
-      triggerWarningNotification("Warning: Failed to query location. Check your internet connection.");
+      triggerWarningNotification(
+        "Warning: Failed to query location. Check your internet connection.",
+      );
     } finally {
       setSearchingLocation(false);
     }
@@ -211,16 +243,30 @@ export default function ShopDetails() {
   };
 
   const handleSaveOrUpdate = async () => {
-    if (!shopName || !city || !latitude || !longitude || !phone || !timing || !description) {
-      triggerWarningNotification("Warning: Please complete all registration fields.");
+    if (
+      !shopName ||
+      !city ||
+      !latitude ||
+      !longitude ||
+      !phone ||
+      !timing ||
+      !description
+    ) {
+      triggerWarningNotification(
+        "Warning: Please complete all registration fields.",
+      );
       return;
     }
     if (!/^\d{11}$/.test(phone)) {
-      triggerWarningNotification("Warning: Phone number must contain exactly 11 digits.");
+      triggerWarningNotification(
+        "Warning: Phone number must contain exactly 11 digits.",
+      );
       return;
     }
     if (phone.startsWith("-")) {
-      triggerWarningNotification("Warning: Negative phone numbers are not allowed.");
+      triggerWarningNotification(
+        "Warning: Negative phone numbers are not allowed.",
+      );
       return;
     }
     try {
@@ -228,9 +274,18 @@ export default function ShopDetails() {
       const token = await AsyncStorage.getItem("token");
       const response = await fetch(API_URLS.SHOP_PROFILE_UPDATE, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
-          shopName, city, latitude: parseFloat(latitude), longitude: parseFloat(longitude), phone, timing, description,
+          shopName,
+          city,
+          latitude: parseFloat(latitude),
+          longitude: parseFloat(longitude),
+          phone,
+          timing,
+          description,
         }),
       });
       const data = await response.json();
@@ -242,12 +297,18 @@ export default function ShopDetails() {
         setPhone(data.shop.phone);
         setTiming(data.shop.timing);
         setDescription(data.shop.description);
-        triggerWarningNotification("Success: Shop metadata updates saved securely!");
+        triggerWarningNotification(
+          "Success: Shop metadata updates saved securely!",
+        );
       } else {
-        triggerWarningNotification(data.message || "Warning: Failed to save changes to profile.");
+        triggerWarningNotification(
+          data.message || "Warning: Failed to save changes to profile.",
+        );
       }
     } catch (err) {
-      triggerWarningNotification(`Warning: Network connection breakdown: ${err.message}`);
+      triggerWarningNotification(
+        `Warning: Network connection breakdown: ${err.message}`,
+      );
     } finally {
       setSaving(false);
     }
@@ -257,7 +318,9 @@ export default function ShopDetails() {
     return (
       <View style={localStyles.centered}>
         <ActivityIndicator size="large" color="#1E3A8A" />
-        <Text style={localStyles.loadingText}>Syncing your shop records...</Text>
+        <Text style={localStyles.loadingText}>
+          Syncing your shop records...
+        </Text>
       </View>
     );
   }
@@ -294,15 +357,20 @@ export default function ShopDetails() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <View style={localStyles.mainContainer}>
-        
         {/* HEADER */}
-        <LinearGradient 
-          colors={["#eef4fe", "#2e4466"]} 
-          start={{ x: 1, y: 0 }} 
-          end={{ x: 0, y: 0 }} 
+        <LinearGradient
+          colors={["#eef4fe", "#2e4466"]}
+          start={{ x: 1, y: 0 }}
+          end={{ x: 0, y: 0 }}
           style={localStyles.gradientHeader}
         >
-          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/shopkeeperDashboard")}>
+          <TouchableOpacity
+            onPress={() =>
+              router.canGoBack()
+                ? router.back()
+                : router.replace("/shopkeeperDashboard")
+            }
+          >
             <Ionicons name="chevron-back" size={28} color="#eef4fe" />
           </TouchableOpacity>
           <View style={localStyles.headerCenterContainer}>
@@ -314,50 +382,87 @@ export default function ShopDetails() {
         </LinearGradient>
 
         {/* FIXED NATIVE CONTAINER AND BEHAVIOR SETTINGS */}
-        <KeyboardAvoidingView 
-          style={localStyles.flexContainer} 
+        <KeyboardAvoidingView
+          style={localStyles.flexContainer}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
         >
-          <ScrollView 
-            showsVerticalScrollIndicator={false} 
+          <ScrollView
+            showsVerticalScrollIndicator={false}
             contentContainerStyle={localStyles.scrollContainer}
             keyboardShouldPersistTaps="handled"
           >
             <View style={localStyles.contentBody}>
-              
               {/* SECTION 1: General Information */}
-              <Text style={localStyles.sectionHeading}>General Information</Text>
+              <Text style={localStyles.sectionHeading}>
+                General Information
+              </Text>
               <View style={localStyles.card}>
                 <Text style={localStyles.fieldLabel}>Shop Name</Text>
-                <View style={[localStyles.inputWrapper, !isEditMode && localStyles.disabledWrapper]}>
-                  <Ionicons name="storefront-outline" size={20} color={isEditMode ? "#64748B" : "#94A3B8"} style={localStyles.inputIcon} />
+                <View
+                  style={[
+                    localStyles.inputWrapper,
+                    !isEditMode && localStyles.disabledWrapper,
+                  ]}
+                >
+                  <Ionicons
+                    name="storefront-outline"
+                    size={20}
+                    color={isEditMode ? "#64748B" : "#94A3B8"}
+                    style={localStyles.inputIcon}
+                  />
                   <TextInput
                     placeholder="Enter Shop Name"
                     placeholderTextColor="#94A3B8"
                     value={shopName}
                     onChangeText={setShopName}
                     editable={isEditMode}
-                    style={[localStyles.baseInputOverride, !isEditMode && localStyles.disabledTextOverride]}
+                    style={[
+                      localStyles.baseInputOverride,
+                      !isEditMode && localStyles.disabledTextOverride,
+                    ]}
                   />
                 </View>
-              
+
                 <Text style={localStyles.fieldLabel}>City</Text>
-                <View style={[localStyles.inputWrapper, !isEditMode && localStyles.disabledWrapper]}>
-                  <Ionicons name="business-outline" size={20} color={isEditMode ? "#64748B" : "#94A3B8"} style={localStyles.inputIcon} />
+                <View
+                  style={[
+                    localStyles.inputWrapper,
+                    !isEditMode && localStyles.disabledWrapper,
+                  ]}
+                >
+                  <Ionicons
+                    name="business-outline"
+                    size={20}
+                    color={isEditMode ? "#64748B" : "#94A3B8"}
+                    style={localStyles.inputIcon}
+                  />
                   <TextInput
                     placeholder="Enter City"
                     placeholderTextColor="#94A3B8"
                     value={city}
                     onChangeText={setCity}
                     editable={isEditMode}
-                    style={[localStyles.baseInputOverride, !isEditMode && localStyles.disabledTextOverride]}
+                    style={[
+                      localStyles.baseInputOverride,
+                      !isEditMode && localStyles.disabledTextOverride,
+                    ]}
                   />
                 </View>
 
                 <Text style={localStyles.fieldLabel}>Phone</Text>
-                <View style={[localStyles.inputWrapper, !isEditMode && localStyles.disabledWrapper]}>
-                  <Ionicons name="call-outline" size={20} color={isEditMode ? "#64748B" : "#94A3B8"} style={localStyles.inputIcon} />
+                <View
+                  style={[
+                    localStyles.inputWrapper,
+                    !isEditMode && localStyles.disabledWrapper,
+                  ]}
+                >
+                  <Ionicons
+                    name="call-outline"
+                    size={20}
+                    color={isEditMode ? "#64748B" : "#94A3B8"}
+                    style={localStyles.inputIcon}
+                  />
                   <TextInput
                     placeholder="Enter Phone Number"
                     placeholderTextColor="#94A3B8"
@@ -383,11 +488,20 @@ export default function ShopDetails() {
               <View style={localStyles.mapHeaderRow}>
                 <View style={{ flex: 1 }}>
                   <View style={localStyles.flexRowAlignCenter}>
-                    <Ionicons name="location" size={18} color="#1E3A8A" style={{ marginRight: 6 }} />
-                    <Text style={localStyles.mapSectionTitle}>Shopfront Pinpoint</Text>
+                    <Ionicons
+                      name="location"
+                      size={18}
+                      color="#1E3A8A"
+                      style={{ marginRight: 6 }}
+                    />
+                    <Text style={localStyles.mapSectionTitle}>
+                      Shopfront Pinpoint
+                    </Text>
                   </View>
                   <Text style={localStyles.mapHelpText}>
-                    {isEditMode ? "Hold and drag the marker pin directly onto your storefront door location." : "This is your currently saved location coordinate displayed to drivers."}
+                    {isEditMode
+                      ? "Hold and drag the marker pin directly onto your storefront door location."
+                      : "This is your currently saved location coordinate displayed to drivers."}
                   </Text>
 
                   {isEditMode && (
@@ -399,26 +513,59 @@ export default function ShopDetails() {
                         onChangeText={setSearchLocation}
                         style={localStyles.searchInput}
                       />
-                      <TouchableOpacity onPress={searchAndMovePin} disabled={searchingLocation} style={localStyles.searchButton}>
-                        {searchingLocation ? <ActivityIndicator color="#fff" /> : <Text style={localStyles.searchButtonText}>Search</Text>}
+                      <TouchableOpacity
+                        onPress={searchAndMovePin}
+                        disabled={searchingLocation}
+                        style={localStyles.searchButton}
+                      >
+                        {searchingLocation ? (
+                          <ActivityIndicator color="#fff" />
+                        ) : (
+                          <Text style={localStyles.searchButtonText}>
+                            Search
+                          </Text>
+                        )}
                       </TouchableOpacity>
                     </View>
                   )}
                 </View>
 
                 {isEditMode && (
-                  <TouchableOpacity onPress={() => fetchCurrentGPSLocation(false)} disabled={locating} style={localStyles.gpsButton} activeOpacity={0.7}>
-                    <Ionicons name="locate" size={14} color="#0284C7" style={{ marginRight: 4 }} />
-                    <Text style={localStyles.gpsButtonText}>{locating ? "Locating..." : "Use GPS"}</Text>
+                  <TouchableOpacity
+                    onPress={() => fetchCurrentGPSLocation(false)}
+                    disabled={locating}
+                    style={localStyles.gpsButton}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons
+                      name="locate"
+                      size={14}
+                      color="#0284C7"
+                      style={{ marginRight: 4 }}
+                    />
+                    <Text style={localStyles.gpsButtonText}>
+                      {locating ? "Locating..." : "Use GPS"}
+                    </Text>
                   </TouchableOpacity>
                 )}
               </View>
 
               <View style={localStyles.mapCardWrapper}>
                 {Platform.OS === "web" ? (
-                  <iframe id="leaflet-iframe" srcDoc={leafletHTML} style={{ width: "100%", height: "100%", border: "none" }} title="Map" />
+                  <iframe
+                    id="leaflet-iframe"
+                    srcDoc={leafletHTML}
+                    style={{ width: "100%", height: "100%", border: "none" }}
+                    title="Map"
+                  />
                 ) : (
-                  <WebView ref={webViewRef} originWhitelist={["*"]} source={{ html: leafletHTML }} onMessage={handleMapMessage} style={{ flex: 1 }} />
+                  <WebView
+                    ref={webViewRef}
+                    originWhitelist={["*"]}
+                    source={{ html: leafletHTML }}
+                    onMessage={handleMapMessage}
+                    style={{ flex: 1 }}
+                  />
                 )}
               </View>
 
@@ -426,16 +573,50 @@ export default function ShopDetails() {
               <View style={localStyles.coordinatesGrid}>
                 <View style={localStyles.coordinateHalf}>
                   <Text style={localStyles.coordLabel}>Latitude</Text>
-                  <View style={[localStyles.coordValueBox, localStyles.latitudeBoxAccent]}>
-                    <Ionicons name="git-commit-outline" size={14} color="#0284C7" style={localStyles.coordIcon} />
-                    <Text style={[localStyles.coordValueText, localStyles.latitudeTextAccent]}>{latitude}</Text>
+                  <View
+                    style={[
+                      localStyles.coordValueBox,
+                      localStyles.latitudeBoxAccent,
+                    ]}
+                  >
+                    <Ionicons
+                      name="git-commit-outline"
+                      size={14}
+                      color="#0284C7"
+                      style={localStyles.coordIcon}
+                    />
+                    <Text
+                      style={[
+                        localStyles.coordValueText,
+                        localStyles.latitudeTextAccent,
+                      ]}
+                    >
+                      {latitude}
+                    </Text>
                   </View>
                 </View>
                 <View style={localStyles.coordinateHalf}>
                   <Text style={localStyles.coordLabel}>Longitude</Text>
-                  <View style={[localStyles.coordValueBox, localStyles.longitudeBoxAccent]}>
-                    <Ionicons name="git-commit-outline" size={14} color="#0284C7" style={localStyles.coordIcon} />
-                    <Text style={[localStyles.coordValueText, localStyles.longitudeTextAccent]}>{longitude}</Text>
+                  <View
+                    style={[
+                      localStyles.coordValueBox,
+                      localStyles.longitudeBoxAccent,
+                    ]}
+                  >
+                    <Ionicons
+                      name="git-commit-outline"
+                      size={14}
+                      color="#0284C7"
+                      style={localStyles.coordIcon}
+                    />
+                    <Text
+                      style={[
+                        localStyles.coordValueText,
+                        localStyles.longitudeTextAccent,
+                      ]}
+                    >
+                      {longitude}
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -444,15 +625,28 @@ export default function ShopDetails() {
               <Text style={localStyles.sectionHeading}>Business Hours</Text>
               <View style={localStyles.card}>
                 <Text style={localStyles.fieldLabel}>Timings</Text>
-                <View style={[localStyles.inputWrapper, !isEditMode && localStyles.disabledWrapper]}>
-                  <Ionicons name="time-outline" size={20} color={isEditMode ? "#64748B" : "#94A3B8"} style={localStyles.inputIcon} />
+                <View
+                  style={[
+                    localStyles.inputWrapper,
+                    !isEditMode && localStyles.disabledWrapper,
+                  ]}
+                >
+                  <Ionicons
+                    name="time-outline"
+                    size={20}
+                    color={isEditMode ? "#64748B" : "#94A3B8"}
+                    style={localStyles.inputIcon}
+                  />
                   <TextInput
                     placeholder="e.g., Monday - Sunday 9:00 AM - 6:00 PM"
                     placeholderTextColor="#94A3B8"
                     value={timing}
                     onChangeText={setTiming}
                     editable={isEditMode}
-                    style={[localStyles.baseInputOverride, !isEditMode && localStyles.disabledTextOverride]}
+                    style={[
+                      localStyles.baseInputOverride,
+                      !isEditMode && localStyles.disabledTextOverride,
+                    ]}
                   />
                 </View>
               </View>
@@ -461,7 +655,13 @@ export default function ShopDetails() {
               <Text style={localStyles.sectionHeading}>Description</Text>
               <View style={localStyles.card}>
                 <Text style={localStyles.fieldLabel}>About Shop</Text>
-                <View style={[localStyles.inputWrapper, !isEditMode && localStyles.disabledWrapper, localStyles.textAreaWrapper]}>
+                <View
+                  style={[
+                    localStyles.inputWrapper,
+                    !isEditMode && localStyles.disabledWrapper,
+                    localStyles.textAreaWrapper,
+                  ]}
+                >
                   <TextInput
                     placeholder="Enter details about your shop items..."
                     placeholderTextColor="#94A3B8"
@@ -470,7 +670,11 @@ export default function ShopDetails() {
                     editable={isEditMode}
                     multiline={true}
                     numberOfLines={4}
-                    style={[localStyles.baseInputOverride, !isEditMode && localStyles.disabledTextOverride, localStyles.textAreaInput]}
+                    style={[
+                      localStyles.baseInputOverride,
+                      !isEditMode && localStyles.disabledTextOverride,
+                      localStyles.textAreaInput,
+                    ]}
                   />
                 </View>
               </View>
@@ -480,23 +684,65 @@ export default function ShopDetails() {
                 <View style={localStyles.actionRow}>
                   {hasExistingProfile ? (
                     <>
-                      <TouchableOpacity onPress={() => setIsEditMode(false)} style={[localStyles.actionButtonHalf, localStyles.cancelButtonColor]}>
+                      <TouchableOpacity
+                        onPress={() => setIsEditMode(false)}
+                        style={[
+                          localStyles.actionButtonHalf,
+                          localStyles.cancelButtonColor,
+                        ]}
+                      >
                         <Text style={localStyles.actionButtonText}>Cancel</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={handleSaveOrUpdate} style={[localStyles.actionButtonHalf, localStyles.saveButtonColor]} disabled={saving}>
-                        {saving ? <ActivityIndicator color="white" /> : <Text style={localStyles.actionButtonText}>Save Changes</Text>}
+                      <TouchableOpacity
+                        onPress={handleSaveOrUpdate}
+                        style={[
+                          localStyles.actionButtonHalf,
+                          localStyles.saveButtonColor,
+                        ]}
+                        disabled={saving}
+                      >
+                        {saving ? (
+                          <ActivityIndicator color="white" />
+                        ) : (
+                          <Text style={localStyles.actionButtonText}>
+                            Save Changes
+                          </Text>
+                        )}
                       </TouchableOpacity>
                     </>
                   ) : (
-                    <TouchableOpacity onPress={handleSaveOrUpdate} style={[localStyles.fullEditButton, localStyles.saveButtonColor]} disabled={saving}>
-                      {saving ? <ActivityIndicator color="white" /> : <Text style={localStyles.fullEditButtonText}>Save Shop Details</Text>}
+                    <TouchableOpacity
+                      onPress={handleSaveOrUpdate}
+                      style={[
+                        localStyles.fullEditButton,
+                        localStyles.saveButtonColor,
+                      ]}
+                      disabled={saving}
+                    >
+                      {saving ? (
+                        <ActivityIndicator color="white" />
+                      ) : (
+                        <Text style={localStyles.fullEditButtonText}>
+                          Save Shop Details
+                        </Text>
+                      )}
                     </TouchableOpacity>
                   )}
                 </View>
               ) : (
-                <TouchableOpacity onPress={() => setIsEditMode(true)} style={localStyles.fullEditButton}>
-                  <Ionicons name="create-outline" size={20} color="white" style={{ marginRight: 8 }} />
-                  <Text style={localStyles.fullEditButtonText}>Edit Shop Details</Text>
+                <TouchableOpacity
+                  onPress={() => setIsEditMode(true)}
+                  style={localStyles.fullEditButton}
+                >
+                  <Ionicons
+                    name="create-outline"
+                    size={20}
+                    color="white"
+                    style={{ marginRight: 8 }}
+                  />
+                  <Text style={localStyles.fullEditButtonText}>
+                    Edit Shop Details
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -506,7 +752,15 @@ export default function ShopDetails() {
         {/* ORANGE WARNING BANNER */}
         {warningMessage ? (
           <View style={localStyles.warningBox}>
-            <Ionicons name={warningMessage.startsWith("Success") ? "checkmark-circle-outline" : "warning-outline"} size={22} color="#fff" />
+            <Ionicons
+              name={
+                warningMessage.startsWith("Success")
+                  ? "checkmark-circle-outline"
+                  : "warning-outline"
+              }
+              size={22}
+              color="#fff"
+            />
             <Text style={localStyles.warningText}>{warningMessage}</Text>
           </View>
         ) : null}
@@ -519,80 +773,248 @@ export default function ShopDetails() {
 }
 
 const localStyles = StyleSheet.create({
-  mainContainer: { flex: 1, backgroundColor: '#F8FAFC' },
+  mainContainer: { flex: 1, backgroundColor: "#F8FAFC" },
   flexContainer: { flex: 1 },
   scrollContainer: {
     paddingVertical: 12,
     paddingBottom: 95, // Clean bumper area spacing past absolute bottom bars
   },
   contentBody: { paddingHorizontal: 20 },
-  centered: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: '#FFFFFF' },
-  loadingText: { marginTop: 12, color: "#64748B", fontWeight: "500", fontSize: 15 },
-  
-  gradientHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 26, width: '100%', elevation: 3 },
-  headerCenterContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  headerTitleText: { fontSize: 20, fontWeight: '700', color: '#2e4466', textAlign: 'center' },
-  
-  sectionHeading: { fontSize: 16, fontWeight: '700', color: '#1E293B', marginTop: 22, marginBottom: 6 },
-  card: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 16, marginTop: 5, marginBottom: 5, shadowColor: '#475569', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.12, shadowRadius: 12, elevation: 4 },
-  fieldLabel: { fontSize: 13, fontWeight: '700', color: '#334155', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 },
-  inputWrapper: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: '#CBD5E1', borderRadius: 12, marginBottom: 16, paddingHorizontal: 12, backgroundColor: '#FFFFFF' },
-  disabledWrapper: { backgroundColor: '#F1F5F9', borderColor: '#E2E8F0' },
-  inputIcon: { marginRight: 8 },
-  baseInputOverride: { flex: 1, height: 48, fontSize: 15, color: '#0F172A', ...Platform.select({ web: { outlineStyle: 'none' } }) },
-  disabledTextOverride: { color: '#64748B', fontWeight: '500' },
-  
-  textAreaWrapper: { alignItems: 'flex-start', paddingVertical: 10 },
-  textAreaInput: { height: 80, textAlignVertical: 'top' },
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+  },
+  loadingText: {
+    marginTop: 12,
+    color: "#64748B",
+    fontWeight: "500",
+    fontSize: 15,
+  },
 
-  mapHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginTop: 20, marginBottom: 4 },
-  flexRowAlignCenter: { flexDirection: 'row', alignItems: 'center' },
-  mapSectionTitle: { fontWeight: '700', fontSize: 16, color: '#1E293B' },
-  mapHelpText: { fontSize: 13, color: '#64748B', marginBottom: 12, lineHeight: 18 },
-  
-  gpsButton: { flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: 6, backgroundColor: "#E0F2FE", paddingHorizontal: 10, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: "#BAE6FD" },
-  gpsButtonText: { color: '#0284C7', fontWeight: '700', fontSize: 12 },
-  mapCardWrapper: { height: 240, width: '100%', borderRadius: 16, overflow: 'hidden', borderWidth: 1.5, borderColor: '#CBD5E1', backgroundColor: '#FFFFFF' },
-  
-  coordinatesGrid: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 14, marginBottom: 10 },
-  coordinateHalf: { width: '48%' },
-  coordLabel: { fontSize: 12, color: '#475569', fontWeight: '700', marginBottom: 6, textTransform: 'uppercase' },
-  coordValueBox: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 8 },
+  gradientHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 26,
+    width: "100%",
+    elevation: 3,
+  },
+  headerCenterContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerTitleText: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#2e4466",
+    textAlign: "center",
+  },
+
+  sectionHeading: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#1E293B",
+    marginTop: 22,
+    marginBottom: 6,
+  },
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 5,
+    marginBottom: 5,
+    shadowColor: "#475569",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  fieldLabel: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#334155",
+    marginBottom: 6,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderColor: "#CBD5E1",
+    borderRadius: 12,
+    marginBottom: 16,
+    paddingHorizontal: 12,
+    backgroundColor: "#FFFFFF",
+  },
+  disabledWrapper: { backgroundColor: "#F1F5F9", borderColor: "#E2E8F0" },
+  inputIcon: { marginRight: 8 },
+  baseInputOverride: {
+    flex: 1,
+    height: 48,
+    fontSize: 15,
+    color: "#0F172A",
+    ...Platform.select({ web: { outlineStyle: "none" } }),
+  },
+  disabledTextOverride: { color: "#64748B", fontWeight: "500" },
+
+  textAreaWrapper: { alignItems: "flex-start", paddingVertical: 10 },
+  textAreaInput: { height: 80, textAlignVertical: "top" },
+
+  mapHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginTop: 20,
+    marginBottom: 4,
+  },
+  flexRowAlignCenter: { flexDirection: "row", alignItems: "center" },
+  mapSectionTitle: { fontWeight: "700", fontSize: 16, color: "#1E293B" },
+  mapHelpText: {
+    fontSize: 13,
+    color: "#64748B",
+    marginBottom: 12,
+    lineHeight: 18,
+  },
+
+  gpsButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 6,
+    backgroundColor: "#E0F2FE",
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#BAE6FD",
+  },
+  gpsButtonText: { color: "#0284C7", fontWeight: "700", fontSize: 12 },
+  mapCardWrapper: {
+    height: 240,
+    width: "100%",
+    borderRadius: 16,
+    overflow: "hidden",
+    borderWidth: 1.5,
+    borderColor: "#CBD5E1",
+    backgroundColor: "#FFFFFF",
+  },
+
+  coordinatesGrid: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 14,
+    marginBottom: 10,
+  },
+  coordinateHalf: { width: "48%" },
+  coordLabel: {
+    fontSize: 12,
+    color: "#475569",
+    fontWeight: "700",
+    marginBottom: 6,
+    textTransform: "uppercase",
+  },
+  coordValueBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
+  },
   coordIcon: { marginRight: 5 },
-  coordValueText: { fontSize: 14, fontFamily: 'monospace', fontWeight: '700' },
-  
-  latitudeBoxAccent: { backgroundColor: '#F0F9FF', borderColor: '#BAE6FD' },
-  latitudeTextAccent: { color: '#0369A1' },
-  longitudeBoxAccent: { backgroundColor: '#F0FDF4', borderColor: '#BAE6FD' },
-  longitudeTextAccent: { color: '#0369A1' },
-  
-  actionRow: { flexDirection: 'row', justifyContent: 'center', width: '100%', marginTop: 25, gap: 12 },
-  actionButtonHalf: { flex: 1, maxWidth: '48%', borderRadius: 14, height: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-  cancelButtonColor: { backgroundColor: '#EF4444' },
-  saveButtonColor: { backgroundColor: '#22C55E' },
-  actionButtonText: { color: 'white', fontWeight: '700', fontSize: 15 },
-  fullEditButton: { width: '100%', flexDirection: 'row', backgroundColor: '#22C55E', borderRadius: 14, height: 52, alignItems: 'center', justifyContent: 'center', marginTop: 25 },
-  fullEditButtonText: { color: 'white', fontWeight: '700', fontSize: 15 },
-  searchContainer: { flexDirection: "row", alignItems: "center", marginBottom: 12, marginTop: 10, gap: 8 },
-  searchInput: { flex: 1, height: 46, borderWidth: 1.5, borderColor: "#CBD5E1", borderRadius: 12, backgroundColor: "#FFFFFF", paddingHorizontal: 14, fontSize: 14, color: "#0F172A" },
-  searchButton: { height: 46, paddingHorizontal: 18, backgroundColor: "#2e4466", borderRadius: 12, justifyContent: "center", alignItems: "center", minWidth: 90 },
+  coordValueText: { fontSize: 14, fontFamily: "monospace", fontWeight: "700" },
+
+  latitudeBoxAccent: { backgroundColor: "#F0F9FF", borderColor: "#BAE6FD" },
+  latitudeTextAccent: { color: "#0369A1" },
+  longitudeBoxAccent: { backgroundColor: "#F0FDF4", borderColor: "#BAE6FD" },
+  longitudeTextAccent: { color: "#0369A1" },
+
+  actionRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    width: "100%",
+    marginTop: 25,
+    gap: 12,
+  },
+  actionButtonHalf: {
+    flex: 1,
+    maxWidth: "48%",
+    borderRadius: 14,
+    height: 52,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cancelButtonColor: { backgroundColor: "#EF4444" },
+  saveButtonColor: { backgroundColor: "#22C55E" },
+  actionButtonText: { color: "white", fontWeight: "700", fontSize: 15 },
+  fullEditButton: {
+    width: "100%",
+    flexDirection: "row",
+    backgroundColor: "#22C55E",
+    borderRadius: 14,
+    height: 52,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 25,
+  },
+  fullEditButtonText: { color: "white", fontWeight: "700", fontSize: 15 },
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+    marginTop: 10,
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    height: 46,
+    borderWidth: 1.5,
+    borderColor: "#CBD5E1",
+    borderRadius: 12,
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 14,
+    fontSize: 14,
+    color: "#0F172A",
+  },
+  searchButton: {
+    height: 46,
+    paddingHorizontal: 18,
+    backgroundColor: "#2e4466",
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    minWidth: 90,
+  },
   searchButtonText: { color: "#FFFFFF", fontWeight: "700", fontSize: 14 },
 
   warningBox: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 85, // Shifted clearly overhead absolute overlay components
     left: 20,
     right: 20,
-    backgroundColor: '#e67e22',
+    backgroundColor: "#e67e22",
     padding: 14,
     borderRadius: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     zIndex: 9999,
     elevation: 6,
     shadowColor: "#000",
     shadowOpacity: 0.3,
     shadowRadius: 5,
   },
-  warningText: { color: '#fff', marginLeft: 10, fontSize: 14, fontWeight: '600', flex: 1 },
+  warningText: {
+    color: "#fff",
+    marginLeft: 10,
+    fontSize: 14,
+    fontWeight: "600",
+    flex: 1,
+  },
 });

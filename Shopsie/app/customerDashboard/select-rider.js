@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { API_URLS } from '../../src/services/apiConfig';
+import { API_URLS } from "../../src/services/apiConfig";
 import {
   View,
   Text,
@@ -65,7 +65,7 @@ export default function CustomerSelectRider() {
 
   const listTotal = useMemo(
     () => items.reduce((sum, item) => sum + Number(item.lineTotal || 0), 0),
-    [items]
+    [items],
   );
 
   const selectedRiderCashLimit = Number(selectedRider?.dailyCashLimit || 0);
@@ -95,7 +95,7 @@ export default function CustomerSelectRider() {
       deliveryLocationLat,
       deliveryLocationLng,
       deliveryLocationLabel,
-    ]
+    ],
   );
 
   const loadRiders = useCallback(async () => {
@@ -106,7 +106,7 @@ export default function CustomerSelectRider() {
         setRiders([]);
         return Alert.alert(
           "Buying location required",
-          "Please choose a valid 'buy items from' location before finding riders."
+          "Please choose a valid 'buy items from' location before finding riders.",
         );
       }
 
@@ -121,7 +121,7 @@ export default function CustomerSelectRider() {
     } catch (e) {
       Alert.alert(
         "Error",
-        e.response?.data?.message || "Could not load nearby riders."
+        e.response?.data?.message || "Could not load nearby riders.",
       );
     } finally {
       setLoading(false);
@@ -131,7 +131,7 @@ export default function CustomerSelectRider() {
   useFocusEffect(
     useCallback(() => {
       loadRiders();
-    }, [loadRiders])
+    }, [loadRiders]),
   );
 
   const handleSharePress = (rider) => {
@@ -149,19 +149,20 @@ export default function CustomerSelectRider() {
 
       const token = await AsyncStorage.getItem("token");
 
-      await axios.post(`${API_URLS.RIDER}/request`,
+      await axios.post(
+        `${API_URLS.RIDER}/request`,
         {
           ...requestPayload,
           riderId: selectedRider.riderId,
         },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       setSentRiders((prev) => ({ ...prev, [selectedRider.riderId]: true }));
     } catch (e) {
       Alert.alert(
         "Error",
-        e.response?.data?.message || "Could not send request."
+        e.response?.data?.message || "Could not send request.",
       );
     } finally {
       setSendingId(null);
@@ -190,7 +191,10 @@ export default function CustomerSelectRider() {
           )}
 
           <Text style={styles.cashMeta}>
-            Cash limit: {item.dailyCashLimit == null ? "Not set" : formatCurrency(item.dailyCashLimit)}
+            Cash limit:{" "}
+            {item.dailyCashLimit == null
+              ? "Not set"
+              : formatCurrency(item.dailyCashLimit)}
           </Text>
           {!!item.paymentProviderName && (
             <Text style={styles.paymentMeta} numberOfLines={1}>
@@ -219,170 +223,201 @@ export default function CustomerSelectRider() {
   };
 
   return (
-  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-    <View style={[styles.container, { backgroundColor: "#ffffff" }]}>
-      
-      {/* ================= EXACT UNIFIED HEADER ================= */}
-      <LinearGradient
-        colors={["#eef4fe", "#2e4466"]}
-        start={{ x: 1, y: 0 }}
-        end={{ x: 0, y: 0 }}
-        style={styles.header}
-      >
-        <TouchableOpacity 
-          onPress={() => router.canGoBack() ? router.back() : router.replace("/customerDashboard")}
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      <View style={[styles.container, { backgroundColor: "#ffffff" }]}>
+        {/* ================= EXACT UNIFIED HEADER ================= */}
+        <LinearGradient
+          colors={["#eef4fe", "#2e4466"]}
+          start={{ x: 1, y: 0 }}
+          end={{ x: 0, y: 0 }}
+          style={styles.header}
         >
-          <Ionicons name="chevron-back" size={28} color="#eef4fe" />
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() =>
+              router.canGoBack()
+                ? router.back()
+                : router.replace("/customerDashboard")
+            }
+          >
+            <Ionicons name="chevron-back" size={28} color="#eef4fe" />
+          </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>Find Rider</Text>
-        <View style={{ width: 28 }} />
-      </LinearGradient>
+          <Text style={styles.headerTitle}>Find Rider</Text>
+          <View style={{ width: 28 }} />
+        </LinearGradient>
 
-      {loading ? (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#2e4466" />
-          <Text style={styles.loadingText}>Finding nearby riders...</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={riders}
-          keyExtractor={(item) => String(item.riderId)}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
-          ListHeaderComponent={
-            <View style={styles.infoCard}>
-              <Text style={styles.infoTitle}>
-                {listName || sourceList?.name || "Selected List"}
-              </Text>
-
-              <Text style={styles.infoMeta}>
-                Showing riders online near the buying location
-              </Text>
-
-              {!!buyingLocationLabel && (
-                <View style={styles.locationRow}>
-                  <Ionicons name="location" size={14} color="#2e4466" />
-                  <Text style={styles.locationRowText} numberOfLines={2}>
-                    {buyingLocationLabel}
-                  </Text>
-                </View>
-              )}
-
-              <Text style={styles.countText}>
-                {riders.length} rider(s) found nearby
-              </Text>
-            </View>
-          }
-          ListEmptyComponent={
-            <View style={styles.emptyBox}>
-              <MaterialCommunityIcons
-                name="bicycle-electric"
-                size={56}
-                color="#cbd5e1"
-              />
-              <Text style={styles.emptyText}>
-                No online riders found near this area.
-              </Text>
-              <Text style={styles.emptyMeta}>
-                Riders must save their location and turn on duty status to appear here.
-              </Text>
-            </View>
-          }
-          renderItem={renderRider}
-        />
-      )}
-
-      {/* CONFIRMATION MODAL */}
-      <Modal
-        visible={confirmVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => {
-          setConfirmVisible(false);
-          setSelectedRider(null);
-        }}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalBox}>
-            <TouchableOpacity
-              onPress={() => {
-                setConfirmVisible(false);
-                setSelectedRider(null);
-              }}
-              style={styles.closeCornerBtn}
-            >
-              <Text style={styles.closeX}>✕</Text>
-            </TouchableOpacity>
-            
-            <Text style={styles.modalTitle}>Share List?</Text>
-
-            <Text style={styles.modalBody}>
-              Do you want to share{" "}
-              <Text style={styles.boldText}>
-                "{listName || "this list"}"
-              </Text>{" "}
-              with rider{" "}
-              <Text style={styles.boldText}>{selectedRider?.name}</Text>?
-            </Text>
-
-            <View style={styles.advanceBox}>
-              <Text style={styles.advanceText}>List total: {formatCurrency(listTotal)}</Text>
-              <Text style={styles.advanceText}>
-                Rider cash limit: {selectedRider?.dailyCashLimit == null ? "Not set" : formatCurrency(selectedRider.dailyCashLimit)}
-              </Text>
-              {selectedAdvanceAmount > 0 ? (
-                <Text style={styles.advanceWarning}>
-                  You will have to pay {formatCurrency(selectedAdvanceAmount)} in advance before delivery because rider has {formatCurrency(selectedRiderCashLimit)} cash.
+        {loading ? (
+          <View style={styles.centered}>
+            <ActivityIndicator size="large" color="#2e4466" />
+            <Text style={styles.loadingText}>Finding nearby riders...</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={riders}
+            keyExtractor={(item) => String(item.riderId)}
+            contentContainerStyle={styles.list}
+            showsVerticalScrollIndicator={false}
+            ListHeaderComponent={
+              <View style={styles.infoCard}>
+                <Text style={styles.infoTitle}>
+                  {listName || sourceList?.name || "Selected List"}
                 </Text>
-              ) : (
-                <Text style={styles.advanceOk}>No advance is required from cash-limit difference.</Text>
-              )}
-            </View>
 
-            <View style={styles.modalBtnRow}>
+                <Text style={styles.infoMeta}>
+                  Showing riders online near the buying location
+                </Text>
+
+                {!!buyingLocationLabel && (
+                  <View style={styles.locationRow}>
+                    <Ionicons name="location" size={14} color="#2e4466" />
+                    <Text style={styles.locationRowText} numberOfLines={2}>
+                      {buyingLocationLabel}
+                    </Text>
+                  </View>
+                )}
+
+                <Text style={styles.countText}>
+                  {riders.length} rider(s) found nearby
+                </Text>
+              </View>
+            }
+            ListEmptyComponent={
+              <View style={styles.emptyBox}>
+                <MaterialCommunityIcons
+                  name="bicycle-electric"
+                  size={56}
+                  color="#cbd5e1"
+                />
+                <Text style={styles.emptyText}>
+                  No online riders found near this area.
+                </Text>
+                <Text style={styles.emptyMeta}>
+                  Riders must save their location and turn on duty status to
+                  appear here.
+                </Text>
+              </View>
+            }
+            renderItem={renderRider}
+          />
+        )}
+
+        {/* CONFIRMATION MODAL */}
+        <Modal
+          visible={confirmVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => {
+            setConfirmVisible(false);
+            setSelectedRider(null);
+          }}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalBox}>
               <TouchableOpacity
-                style={styles.noBtn}
                 onPress={() => {
                   setConfirmVisible(false);
                   setSelectedRider(null);
                 }}
+                style={styles.closeCornerBtn}
               >
-                <Text style={styles.noBtnText}>No</Text>
+                <Text style={styles.closeX}>✕</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.yesBtn} onPress={handleConfirmShare}>
-                <Ionicons
-                  name="share-social"
-                  size={16}
-                  color="#fff"
-                  style={{ marginRight: 6 }}
-                />
-                <Text style={styles.yesBtnText}>Yes</Text>
-              </TouchableOpacity>
+              <Text style={styles.modalTitle}>Share List?</Text>
+
+              <Text style={styles.modalBody}>
+                Do you want to share{" "}
+                <Text style={styles.boldText}>"{listName || "this list"}"</Text>{" "}
+                with rider{" "}
+                <Text style={styles.boldText}>{selectedRider?.name}</Text>?
+              </Text>
+
+              <View style={styles.advanceBox}>
+                <Text style={styles.advanceText}>
+                  List total: {formatCurrency(listTotal)}
+                </Text>
+                <Text style={styles.advanceText}>
+                  Rider cash limit:{" "}
+                  {selectedRider?.dailyCashLimit == null
+                    ? "Not set"
+                    : formatCurrency(selectedRider.dailyCashLimit)}
+                </Text>
+                {selectedAdvanceAmount > 0 ? (
+                  <Text style={styles.advanceWarning}>
+                    You will have to pay {formatCurrency(selectedAdvanceAmount)}{" "}
+                    in advance before delivery because rider has{" "}
+                    {formatCurrency(selectedRiderCashLimit)} cash.
+                  </Text>
+                ) : (
+                  <Text style={styles.advanceOk}>
+                    No advance is required from cash-limit difference.
+                  </Text>
+                )}
+              </View>
+
+              <View style={styles.modalBtnRow}>
+                <TouchableOpacity
+                  style={styles.noBtn}
+                  onPress={() => {
+                    setConfirmVisible(false);
+                    setSelectedRider(null);
+                  }}
+                >
+                  <Text style={styles.noBtnText}>No</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.yesBtn}
+                  onPress={handleConfirmShare}
+                >
+                  <Ionicons
+                    name="share-social"
+                    size={16}
+                    color="#fff"
+                    style={{ marginRight: 6 }}
+                  />
+                  <Text style={styles.yesBtnText}>Yes</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
 
-      {/* ================= EXACT UNIFIED BOTTOM NAVIGATION ================= */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.tabItem} onPress={() => router.push("/customerDashboard")}>
-          <Ionicons name="home" size={22} color="white" />
-          <Text style={styles.navText}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem} onPress={() => router.push("/customerDashboard/savedlist")}>
-          <MaterialCommunityIcons name="format-list-bulleted" size={22} color="white" />
-          <Text style={styles.navText}>Saved Lists</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem} onPress={() => router.push("/customerDashboard/inbox")}>
-          <Ionicons name="chatbubble-ellipses-outline" size={22} color="white" />
-          <Text style={styles.navText}>Inbox</Text>
-        </TouchableOpacity>
+        {/* ================= EXACT UNIFIED BOTTOM NAVIGATION ================= */}
+        <View style={styles.bottomNav}>
+          <TouchableOpacity
+            style={styles.tabItem}
+            onPress={() => router.push("/customerDashboard")}
+          >
+            <Ionicons name="home" size={22} color="white" />
+            <Text style={styles.navText}>Home</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.tabItem}
+            onPress={() => router.push("/customerDashboard/savedlist")}
+          >
+            <MaterialCommunityIcons
+              name="format-list-bulleted"
+              size={22}
+              color="white"
+            />
+            <Text style={styles.navText}>Saved Lists</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.tabItem}
+            onPress={() => router.push("/customerDashboard/inbox")}
+          >
+            <Ionicons
+              name="chatbubble-ellipses-outline"
+              size={22}
+              color="white"
+            />
+            <Text style={styles.navText}>Inbox</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-     </View>
-  </SafeAreaView>
-);
+    </SafeAreaView>
+  );
 }
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#ffffff" },
@@ -407,10 +442,10 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   loadingText: { color: "#64748b", fontSize: 14 },
-list: {
-  padding: 16,
-  paddingBottom: 75,
-},
+  list: {
+    padding: 16,
+    paddingBottom: 75,
+  },
   infoCard: {
     backgroundColor: "#fff",
     borderRadius: 18,
@@ -470,7 +505,12 @@ list: {
   meta: { color: "#64748b", fontSize: 12, marginTop: 3 },
   locationMeta: { color: "#334155", fontSize: 11, marginTop: 3 },
   cashMeta: { color: "#2e4466", fontSize: 12, marginTop: 5, fontWeight: "900" },
-  paymentMeta: { color: "#047857", fontSize: 11, marginTop: 3, fontWeight: "800" },
+  paymentMeta: {
+    color: "#047857",
+    fontSize: 11,
+    marginTop: 3,
+    fontWeight: "800",
+  },
   shareIconBtn: {
     width: 46,
     height: 46,
@@ -555,9 +595,25 @@ list: {
     borderWidth: 1,
     borderColor: "#e1e8ee",
   },
-  advanceText: { color: "#334155", fontSize: 12, fontWeight: "700", marginTop: 2 },
-  advanceWarning: { color: "#b91c1c", fontSize: 12, fontWeight: "900", lineHeight: 18, marginTop: 8 },
-  advanceOk: { color: "#047857", fontSize: 12, fontWeight: "900", marginTop: 8 },
+  advanceText: {
+    color: "#334155",
+    fontSize: 12,
+    fontWeight: "700",
+    marginTop: 2,
+  },
+  advanceWarning: {
+    color: "#b91c1c",
+    fontSize: 12,
+    fontWeight: "900",
+    lineHeight: 18,
+    marginTop: 8,
+  },
+  advanceOk: {
+    color: "#047857",
+    fontSize: 12,
+    fontWeight: "900",
+    marginTop: 8,
+  },
   modalBtnRow: { flexDirection: "row", gap: 12, width: "100%" },
   noBtn: {
     flex: 1,
@@ -599,34 +655,34 @@ list: {
     color: "#94a3b8",
     fontWeight: "bold",
   },
-bottomNav: {
-  position: "absolute",
-  left: 0,
-  right: 0,
-  bottom: 0,
+  bottomNav: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
 
-  height: 75,
+    height: 75,
 
-  backgroundColor: "#2e4466",
-  flexDirection: "row",
-  justifyContent: "space-around",
-  alignItems: "center",
+    backgroundColor: "#2e4466",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
 
-  elevation: 0,
-  borderTopWidth: 0,
-  zIndex: 1000,
-},
- tabItem: {
-  flex: 1,
-  alignItems: "center",
-  justifyContent: "center",
-  paddingVertical: 4,
-},
-navText: {
-  color: "white",
-  fontSize: 12,
-  marginTop: 0,
-  textAlign: "center",
-  fontWeight: "500",
-}
+    elevation: 0,
+    borderTopWidth: 0,
+    zIndex: 1000,
+  },
+  tabItem: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 4,
+  },
+  navText: {
+    color: "white",
+    fontSize: 12,
+    marginTop: 0,
+    textAlign: "center",
+    fontWeight: "500",
+  },
 });

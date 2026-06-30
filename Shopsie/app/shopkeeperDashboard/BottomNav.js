@@ -40,31 +40,37 @@ export default function BottomNav() {
   }, []);
 
   const items = [
-    { 
-      label: "Home", 
-      icon: <Ionicons name="home" size={22} color="white" />, 
-      path: "/shopkeeperDashboard" 
+    {
+      label: "Home",
+      icon: <Ionicons name="home" size={22} color="white" />,
+      path: "/shopkeeperDashboard",
     },
-    { 
-      label: "Stock", 
-      icon: <MaterialCommunityIcons name="package-variant-closed" size={24} color="white" />, 
-      path: "/shopkeeperDashboard/viewStock" 
+    {
+      label: "Stock",
+      icon: (
+        <MaterialCommunityIcons
+          name="package-variant-closed"
+          size={24}
+          color="white"
+        />
+      ),
+      path: "/shopkeeperDashboard/viewStock",
     },
-    { 
-      label: "Orders", 
-      icon: <Ionicons name="receipt" size={24} color="white" />, 
-      path: "/shopkeeperDashboard/orders" 
+    {
+      label: "Orders",
+      icon: <Ionicons name="receipt" size={24} color="white" />,
+      path: "/shopkeeperDashboard/orders",
     },
   ];
 
   return (
     <View style={styles.bottomNav}>
       {items.map((item) => (
-        <TouchableOpacity 
-          key={item.label} 
-          style={styles.navItem} 
+        <TouchableOpacity
+          key={item.label}
+          style={styles.navItem}
           onPress={() => {
-            // FIXED: Using router.navigate preserves the stack history context 
+            // FIXED: Using router.navigate preserves the stack history context
             // so the hardware back button returns to the last viewed tab instead of page 0.
             router.navigate(item.path);
           }}
@@ -79,7 +85,7 @@ export default function BottomNav() {
               </View>
             )}
           </View>
-          
+
           <Text style={styles.navText}>{item.label}</Text>
         </TouchableOpacity>
       ))}

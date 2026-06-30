@@ -1,11 +1,5 @@
 import React, { useState, useCallback } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Image,
-  ScrollView,
-} from "react-native";
+import { View, Text, TouchableOpacity, Image, ScrollView } from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -20,8 +14,7 @@ import styles from "../styles/dashboardStyle";
 import { API_URLS } from "../../src/services/apiConfig";
 import BottomNavBar from "./BottomNav";
 
-const DEFAULT_IMAGE =
-  "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+const DEFAULT_IMAGE = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
 
 export default function ShopkeeperDashboard() {
   const router = useRouter();
@@ -45,9 +38,7 @@ export default function ShopkeeperDashboard() {
 
             const img = parsedData.profileImage;
             setProfileImage(
-              img && img.startsWith("http")
-                ? img
-                : DEFAULT_IMAGE
+              img && img.startsWith("http") ? img : DEFAULT_IMAGE,
             );
           } else {
             setUsername("Shopkeeper Name");
@@ -56,49 +47,32 @@ export default function ShopkeeperDashboard() {
 
           if (token) {
             // Fetch notifications
-            const notificationRes = await fetch(
-              API_URLS.SHOP_NOTIFICATIONS,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
+            const notificationRes = await fetch(API_URLS.SHOP_NOTIFICATIONS, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
 
-            const notificationData =
-              await notificationRes.json();
+            const notificationData = await notificationRes.json();
 
-            if (
-              notificationRes.ok &&
-              Array.isArray(notificationData)
-            ) {
+            if (notificationRes.ok && Array.isArray(notificationData)) {
               setNotificationCount(
-                notificationData.filter(
-                  (item) => !item.isRead
-                ).length
+                notificationData.filter((item) => !item.isRead).length,
               );
             }
 
             // Fetch orders
-            const orderRes = await fetch(
-              API_URLS.SHOP_ORDERS,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
+            const orderRes = await fetch(API_URLS.SHOP_ORDERS, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
 
             const orderData = await orderRes.json();
 
-            if (
-              orderRes.ok &&
-              Array.isArray(orderData)
-            ) {
+            if (orderRes.ok && Array.isArray(orderData)) {
               setOrderCount(
-                orderData.filter(
-                  (item) => item.status === "PENDING"
-                ).length
+                orderData.filter((item) => item.status === "PENDING").length,
               );
             }
           }
@@ -109,189 +83,146 @@ export default function ShopkeeperDashboard() {
       };
 
       loadUserData();
-    }, [])
+    }, []),
   );
 
- return (
-  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-    <View style={{ flex: 1 }}>
-      {/* ================= ORIGINAL HEADER ================= */}
-      <LinearGradient
-        colors={["#eef4fe", "#2e4466"]}
-        start={{ x: 1, y: 0 }}
-        end={{ x: 0, y: 0 }}
-        style={styles.header}
-      >
-        <Text style={styles.logo}>SHOPSIE</Text>
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      <View style={{ flex: 1 }}>
+        {/* ================= ORIGINAL HEADER ================= */}
+        <LinearGradient
+          colors={["#eef4fe", "#2e4466"]}
+          start={{ x: 1, y: 0 }}
+          end={{ x: 0, y: 0 }}
+          style={styles.header}
+        >
+          <Text style={styles.logo}>SHOPSIE</Text>
 
-        <View style={styles.icons}>
-          <TouchableOpacity
-            onPress={() =>
-              router.push("/notifications")
-            }
-          >
-            <Ionicons
-              name="notifications"
-              size={24}
-              color="#2e4466"
-              style={styles.iconSpacing}
-            />
+          <View style={styles.icons}>
+            <TouchableOpacity onPress={() => router.push("/notifications")}>
+              <Ionicons
+                name="notifications"
+                size={24}
+                color="#2e4466"
+                style={styles.iconSpacing}
+              />
 
-            {notificationCount > 0 && (
-              <View
-                style={{
-                  position: "absolute",
-                  top: -8,
-                  right: 6,
-                  minWidth: 18,
-                  height: 18,
-                  borderRadius: 9,
-                  backgroundColor: "#EF4444",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  paddingHorizontal: 4,
-                }}
-              >
-                <Text
+              {notificationCount > 0 && (
+                <View
                   style={{
-                    color: "#fff",
-                    fontSize: 10,
-                    fontWeight: "800",
+                    position: "absolute",
+                    top: -8,
+                    right: 6,
+                    minWidth: 18,
+                    height: 18,
+                    borderRadius: 9,
+                    backgroundColor: "#EF4444",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    paddingHorizontal: 4,
                   }}
                 >
-                  {notificationCount > 9
-                    ? "9+"
-                    : notificationCount}
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
+                  <Text
+                    style={{
+                      color: "#fff",
+                      fontSize: 10,
+                      fontWeight: "800",
+                    }}
+                  >
+                    {notificationCount > 9 ? "9+" : notificationCount}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={() =>
-              router.push({
-                pathname: "/settings",
-                params: {
-                  role: "shopkeeper",
-                },
-              })
-            }
-          >
-            <Ionicons
-              name="settings"
-              size={24}
-              color="#2e4466"
+            <TouchableOpacity
+              onPress={() =>
+                router.push({
+                  pathname: "/settings",
+                  params: {
+                    role: "shopkeeper",
+                  },
+                })
+              }
+            >
+              <Ionicons name="settings" size={24} color="#2e4466" />
+            </TouchableOpacity>
+          </View>
+        </LinearGradient>
+
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingBottom: 75,
+          }}
+        >
+          {/* ================= PROFILE CARD ================= */}
+          <View style={styles.profileCard}>
+            <Image
+              source={{
+                uri: profileImage + "?t=" + Date.now(),
+              }}
+              style={styles.profileImage}
             />
-          </TouchableOpacity>
-        </View>
-      </LinearGradient>
 
-     <ScrollView
-  showsVerticalScrollIndicator={false}
-  contentContainerStyle={{
-    paddingBottom: 75,
-  }}
->
-        {/* ================= PROFILE CARD ================= */}
-        <View style={styles.profileCard}>
-          <Image
-            source={{
-              uri:
-                profileImage +
-                "?t=" +
-                Date.now(),
-            }}
-            style={styles.profileImage}
-          />
+            <Text style={styles.username}>{username}</Text>
+          </View>
 
-          <Text style={styles.username}>
-            {username}
-          </Text>
-        </View>    
+          {/* ================= GRID BUTTONS ================= */}
+          <View style={styles.grid}>
+            {/* Enter Stock */}
+            <TouchableOpacity
+              style={styles.card}
+              onPress={() => router.push("/shopkeeperDashboard/enterStock")}
+            >
+              <MaterialCommunityIcons
+                name="warehouse"
+                size={35}
+                color="white"
+              />
+              <Text style={styles.cardText}>Enter Stock</Text>
+            </TouchableOpacity>
 
-        {/* ================= GRID BUTTONS ================= */}
-        <View style={styles.grid}>
-          {/* Enter Stock */}
-          <TouchableOpacity
-            style={styles.card}
-            onPress={() =>
-              router.push(
-                "/shopkeeperDashboard/enterStock"
-              )
-            }
-          >
-            <MaterialCommunityIcons
-              name="warehouse"
-              size={35}
-              color="white"
-            />
-            <Text style={styles.cardText}>
-              Enter Stock
-            </Text>
-          </TouchableOpacity>
+            {/* Update Stock */}
+            <TouchableOpacity
+              style={styles.card}
+              onPress={() => router.push("/shopkeeperDashboard/updateStock")}
+            >
+              <FontAwesome5 name="edit" size={35} color="white" />
+              <Text style={styles.cardText}>Update Stock</Text>
+            </TouchableOpacity>
 
-          {/* Update Stock */}
-          <TouchableOpacity
-            style={styles.card}
-            onPress={() =>
-              router.push(
-                "/shopkeeperDashboard/updateStock"
-              )
-            }
-          >
-            <FontAwesome5
-              name="edit"
-              size={35}
-              color="white"
-            />
-            <Text style={styles.cardText}>
-              Update Stock
-            </Text>
-          </TouchableOpacity>
+            {/* View Stock */}
+            <TouchableOpacity
+              style={styles.card}
+              onPress={() => router.push("/shopkeeperDashboard/viewStock")}
+            >
+              <MaterialCommunityIcons
+                name="package-variant-closed"
+                size={35}
+                color="white"
+              />
+              <Text style={styles.cardText}>View Stock</Text>
+            </TouchableOpacity>
 
-          {/* View Stock */}
-          <TouchableOpacity
-            style={styles.card}
-            onPress={() =>
-              router.push(
-                "/shopkeeperDashboard/viewStock"
-              )
-            }
-          >
-            <MaterialCommunityIcons
-              name="package-variant-closed"
-              size={35}
-              color="white"
-            />
-            <Text style={styles.cardText}>
-              View Stock
-            </Text>
-          </TouchableOpacity>
+            {/* Shop Details */}
+            <TouchableOpacity
+              style={styles.card}
+              onPress={() => router.push("/shopkeeperDashboard/shopDetails")}
+            >
+              <MaterialCommunityIcons
+                name="storefront"
+                size={35}
+                color="white"
+              />
+              <Text style={styles.cardText}>Shop Details</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
 
-          {/* Shop Details */}
-          <TouchableOpacity
-            style={styles.card}
-            onPress={() =>
-              router.push(
-                "/shopkeeperDashboard/shopDetails"
-              )
-            }
-          >
-            <MaterialCommunityIcons
-              name="storefront"
-              size={35}
-              color="white"
-            />
-            <Text style={styles.cardText}>
-              Shop Details
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-
-      {/* ================= REUSABLE BOTTOM NAVIGATION ================= */}
-      <BottomNavBar />
+        {/* ================= REUSABLE BOTTOM NAVIGATION ================= */}
+        <BottomNavBar />
       </View>
-  </SafeAreaView>
-);
+    </SafeAreaView>
+  );
 }

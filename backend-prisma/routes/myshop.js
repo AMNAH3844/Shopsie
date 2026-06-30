@@ -72,15 +72,8 @@ router.post("/update", verifyToken, async (req, res) => {
   try {
     const userId = Number(req.user.id);
 
-    const {
-      shopName,
-      city,
-      latitude,
-      longitude,
-      phone,
-      timing,
-      description,
-    } = req.body;
+    const { shopName, city, latitude, longitude, phone, timing, description } =
+      req.body;
 
     if (
       !shopName ||
@@ -90,18 +83,14 @@ router.post("/update", verifyToken, async (req, res) => {
     ) {
       return res.status(400).json({
         success: false,
-        message:
-          "Shop name, city, latitude, and longitude are required.",
+        message: "Shop name, city, latitude, and longitude are required.",
       });
     }
 
     const parsedLat = Number(latitude);
     const parsedLng = Number(longitude);
 
-    if (
-      !Number.isFinite(parsedLat) ||
-      !Number.isFinite(parsedLng)
-    ) {
+    if (!Number.isFinite(parsedLat) || !Number.isFinite(parsedLng)) {
       return res.status(400).json({
         success: false,
         message: "Latitude and longitude must be valid numbers.",
@@ -117,8 +106,7 @@ router.post("/update", verifyToken, async (req, res) => {
     if (!shopkeeper) {
       return res.status(404).json({
         success: false,
-        message:
-          "Shopkeeper profile not found for this user account.",
+        message: "Shopkeeper profile not found for this user account.",
       });
     }
 

@@ -29,8 +29,8 @@ const ensurePaymentProviders = async () => {
         where: { name: provider.name },
         update: { type: provider.type },
         create: provider,
-      })
-    )
+      }),
+    ),
   );
 };
 
@@ -43,7 +43,12 @@ const formatRiderPaymentInfo = (rider) => {
     return "Rider online payment info is not provided yet.";
   }
 
-  const accountLabel = method === "wallet" ? "Number" : method === "bank" ? "Account No" : "Card/Account No";
+  const accountLabel =
+    method === "wallet"
+      ? "Number"
+      : method === "bank"
+        ? "Account No"
+        : "Card/Account No";
   return `Rider online payment info: ${provider} | ${accountLabel}: ${account}`;
 };
 
@@ -148,21 +153,35 @@ router.get("/me/account-details", verifyToken, async (req, res) => {
 
 router.put("/me/account-details", verifyToken, async (req, res) => {
   try {
-    const { dailyCashLimit, paymentMethodType, paymentProviderName, paymentAccountNumber } = req.body;
+    const {
+      dailyCashLimit,
+      paymentMethodType,
+      paymentProviderName,
+      paymentAccountNumber,
+    } = req.body;
     const rider = await getMyRider(req.user.id);
     if (!rider) return res.status(404).json({ message: "Rider not found" });
 
     const parsedLimit =
-      dailyCashLimit === null || dailyCashLimit === undefined || dailyCashLimit === ""
+      dailyCashLimit === null ||
+      dailyCashLimit === undefined ||
+      dailyCashLimit === ""
         ? null
         : Number(dailyCashLimit);
 
-    if (parsedLimit !== null && (!Number.isFinite(parsedLimit) || parsedLimit < 0)) {
-      return res.status(400).json({ message: "Daily cash limit must be digits only" });
+    if (
+      parsedLimit !== null &&
+      (!Number.isFinite(parsedLimit) || parsedLimit < 0)
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Daily cash limit must be digits only" });
     }
 
     if (paymentAccountNumber && !/^\d+$/.test(String(paymentAccountNumber))) {
-      return res.status(400).json({ message: "Payment number/account must contain digits only" });
+      return res
+        .status(400)
+        .json({ message: "Payment number/account must contain digits only" });
     }
 
     const updated = await prisma.rider.update({
@@ -249,7 +268,6 @@ router.get("/requests", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Failed to load requests" });
   }
 });
-
 
 /* ===================== DELETE EXPIRED REQUEST (SOFT OR HARD) ===================== */
 
@@ -358,10 +376,10 @@ router.post("/requests/:id/respond", verifyToken, async (req, res) => {
     }
 
     if (request.customerArchivedAt) {
-  return res.status(400).json({
-    message: "This request has expired.",
-  });
-}
+      return res.status(400).json({
+        message: "This request has expired.",
+      });
+    }
 
     const accepted = action === "accept";
     const updated = await prisma.riderRequest.update({
@@ -392,26 +410,26 @@ router.post("/requests/:id/respond", verifyToken, async (req, res) => {
       },
     });
 
-const riderUser = await prisma.user.findUnique({
-  where: { id: Number(req.user.id) },
-  select: {
-    id: true,
-    username: true,
-  },
-});
+    const riderUser = await prisma.user.findUnique({
+      where: { id: Number(req.user.id) },
+      select: {
+        id: true,
+        username: true,
+      },
+    });
 
-await prisma.notification.create({
-  data: {
-    userId: request.customerId,
-    senderId: riderUser.id,
-    senderName: riderUser.username,
-    type: accepted ? "RIDER_ACCEPTED" : "RIDER_REJECTED",
-    title: accepted ? "Request Accepted" : "Request Rejected",
-    message: accepted
-      ? `${riderUser.username} accepted your shopping request`
-      : `${riderUser.username} rejected your shopping request`,
-  },
-});
+    await prisma.notification.create({
+      data: {
+        userId: request.customerId,
+        senderId: riderUser.id,
+        senderName: riderUser.username,
+        type: accepted ? "RIDER_ACCEPTED" : "RIDER_REJECTED",
+        title: accepted ? "Request Accepted" : "Request Rejected",
+        message: accepted
+          ? `${riderUser.username} accepted your shopping request`
+          : `${riderUser.username} rejected your shopping request`,
+      },
+    });
 
     res.json(updated);
   } catch (err) {
@@ -501,31 +519,30 @@ router.post("/requests/:id/delivered", verifyToken, async (req, res) => {
         messages: {
           create: {
             senderId: Number(req.user.id),
-            text:
-              "🚚 Rider marked delivery completed. Waiting for customer confirmation.",
+            text: "🚚 Rider marked delivery completed. Waiting for customer confirmation.",
           },
         },
       },
     });
 
-const riderUser = await prisma.user.findUnique({
-  where: { id: Number(req.user.id) },
-  select: {
-    id: true,
-    username: true,
-  },
-});
+    const riderUser = await prisma.user.findUnique({
+      where: { id: Number(req.user.id) },
+      select: {
+        id: true,
+        username: true,
+      },
+    });
 
-await prisma.notification.create({
-  data: {
-    userId: request.customerId,
-    senderId: riderUser.id,
-    senderName: riderUser.username,
-    type: "DELIVERY_COMPLETED",
-    title: "Delivery Completed",
-    message: `${riderUser.username} marked your delivery as completed`,
-  },
-});
+    await prisma.notification.create({
+      data: {
+        userId: request.customerId,
+        senderId: riderUser.id,
+        senderName: riderUser.username,
+        type: "DELIVERY_COMPLETED",
+        title: "Delivery Completed",
+        message: `${riderUser.username} marked your delivery as completed`,
+      },
+    });
 
     res.json(updated);
   } catch (err) {
@@ -543,10 +560,14 @@ router.post("/requests/:id/confirm", verifyToken, async (req, res) => {
 
     if (!request) return res.status(404).json({ message: "Not found" });
     if (request.customerId !== Number(req.user.id)) {
-      return res.status(403).json({ message: "Only customer can confirm delivery" });
+      return res
+        .status(403)
+        .json({ message: "Only customer can confirm delivery" });
     }
     if (!request.riderDeliveredAt) {
-      return res.status(400).json({ message: "Rider has not marked this delivered yet" });
+      return res
+        .status(400)
+        .json({ message: "Rider has not marked this delivered yet" });
     }
 
     const updated = await prisma.riderRequest.update({
@@ -565,28 +586,28 @@ router.post("/requests/:id/confirm", verifyToken, async (req, res) => {
       },
     });
 
-const customer = await prisma.user.findUnique({
-  where: { id: Number(req.user.id) },
-  select: {
-    id: true,
-    username: true,
-  },
-});
+    const customer = await prisma.user.findUnique({
+      where: { id: Number(req.user.id) },
+      select: {
+        id: true,
+        username: true,
+      },
+    });
 
-const riderRecord = await prisma.rider.findUnique({
-  where: { id: request.riderId },
-});
+    const riderRecord = await prisma.rider.findUnique({
+      where: { id: request.riderId },
+    });
 
-await prisma.notification.create({
-  data: {
-    userId: riderRecord.userId,
-    senderId: customer.id,
-    senderName: customer.username,
-    type: "DELIVERY_CONFIRMED",
-    title: "Delivery Confirmed",
-    message: `${customer.username} confirmed the delivery`,
-  },
-});
+    await prisma.notification.create({
+      data: {
+        userId: riderRecord.userId,
+        senderId: customer.id,
+        senderName: customer.username,
+        type: "DELIVERY_CONFIRMED",
+        title: "Delivery Confirmed",
+        message: `${customer.username} confirmed the delivery`,
+      },
+    });
 
     res.json(updated);
   } catch (err) {
@@ -612,11 +633,9 @@ router.delete("/requests/:id", verifyToken, async (req, res) => {
 
     const rider = await getMyRider(req.user.id);
 
-    const isCustomer =
-      request.customerId === Number(req.user.id);
+    const isCustomer = request.customerId === Number(req.user.id);
 
-    const isRider =
-      rider && request.riderId === rider.id;
+    const isRider = rider && request.riderId === rider.id;
 
     if (!isCustomer && !isRider) {
       return res.status(403).json({
@@ -627,12 +646,10 @@ router.delete("/requests/:id", verifyToken, async (req, res) => {
     const canDelete =
       request.status === "PENDING" ||
       request.status === "REJECTED" ||
-      (
-        request.status === "COMPLETED" &&
+      (request.status === "COMPLETED" &&
         request.riderDeliveredAt &&
         request.customerConfirmedAt &&
-        request.completedAt
-      );
+        request.completedAt);
 
     if (isCustomer && !canDelete) {
       return res.status(400).json({
@@ -718,41 +735,41 @@ router.post("/requests/:id/chat", verifyToken, async (req, res) => {
       include: { sender: true },
     });
 
-// Sender info
-const sender = await prisma.user.findUnique({
-  where: { id: Number(req.user.id) },
-  select: {
-    id: true,
-    username: true,
-  },
-});
+    // Sender info
+    const sender = await prisma.user.findUnique({
+      where: { id: Number(req.user.id) },
+      select: {
+        id: true,
+        username: true,
+      },
+    });
 
-// Determine receiver
-let receiverUserId;
+    // Determine receiver
+    let receiverUserId;
 
-const riderRecord = await prisma.rider.findUnique({
-  where: { id: request.riderId },
-});
+    const riderRecord = await prisma.rider.findUnique({
+      where: { id: request.riderId },
+    });
 
-if (request.customerId === Number(req.user.id)) {
-  // Customer sent message → notify Rider
-  receiverUserId = riderRecord.userId;
-} else {
-  // Rider sent message → notify Customer
-  receiverUserId = request.customerId;
-}
+    if (request.customerId === Number(req.user.id)) {
+      // Customer sent message → notify Rider
+      receiverUserId = riderRecord.userId;
+    } else {
+      // Rider sent message → notify Customer
+      receiverUserId = request.customerId;
+    }
 
-// Create notification
-await prisma.notification.create({
-  data: {
-    userId: receiverUserId,
-    senderId: sender.id,
-    senderName: sender.username,
-    type: "MESSAGE",
-    title: "New Message",
-    message: `${sender.username}: ${text.trim()}`,
-  },
-});
+    // Create notification
+    await prisma.notification.create({
+      data: {
+        userId: receiverUserId,
+        senderId: sender.id,
+        senderName: sender.username,
+        type: "MESSAGE",
+        title: "New Message",
+        message: `${sender.username}: ${text.trim()}`,
+      },
+    });
 
     res.json(msg);
   } catch (err) {
@@ -925,7 +942,12 @@ router.post("/nearby", verifyToken, async (req, res) => {
           return null;
         }
 
-        const calculatedDistance = distanceKm(buyLat, buyLng, riderLat, riderLng);
+        const calculatedDistance = distanceKm(
+          buyLat,
+          buyLng,
+          riderLat,
+          riderLng,
+        );
 
         return {
           riderId: rider.id,
@@ -1096,26 +1118,24 @@ router.post("/request", verifyToken, async (req, res) => {
       },
     });
 
-const customer = await prisma.user.findUnique({
-  where: { id: Number(req.user.id) },
-  select: {
-    id: true,
-    username: true,
-  },
-});
+    const customer = await prisma.user.findUnique({
+      where: { id: Number(req.user.id) },
+      select: {
+        id: true,
+        username: true,
+      },
+    });
 
-
-await prisma.notification.create({
-  data: {
-    userId: rider.userId,
-    senderId: customer.id,
-    senderName: customer.username,
-    type: "RIDER_REQUEST",
-    title: "New Rider Request",
-    message: `${customer.username} sent you a shopping request`,
-  },
-});
-
+    await prisma.notification.create({
+      data: {
+        userId: rider.userId,
+        senderId: customer.id,
+        senderName: customer.username,
+        type: "RIDER_REQUEST",
+        title: "New Rider Request",
+        message: `${customer.username} sent you a shopping request`,
+      },
+    });
 
     res.json(request);
   } catch (err) {

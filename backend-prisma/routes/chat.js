@@ -117,13 +117,13 @@ router.post("/send", verifyToken, async (req, res) => {
       });
 
       await prisma.notification.create({
-  data: {
-    userId: receiverId,
-    type: "MESSAGE",
-    title: "New Message",
-    message: `${sender.username}: ${text}`,
-  },
-});
+        data: {
+          userId: receiverId,
+          type: "MESSAGE",
+          title: "New Message",
+          message: `${sender.username}: ${text}`,
+        },
+      });
     }
 
     res.json(newMsg);
@@ -141,7 +141,9 @@ router.delete("/delete/:id", verifyToken, async (req, res) => {
     const msg = await prisma.message.findUnique({ where: { id: msgId } });
     if (!msg) return res.status(404).json({ error: "Message not found" });
     if (msg.senderId !== userId) {
-      return res.status(403).json({ error: "You can only delete your own message" });
+      return res
+        .status(403)
+        .json({ error: "You can only delete your own message" });
     }
 
     await prisma.message.delete({ where: { id: msgId } });
@@ -153,4 +155,3 @@ router.delete("/delete/:id", verifyToken, async (req, res) => {
 });
 
 export default router;
-

@@ -19,7 +19,7 @@ const DEFAULT_IMAGE = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
 
 export default function DashboardRider() {
   const router = useRouter();
-  
+
   // ==========================================
   // STATE MANAGEMENT (Variables to save data)
   // ==========================================
@@ -51,34 +51,25 @@ export default function DashboardRider() {
         const parsedData = JSON.parse(userData);
         setUsername(parsedData.username || "Rider Name");
         const img = parsedData.profileImage;
-        setProfileImage(
-          img && img.startsWith("http") ? img : DEFAULT_IMAGE
-        );
+        setProfileImage(img && img.startsWith("http") ? img : DEFAULT_IMAGE);
       } else {
         setUsername("Rider Name");
         setProfileImage(DEFAULT_IMAGE);
       }
 
       if (token) {
-        const notificationRes = await fetch(
-          API_URLS.NOTIFICATIONS,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const notificationRes = await fetch(API_URLS.NOTIFICATIONS, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         const notificationData = await notificationRes.json();
 
-        if (
-          notificationRes.ok &&
-          Array.isArray(notificationData)
-        ) {
-          const unreadCount =
-            notificationData.filter(
-              (item) => !item.isRead
-            ).length;
+        if (notificationRes.ok && Array.isArray(notificationData)) {
+          const unreadCount = notificationData.filter(
+            (item) => !item.isRead,
+          ).length;
 
           setNotificationCount(unreadCount);
         }
@@ -96,7 +87,7 @@ export default function DashboardRider() {
   useFocusEffect(
     useCallback(() => {
       loadUserData();
-    }, [])
+    }, []),
   );
 
   // ==========================================
@@ -105,14 +96,13 @@ export default function DashboardRider() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
-        
         {/* TOP HEADER */}
         <LinearGradient
-  colors={["#eef4fe", "#2e4466"]}
-  start={{ x: 1, y: 0 }}
-  end={{ x: 0, y: 0 }}
-  style={styles.header}
->
+          colors={["#eef4fe", "#2e4466"]}
+          start={{ x: 1, y: 0 }}
+          end={{ x: 0, y: 0 }}
+          style={styles.header}
+        >
           <Text style={styles.logo}>SHOPSIE</Text>
 
           <View style={styles.icons}>
@@ -172,8 +162,9 @@ export default function DashboardRider() {
         </LinearGradient>
 
         {/* FIXED CONTENT MAIN BODY */}
-        <View style={{ flex: 1, justifyContent: "flex-start", paddingBottom: 90 }}>
-          
+        <View
+          style={{ flex: 1, justifyContent: "flex-start", paddingBottom: 90 }}
+        >
           {/* PROFILE CARD */}
           <View
             style={[
@@ -246,9 +237,7 @@ export default function DashboardRider() {
         >
           <View style={localStyles.modalOverlay}>
             <View style={localStyles.modalContent}>
-              <Text style={localStyles.modalTitle}>
-                Optimize Route From
-              </Text>
+              <Text style={localStyles.modalTitle}>Optimize Route From</Text>
 
               <TouchableOpacity
                 style={localStyles.primaryModalBtn}
@@ -257,9 +246,7 @@ export default function DashboardRider() {
                   router.push("/riderDashboard/active-deliveries");
                 }}
               >
-                <Text style={localStyles.primaryBtnText}>
-                  Customer's Chat
-                </Text>
+                <Text style={localStyles.primaryBtnText}>Customer's Chat</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -278,9 +265,7 @@ export default function DashboardRider() {
                 style={localStyles.cancelModalBtn}
                 onPress={() => setShowOptimizeModal(false)}
               >
-                <Text style={localStyles.primaryBtnText}>
-                  Cancel
-                </Text>
+                <Text style={localStyles.primaryBtnText}>Cancel</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -332,24 +317,24 @@ export default function DashboardRider() {
 // ==========================================
 const localStyles = StyleSheet.create({
   warningBox: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 90,
     left: 20,
     right: 20,
-    backgroundColor: '#e67e22',
+    backgroundColor: "#e67e22",
     padding: 14,
     borderRadius: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     zIndex: 9999,
     elevation: 6,
   },
-  warningText: { 
-    color: '#fff', 
-    marginLeft: 10, 
-    fontSize: 14, 
-    fontWeight: '600', 
-    flex: 1 
+  warningText: {
+    color: "#fff",
+    marginLeft: 10,
+    fontSize: 14,
+    fontWeight: "600",
+    flex: 1,
   },
   bottomNav: {
     position: "absolute",

@@ -10,7 +10,8 @@ const cleanSpec = (value) => {
   return spec ? spec : "None";
 };
 
-const cleanCategory = (item) => item.categoryName || item.category || "Uncategorized";
+const cleanCategory = (item) =>
+  item.categoryName || item.category || "Uncategorized";
 
 const createSharedItemPayload = (i) => ({
   name: i.name,
@@ -19,25 +20,36 @@ const createSharedItemPayload = (i) => ({
   categoryName: cleanCategory(i),
   selectedShopId: i.selectedShopId ? Number(i.selectedShopId) : null,
   selectedShopName: i.selectedShopName || null,
-  selectedShopPrice: i.selectedShopPrice != null ? Number(i.selectedShopPrice) : null,
-  selectedShopLatitude: i.selectedShopLatitude != null ? Number(i.selectedShopLatitude) : null,
-  selectedShopLongitude: i.selectedShopLongitude != null ? Number(i.selectedShopLongitude) : null,
+  selectedShopPrice:
+    i.selectedShopPrice != null ? Number(i.selectedShopPrice) : null,
+  selectedShopLatitude:
+    i.selectedShopLatitude != null ? Number(i.selectedShopLatitude) : null,
+  selectedShopLongitude:
+    i.selectedShopLongitude != null ? Number(i.selectedShopLongitude) : null,
   selectedShopPhone: i.selectedShopPhone || null,
   selectedShopTiming: i.selectedShopTiming || null,
-  availableQuantity: i.availableQuantity != null ? Number(i.availableQuantity) : null,
+  availableQuantity:
+    i.availableQuantity != null ? Number(i.availableQuantity) : null,
   lineTotal: i.lineTotal != null ? Number(i.lineTotal) : null,
-  buyingLocationLat: i.buyingLocationLat != null ? Number(i.buyingLocationLat) : null,
-  buyingLocationLng: i.buyingLocationLng != null ? Number(i.buyingLocationLng) : null,
+  buyingLocationLat:
+    i.buyingLocationLat != null ? Number(i.buyingLocationLat) : null,
+  buyingLocationLng:
+    i.buyingLocationLng != null ? Number(i.buyingLocationLng) : null,
   buyingLocationLabel: i.buyingLocationLabel || null,
-  deliveryLocationLat: i.deliveryLocationLat != null ? Number(i.deliveryLocationLat) : null,
-  deliveryLocationLng: i.deliveryLocationLng != null ? Number(i.deliveryLocationLng) : null,
+  deliveryLocationLat:
+    i.deliveryLocationLat != null ? Number(i.deliveryLocationLat) : null,
+  deliveryLocationLng:
+    i.deliveryLocationLng != null ? Number(i.deliveryLocationLng) : null,
   deliveryLocationLabel: i.deliveryLocationLabel || null,
 });
 
 const getListLocationPreview = (items = [], kind) => {
-  const latKey = kind === "delivery" ? "deliveryLocationLat" : "buyingLocationLat";
-  const lngKey = kind === "delivery" ? "deliveryLocationLng" : "buyingLocationLng";
-  const labelKey = kind === "delivery" ? "deliveryLocationLabel" : "buyingLocationLabel";
+  const latKey =
+    kind === "delivery" ? "deliveryLocationLat" : "buyingLocationLat";
+  const lngKey =
+    kind === "delivery" ? "deliveryLocationLng" : "buyingLocationLng";
+  const labelKey =
+    kind === "delivery" ? "deliveryLocationLabel" : "buyingLocationLabel";
   const item = items.find((i) => i[latKey] && i[lngKey]);
   if (!item) return {};
   return {
@@ -88,7 +100,9 @@ router.get("/", verifyToken, async (req, res) => {
       }
 
       let latestTime = list.createdAt;
-      const lastMessage = list.messages.length ? list.messages[list.messages.length - 1] : null;
+      const lastMessage = list.messages.length
+        ? list.messages[list.messages.length - 1]
+        : null;
 
       const latestMsg = lastMessage
         ? lastMessage.text
@@ -107,7 +121,7 @@ router.get("/", verifyToken, async (req, res) => {
       if (lastMessage) latestTime = lastMessage.createdAt;
 
       const unreadMessages = list.messages.filter(
-        (msg) => msg.senderId !== userId && msg.status === "SENT"
+        (msg) => msg.senderId !== userId && msg.status === "SENT",
       );
 
       chatMap[otherUserId].unreadCount += unreadMessages.length;
@@ -116,12 +130,18 @@ router.get("/", verifyToken, async (req, res) => {
         chatMap[otherUserId].time = latestTime;
         chatMap[otherUserId].lastMsg = latestMsg;
         chatMap[otherUserId].lastMsgFrom = lastMsgFrom;
-        chatMap[otherUserId].buyingLocationLat = buyingPreview.buyingLocationLat || null;
-        chatMap[otherUserId].buyingLocationLng = buyingPreview.buyingLocationLng || null;
-        chatMap[otherUserId].buyingLocationLabel = buyingPreview.buyingLocationLabel || null;
-        chatMap[otherUserId].deliveryLocationLat = deliveryPreview.deliveryLocationLat || null;
-        chatMap[otherUserId].deliveryLocationLng = deliveryPreview.deliveryLocationLng || null;
-        chatMap[otherUserId].deliveryLocationLabel = deliveryPreview.deliveryLocationLabel || null;
+        chatMap[otherUserId].buyingLocationLat =
+          buyingPreview.buyingLocationLat || null;
+        chatMap[otherUserId].buyingLocationLng =
+          buyingPreview.buyingLocationLng || null;
+        chatMap[otherUserId].buyingLocationLabel =
+          buyingPreview.buyingLocationLabel || null;
+        chatMap[otherUserId].deliveryLocationLat =
+          deliveryPreview.deliveryLocationLat || null;
+        chatMap[otherUserId].deliveryLocationLng =
+          deliveryPreview.deliveryLocationLng || null;
+        chatMap[otherUserId].deliveryLocationLabel =
+          deliveryPreview.deliveryLocationLabel || null;
       }
     }
 
@@ -133,63 +153,61 @@ router.get("/", verifyToken, async (req, res) => {
 });
 
 router.post("/share", verifyToken, async (req, res) => {
-try {
-const senderId = req.user.id;
-const { receiverId, listName, items } = req.body;
+  try {
+    const senderId = req.user.id;
+    const { receiverId, listName, items } = req.body;
 
-if (!receiverId || !Array.isArray(items) || items.length === 0) {
-  return res.status(400).json({ message: "Invalid data" });
-}
+    if (!receiverId || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: "Invalid data" });
+    }
 
-// Get sender username
-const sender = await prisma.user.findUnique({
-  where: { id: senderId },
-  select: {
-    id: true,
-    username: true,
-  },
+    // Get sender username
+    const sender = await prisma.user.findUnique({
+      where: { id: senderId },
+      select: {
+        id: true,
+        username: true,
+      },
+    });
+
+    const newSharedList = await prisma.sharedList.create({
+      data: {
+        name: listName || "Shared List",
+        senderId,
+        receiverId: Number(receiverId),
+        items: {
+          create: items.map(createSharedItemPayload),
+        },
+      },
+      include: { items: true },
+    });
+
+    await prisma.message.create({
+      data: {
+        listId: newSharedList.id,
+        senderId,
+        text: `Shared a list: ${listName || "Shared List"}`,
+        status: "SENT",
+      },
+    });
+
+    // Notification
+    await prisma.notification.create({
+      data: {
+        userId: Number(receiverId),
+        senderId: sender.id,
+        senderName: sender.username,
+        type: "LIST_SHARED",
+        title: "List Shared",
+        message: `${sender.username} shared a shopping list with you`,
+      },
+    });
+
+    res.json(newSharedList);
+  } catch (e) {
+    console.error("SHARE LIST ERROR:", e);
+    res.status(500).json({ error: e.message });
+  }
 });
-
-const newSharedList = await prisma.sharedList.create({
-  data: {
-    name: listName || "Shared List",
-    senderId,
-    receiverId: Number(receiverId),
-    items: {
-      create: items.map(createSharedItemPayload),
-    },
-  },
-  include: { items: true },
-});
-
-await prisma.message.create({
-  data: {
-    listId: newSharedList.id,
-    senderId,
-    text: `Shared a list: ${listName || "Shared List"}`,
-    status: "SENT",
-  },
-});
-
-// Notification
-await prisma.notification.create({
-  data: {
-    userId: Number(receiverId),
-    senderId: sender.id,
-    senderName: sender.username,
-    type: "LIST_SHARED",
-    title: "List Shared",
-    message: `${sender.username} shared a shopping list with you`,
-  },
-});
-
-res.json(newSharedList);
-
-} catch (e) {
-console.error("SHARE LIST ERROR:", e);
-res.status(500).json({ error: e.message });
-}
-});
-
 
 export default router;

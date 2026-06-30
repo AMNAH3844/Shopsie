@@ -60,7 +60,9 @@ router.post("/update", upload.single("profileImage"), async (req, res) => {
     // ✅ IMAGE UPDATE
     if (field === "profileImage" && file) {
       // Delete old image
-      const user = await prisma.user.findUnique({ where: { id: parseInt(userId) } });
+      const user = await prisma.user.findUnique({
+        where: { id: parseInt(userId) },
+      });
       if (user && user.profileImage) {
         const oldImagePath = `.${user.profileImage}`;
         if (fs.existsSync(oldImagePath)) fs.unlinkSync(oldImagePath);
@@ -80,7 +82,6 @@ router.post("/update", upload.single("profileImage"), async (req, res) => {
     }
 
     res.json({ message: "User updated", user: updatedUser });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Update failed" });
@@ -122,7 +123,6 @@ router.post("/update-password", async (req, res) => {
     });
 
     res.json({ message: "Password updated successfully" });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Password update failed" });
@@ -167,7 +167,6 @@ router.delete("/delete-account", async (req, res) => {
     });
 
     res.json({ message: "Account deleted successfully" });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to delete account" });
@@ -175,7 +174,3 @@ router.delete("/delete-account", async (req, res) => {
 });
 
 export default router;
-
-
-
-

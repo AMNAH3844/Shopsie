@@ -17,10 +17,13 @@ router.post("/add-product", async (req, res) => {
 
     const parsedPrice = Number(price);
     const parsedQuantity = Number(quantity);
-    const parsedThreshold = threshold == null || threshold === "" ? null : Number(threshold);
+    const parsedThreshold =
+      threshold == null || threshold === "" ? null : Number(threshold);
 
     if (!Number.isFinite(parsedPrice) || !Number.isFinite(parsedQuantity)) {
-      return res.status(400).json({ message: "Price and quantity must be valid numbers" });
+      return res
+        .status(400)
+        .json({ message: "Price and quantity must be valid numbers" });
     }
 
     const shopkeeper = await prisma.shopkeeper.findUnique({
@@ -108,9 +111,9 @@ router.get("/order-notification-count", async (req, res) => {
 
     // Counts how many order notifications are still pending response
     const count = await prisma.shopkeeperOrderNotification.count({
-      where: { 
+      where: {
         shopkeeperId: shopkeeper.id,
-        status: "PENDING"
+        status: "PENDING",
       },
     });
 
@@ -133,9 +136,9 @@ router.patch("/order-notifications/read-all", async (req, res) => {
     }
 
     await prisma.shopkeeperOrderNotification.updateMany({
-      where: { 
+      where: {
         shopkeeperId: shopkeeper.id,
-        status: "PENDING"
+        status: "PENDING",
       },
       data: { status: "PENDING" }, // Keeps status intact if only viewing the page
     });
@@ -157,10 +160,11 @@ router.get("/notifications", async (req, res) => {
       return res.status(404).json({ message: "Shopkeeper not found" });
     }
 
-    const stockNotifications = await prisma.shopkeeperStockNotification.findMany({
-      where: { shopkeeperId: shopkeeper.id },
-      orderBy: { createdAt: "desc" },
-    });
+    const stockNotifications =
+      await prisma.shopkeeperStockNotification.findMany({
+        where: { shopkeeperId: shopkeeper.id },
+        orderBy: { createdAt: "desc" },
+      });
 
     const accountNotifications = await prisma.notification.findMany({
       where: { userId: Number(req.user.id) },
@@ -280,21 +284,18 @@ router.post("/revert-request", async (req, res) => {
       },
     });
 
-    const latestSuspension =
-      await prisma.notification.findFirst({
-        where: {
-          userId: shopkeeper.userId,
-          type: "SHOP_SUSPENDED",
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
+    const latestSuspension = await prisma.notification.findFirst({
+      where: {
+        userId: shopkeeper.userId,
+        type: "SHOP_SUSPENDED",
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
 
     if (latestSuspension) {
-      const parsed = JSON.parse(
-        latestSuspension.message
-      );
+      const parsed = JSON.parse(latestSuspension.message);
 
       await prisma.notification.update({
         where: {
@@ -336,7 +337,9 @@ router.patch("/orders/:id/respond", async (req, res) => {
   try {
     const { action } = req.body;
     if (!["approve", "reject"].includes(action)) {
-      return res.status(400).json({ message: "Action must be approve or reject" });
+      return res
+        .status(400)
+        .json({ message: "Action must be approve or reject" });
     }
 
     const shopkeeper = await prisma.shopkeeper.findUnique({
@@ -359,7 +362,9 @@ router.patch("/orders/:id/respond", async (req, res) => {
     }
 
     if (order.status !== "PENDING") {
-      return res.status(400).json({ message: "This order has already been handled" });
+      return res
+        .status(400)
+        .json({ message: "This order has already been handled" });
     }
 
     if (action === "reject") {
@@ -388,10 +393,15 @@ router.patch("/orders/:id/respond", async (req, res) => {
         });
 
     if (!product) {
-      return res.status(404).json({ message: "Matching product not found in inventory" });
+      return res
+        .status(404)
+        .json({ message: "Matching product not found in inventory" });
     }
 
-    const newQuantity = Math.max(0, Number(product.quantity) - Number(order.quantity || 1));
+    const newQuantity = Math.max(
+      0,
+      Number(product.quantity) - Number(order.quantity || 1),
+    );
 
     const result = await prisma.$transaction(async (tx) => {
       const updatedProduct = await tx.product.update({
@@ -471,7 +481,9 @@ router.patch("/update-stock/:id", async (req, res) => {
             : product.threshold,
         brand: brand !== undefined ? brand?.trim() || null : product.brand,
         specification:
-          specification !== undefined ? specification?.trim() || null : product.specification,
+          specification !== undefined
+            ? specification?.trim() || null
+            : product.specification,
       },
     });
 

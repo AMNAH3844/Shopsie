@@ -16,7 +16,7 @@ export default StyleSheet.create({
 
   screenContent: {
     paddingTop: 2,
-     paddingBottom: 75,
+    paddingBottom: 75,
   },
 
   /* ---------------- HEADER ---------------- */
@@ -220,7 +220,7 @@ export default StyleSheet.create({
     borderColor: "#dbe5f1",
     shadowColor: "#2e4466",
     shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.10,
+    shadowOpacity: 0.1,
     shadowRadius: 14,
     elevation: 3,
   },
@@ -364,7 +364,7 @@ export default StyleSheet.create({
     backgroundColor: "#f06543",
     shadowColor: "#f06543",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.20,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 3,
   },
@@ -394,7 +394,7 @@ export default StyleSheet.create({
     alignItems: "center",
     shadowColor: "#16a34a",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.20,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 3,
   },
@@ -407,7 +407,7 @@ export default StyleSheet.create({
     alignItems: "center",
     shadowColor: "#ef4444",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.20,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 3,
   },
@@ -424,7 +424,7 @@ export default StyleSheet.create({
     justifyContent: "center",
     shadowColor: "#ef4444",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.20,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 3,
   },
@@ -512,7 +512,7 @@ export default StyleSheet.create({
     marginTop: 12,
     shadowColor: "#b91c1c",
     shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.20,
+    shadowOpacity: 0.2,
     shadowRadius: 9,
     elevation: 4,
   },
@@ -680,7 +680,7 @@ export default StyleSheet.create({
     borderRadius: 18,
     marginBottom: 30,
     shadowColor: "#000",
-    shadowOpacity: 0.40,
+    shadowOpacity: 0.4,
     shadowRadius: 6,
     elevation: 5,
     paddingHorizontal: 16,
@@ -701,21 +701,20 @@ export default StyleSheet.create({
 
   /* ---------------- BOTTOM NAV ---------------- */
 
+  tabItem: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 4,
+  },
 
-tabItem: {
-  flex: 1,
-  alignItems: "center",
-  justifyContent: "center",
-  paddingVertical: 4,
-},
-
- navText: {
-  color: "white",
-  fontSize: 12,
-  marginTop: 0,
-  textAlign: "center",
-  fontWeight: "500",
-},
+  navText: {
+    color: "white",
+    fontSize: 12,
+    marginTop: 0,
+    textAlign: "center",
+    fontWeight: "500",
+  },
   /* ===== Document Row ===== */
   docRow: {
     flexDirection: "row",
@@ -796,20 +795,20 @@ tabItem: {
   },
 
   bottomNav: {
-  position: "absolute",
-  left: 0,
-  right: 0,
-  bottom: 0,
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
 
-  height: 75,
+    height: 75,
 
-  backgroundColor: "#2e4466",
-  flexDirection: "row",
-  justifyContent: "space-around",
-  alignItems: "center",
+    backgroundColor: "#2e4466",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
 
-  elevation: 0,
-  borderTopWidth: 0,
-  zIndex: 1000,
-},
+    elevation: 0,
+    borderTopWidth: 0,
+    zIndex: 1000,
+  },
 });

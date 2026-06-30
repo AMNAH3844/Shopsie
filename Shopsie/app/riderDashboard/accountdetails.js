@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { API_URLS } from '../../src/services/apiConfig';
+import { API_URLS } from "../../src/services/apiConfig";
 import {
   View,
   Text,
@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useRouter } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context"; 
+import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -30,7 +30,7 @@ const methodOptions = [
 
 export default function RiderAccountDetails() {
   const router = useRouter();
-  
+
   // ==========================================
   // STATE MANAGEMENT
   // ==========================================
@@ -59,15 +59,23 @@ export default function RiderAccountDetails() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Could not load account details");
+      if (!res.ok)
+        throw new Error(data.message || "Could not load account details");
 
-      setDailyCashLimit(data.dailyCashLimit == null ? "" : String(Math.trunc(Number(data.dailyCashLimit))));
+      setDailyCashLimit(
+        data.dailyCashLimit == null
+          ? ""
+          : String(Math.trunc(Number(data.dailyCashLimit))),
+      );
       setPaymentMethodType(data.paymentMethodType || "wallet");
       setPaymentProviderName(data.paymentProviderName || "");
       setProviderSearch(data.paymentProviderName || "");
       setPaymentAccountNumber(data.paymentAccountNumber || "");
       setSavedSummary({
-        dailyCashLimit: data.dailyCashLimit == null ? "" : String(Math.trunc(Number(data.dailyCashLimit))),
+        dailyCashLimit:
+          data.dailyCashLimit == null
+            ? ""
+            : String(Math.trunc(Number(data.dailyCashLimit))),
         paymentMethodType: data.paymentMethodType || "wallet",
         paymentProviderName: data.paymentProviderName || "",
         paymentAccountNumber: data.paymentAccountNumber || "",
@@ -96,7 +104,7 @@ export default function RiderAccountDetails() {
   useFocusEffect(
     useCallback(() => {
       loadAccount();
-    }, [loadAccount])
+    }, [loadAccount]),
   );
 
   useEffect(() => {
@@ -137,9 +145,13 @@ export default function RiderAccountDetails() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Could not save account details");
+      if (!res.ok)
+        throw new Error(data.message || "Could not save account details");
       setSavedSummary({
-        dailyCashLimit: data.dailyCashLimit == null ? "" : String(Math.trunc(Number(data.dailyCashLimit))),
+        dailyCashLimit:
+          data.dailyCashLimit == null
+            ? ""
+            : String(Math.trunc(Number(data.dailyCashLimit))),
         paymentMethodType: data.paymentMethodType || paymentMethodType,
         paymentProviderName: data.paymentProviderName || paymentProviderName,
         paymentAccountNumber: data.paymentAccountNumber || paymentAccountNumber,
@@ -152,7 +164,12 @@ export default function RiderAccountDetails() {
     }
   };
 
-  const accountLabel = paymentMethodType === "wallet" ? "Mobile Wallet Number" : paymentMethodType === "bank" ? "Account Number" : "Card/Account Number";
+  const accountLabel =
+    paymentMethodType === "wallet"
+      ? "Mobile Wallet Number"
+      : paymentMethodType === "bank"
+        ? "Account Number"
+        : "Card/Account Number";
 
   // ==========================================
   // CONDITIONAL INITIAL LOADING RENDER
@@ -173,7 +190,6 @@ export default function RiderAccountDetails() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <View style={styles.mainContainer}>
-        
         {/* TOP HEADER */}
         <LinearGradient
           colors={["#eef4fe", "#2e4466"]}
@@ -181,7 +197,13 @@ export default function RiderAccountDetails() {
           end={{ x: 0, y: 0 }}
           style={styles.header}
         >
-          <TouchableOpacity onPress={() => (router.canGoBack() ? router.back() : router.replace("/riderDashboard"))}>
+          <TouchableOpacity
+            onPress={() =>
+              router.canGoBack()
+                ? router.back()
+                : router.replace("/riderDashboard")
+            }
+          >
             <Ionicons name="chevron-back" size={28} color="#eef4fe" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Account Details</Text>
@@ -205,10 +227,17 @@ export default function RiderAccountDetails() {
                 <View style={styles.card}>
                   <Text style={styles.label}>Daily Cash Limit</Text>
                   <View style={styles.inputWrapper}>
-                    <Ionicons name="cash-outline" size={20} color="#64748B" style={styles.inputIcon} />
+                    <Ionicons
+                      name="cash-outline"
+                      size={20}
+                      color="#64748B"
+                      style={styles.inputIcon}
+                    />
                     <TextInput
                       value={dailyCashLimit}
-                      onChangeText={(text) => setDailyCashLimit(digitsOnly(text))}
+                      onChangeText={(text) =>
+                        setDailyCashLimit(digitsOnly(text))
+                      }
                       placeholder="Example: 40000"
                       placeholderTextColor="#94A3B8"
                       keyboardType="numeric"
@@ -226,14 +255,24 @@ export default function RiderAccountDetails() {
                       return (
                         <TouchableOpacity
                           key={option.value}
-                          style={[styles.segmentBtn, active && styles.segmentBtnActive]}
+                          style={[
+                            styles.segmentBtn,
+                            active && styles.segmentBtnActive,
+                          ]}
                           onPress={() => {
                             setPaymentMethodType(option.value);
                             setProviderSearch("");
                             setPaymentProviderName("");
                           }}
                         >
-                          <Text style={[styles.segmentText, active && styles.segmentTextActive]}>{option.label}</Text>
+                          <Text
+                            style={[
+                              styles.segmentText,
+                              active && styles.segmentTextActive,
+                            ]}
+                          >
+                            {option.label}
+                          </Text>
                         </TouchableOpacity>
                       );
                     })}
@@ -241,7 +280,12 @@ export default function RiderAccountDetails() {
 
                   <Text style={styles.label}>Search or Type Provider</Text>
                   <View style={styles.inputWrapper}>
-                    <Ionicons name="search-outline" size={20} color="#64748B" style={styles.inputIcon} />
+                    <Ionicons
+                      name="search-outline"
+                      size={20}
+                      color="#64748B"
+                      style={styles.inputIcon}
+                    />
                     <TextInput
                       value={providerSearch}
                       onChangeText={(text) => {
@@ -258,58 +302,108 @@ export default function RiderAccountDetails() {
             }
             renderItem={({ item }) => (
               <TouchableOpacity
-                style={[styles.providerRow, paymentProviderName === item.name && styles.providerRowActive]}
+                style={[
+                  styles.providerRow,
+                  paymentProviderName === item.name && styles.providerRowActive,
+                ]}
                 onPress={() => {
                   setPaymentProviderName(item.name);
                   setProviderSearch(item.name);
                 }}
               >
-                <Ionicons name="business-outline" size={18} color={paymentProviderName === item.name ? "#047857" : "#64748B"} />
-                <Text style={[styles.providerText, paymentProviderName === item.name && styles.providerTextActive]}>{item.name}</Text>
+                <Ionicons
+                  name="business-outline"
+                  size={18}
+                  color={
+                    paymentProviderName === item.name ? "#047857" : "#64748B"
+                  }
+                />
+                <Text
+                  style={[
+                    styles.providerText,
+                    paymentProviderName === item.name &&
+                      styles.providerTextActive,
+                  ]}
+                >
+                  {item.name}
+                </Text>
               </TouchableOpacity>
             )}
             ListFooterComponent={
               <View style={styles.footerCard}>
                 <Text style={styles.label}>{accountLabel}</Text>
                 <View style={styles.inputWrapper}>
-                  <Ionicons name="keypad-outline" size={20} color="#64748B" style={styles.inputIcon} />
+                  <Ionicons
+                    name="keypad-outline"
+                    size={20}
+                    color="#64748B"
+                    style={styles.inputIcon}
+                  />
                   <TextInput
                     value={paymentAccountNumber}
-                    onChangeText={(text) => setPaymentAccountNumber(digitsOnly(text))}
-                    placeholder={paymentMethodType === "wallet" ? "03xxxxxxxxx" : "Enter digits only"}
+                    onChangeText={(text) =>
+                      setPaymentAccountNumber(digitsOnly(text))
+                    }
+                    placeholder={
+                      paymentMethodType === "wallet"
+                        ? "03xxxxxxxxx"
+                        : "Enter digits only"
+                    }
                     placeholderTextColor="#94A3B8"
                     keyboardType="numeric"
                     style={styles.input}
                   />
                 </View>
 
-                <TouchableOpacity style={styles.saveBtn} onPress={saveDetails} disabled={saving}>
-                  {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveText}>Save Details</Text>}
+                <TouchableOpacity
+                  style={styles.saveBtn}
+                  onPress={saveDetails}
+                  disabled={saving}
+                >
+                  {saving ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.saveText}>Save Details</Text>
+                  )}
                 </TouchableOpacity>
 
                 {savedSummary && (
                   <View style={styles.summaryCard}>
                     <View style={styles.summaryHeader}>
-                      <Ionicons name="wallet-outline" size={20} color="#2e4466" />
-                      <Text style={styles.summaryTitle}>Saved Account Summary</Text>
+                      <Ionicons
+                        name="wallet-outline"
+                        size={20}
+                        color="#2e4466"
+                      />
+                      <Text style={styles.summaryTitle}>
+                        Saved Account Summary
+                      </Text>
                     </View>
                     <View style={styles.summaryRow}>
                       <Text style={styles.summaryLabel}>Cash Limit</Text>
                       <Text style={styles.summaryValue}>
-                        {savedSummary.dailyCashLimit ? `Rs. ${Number(savedSummary.dailyCashLimit).toLocaleString()}` : "Not set"}
+                        {savedSummary.dailyCashLimit
+                          ? `Rs. ${Number(savedSummary.dailyCashLimit).toLocaleString()}`
+                          : "Not set"}
                       </Text>
                     </View>
                     <View style={styles.summaryRow}>
                       <Text style={styles.summaryLabel}>Payment Type</Text>
-                      <Text style={styles.summaryValue}>{savedSummary.paymentMethodType || "Not set"}</Text>
+                      <Text style={styles.summaryValue}>
+                        {savedSummary.paymentMethodType || "Not set"}
+                      </Text>
                     </View>
                     <View style={styles.summaryRow}>
                       <Text style={styles.summaryLabel}>Provider</Text>
-                      <Text style={styles.summaryValue}>{savedSummary.paymentProviderName || "Not set"}</Text>
+                      <Text style={styles.summaryValue}>
+                        {savedSummary.paymentProviderName || "Not set"}
+                      </Text>
                     </View>
                     <View style={styles.summaryRow}>
                       <Text style={styles.summaryLabel}>Number / Account</Text>
-                      <Text style={styles.summaryValue}>{savedSummary.paymentAccountNumber || "Not set"}</Text>
+                      <Text style={styles.summaryValue}>
+                        {savedSummary.paymentAccountNumber || "Not set"}
+                      </Text>
                     </View>
                   </View>
                 )}
@@ -344,7 +438,6 @@ export default function RiderAccountDetails() {
             <Text style={styles.navText}>Downloads</Text>
           </TouchableOpacity>
         </View>
-
       </View>
     </SafeAreaView>
   );
@@ -355,40 +448,155 @@ export default function RiderAccountDetails() {
 // ==========================================
 const styles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: "#F8FAFC" },
-  center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#F8FAFC" },
-  header: { height: 85, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F8FAFC",
+  },
+  header: {
+    height: 85,
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
   // Headings use 700
-  headerTitle: { flex: 1, textAlign: "center", fontSize: 22, fontWeight: "700", color: "#2e4466" },
-  sectionHeading: { fontSize: 16, fontWeight: "700", color: "#1E293B", marginTop: 20, marginBottom: 8 },
-  summaryTitle: { color: "#2e4466", fontSize: 15, fontWeight: "700", marginLeft: 8 },
-  
+  headerTitle: {
+    flex: 1,
+    textAlign: "center",
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#2e4466",
+  },
+  sectionHeading: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#1E293B",
+    marginTop: 20,
+    marginBottom: 8,
+  },
+  summaryTitle: {
+    color: "#2e4466",
+    fontSize: 15,
+    fontWeight: "700",
+    marginLeft: 8,
+  },
+
   content: { paddingHorizontal: 20, paddingBottom: 110 },
-  card: { backgroundColor: "#FFFFFF", borderRadius: 16, padding: 16, borderWidth: 1, borderColor: "#E2E8F0", elevation: 2 },
-  footerCard: { backgroundColor: "#FFFFFF", borderRadius: 16, padding: 16, borderWidth: 1, borderColor: "#E2E8F0", elevation: 2, marginTop: 10 },
-  
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    elevation: 2,
+  },
+  footerCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    elevation: 2,
+    marginTop: 10,
+  },
+
   // Custom non-headings standardized to 600 or 500
-  label: { fontSize: 12, fontWeight: "600", color: "#475569", marginBottom: 7, textTransform: "uppercase" },
-  inputWrapper: { flexDirection: "row", alignItems: "center", borderWidth: 1.5, borderColor: "#CBD5E1", borderRadius: 12, paddingHorizontal: 12, height: 48, backgroundColor: "#FFFFFF", marginBottom: 14 },
+  label: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#475569",
+    marginBottom: 7,
+    textTransform: "uppercase",
+  },
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderColor: "#CBD5E1",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 48,
+    backgroundColor: "#FFFFFF",
+    marginBottom: 14,
+  },
   inputIcon: { marginRight: 8 },
-  input: { flex: 1, height: "100%", color: "#0F172A", fontSize: 15, fontWeight: "500", ...Platform.select({ web: { outlineStyle: "none" } }) },
+  input: {
+    flex: 1,
+    height: "100%",
+    color: "#0F172A",
+    fontSize: 15,
+    fontWeight: "500",
+    ...Platform.select({ web: { outlineStyle: "none" } }),
+  },
   segmentRow: { flexDirection: "row", gap: 8, marginBottom: 14 },
-  segmentBtn: { flex: 1, height: 42, borderRadius: 12, borderWidth: 1, borderColor: "#CBD5E1", alignItems: "center", justifyContent: "center", backgroundColor: "#F8FAFC" },
+  segmentBtn: {
+    flex: 1,
+    height: 42,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F8FAFC",
+  },
   segmentBtnActive: { backgroundColor: "#2e4466", borderColor: "#2e4466" },
   segmentText: { color: "#475569", fontWeight: "600" },
   segmentTextActive: { color: "#FFFFFF" },
-  providerRow: { flexDirection: "row", alignItems: "center", backgroundColor: "#FFFFFF", borderRadius: 12, padding: 12, marginTop: 8, borderWidth: 1, borderColor: "#E2E8F0" },
+  providerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+  },
   providerRowActive: { backgroundColor: "#ECFDF5", borderColor: "#10B981" },
   providerText: { marginLeft: 8, color: "#334155", fontWeight: "600" },
   providerTextActive: { color: "#047857" },
-  saveBtn: { height: 50, borderRadius: 14, backgroundColor: "#22C55E", alignItems: "center", justifyContent: "center", marginTop: 8 },
+  saveBtn: {
+    height: 50,
+    borderRadius: 14,
+    backgroundColor: "#22C55E",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 8,
+  },
   saveText: { color: "#FFFFFF", fontWeight: "600", fontSize: 15 },
-  summaryCard: { marginTop: 16, backgroundColor: "#F8FAFC", borderRadius: 14, borderWidth: 1, borderColor: "#CBD5E1", padding: 14 },
-  summaryHeader: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
-  summaryRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 7, borderTopWidth: 1, borderTopColor: "#E2E8F0" },
+  summaryCard: {
+    marginTop: 16,
+    backgroundColor: "#F8FAFC",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    padding: 14,
+  },
+  summaryHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  summaryRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 7,
+    borderTopWidth: 1,
+    borderTopColor: "#E2E8F0",
+  },
   summaryLabel: { color: "#64748B", fontSize: 12, fontWeight: "500", flex: 1 },
-  summaryValue: { color: "#0F172A", fontSize: 13, fontWeight: "600", flex: 1, textAlign: "right" },
-  
+  summaryValue: {
+    color: "#0F172A",
+    fontSize: 13,
+    fontWeight: "600",
+    flex: 1,
+    textAlign: "right",
+  },
+
   bottomNav: {
     position: "absolute",
     left: 0,

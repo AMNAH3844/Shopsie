@@ -27,9 +27,7 @@ export default function ForgotPassword() {
   useEffect(() => {
     const loadKnownAccount = () => {
       const paramUsername =
-        typeof params.username === "string"
-          ? params.username
-          : "";
+        typeof params.username === "string" ? params.username : "";
 
       if (paramUsername) {
         setUsername(paramUsername);
@@ -73,7 +71,7 @@ export default function ForgotPassword() {
       if (!res.ok) {
         Alert.alert(
           "Error",
-          data.message || "No account found for this username"
+          data.message || "No account found for this username",
         );
         return;
       }
@@ -83,10 +81,7 @@ export default function ForgotPassword() {
       setShowLockedMessage(false);
     } catch (error) {
       console.error(error);
-      Alert.alert(
-        "Error",
-        "Network error connecting to backend cluster."
-      );
+      Alert.alert("Error", "Network error connecting to backend cluster.");
     } finally {
       setLookupLoading(false);
     }
@@ -94,10 +89,7 @@ export default function ForgotPassword() {
 
   const handleSendResetEmail = async () => {
     if (!emailLocked || !email.trim()) {
-      Alert.alert(
-        "Error",
-        "Find your account email first"
-      );
+      Alert.alert("Error", "Find your account email first");
       return;
     }
 
@@ -117,10 +109,7 @@ export default function ForgotPassword() {
       const data = await res.json();
 
       if (!res.ok) {
-        Alert.alert(
-          "Error",
-          data.message || "Unable to send reset email"
-        );
+        Alert.alert("Error", data.message || "Unable to send reset email");
         return;
       }
 
@@ -132,14 +121,11 @@ export default function ForgotPassword() {
             text: "OK",
             onPress: () => router.replace("/signin"),
           },
-        ]
+        ],
       );
     } catch (error) {
       console.error(error);
-      Alert.alert(
-        "Error",
-        "Network error connecting to backend cluster."
-      );
+      Alert.alert("Error", "Network error connecting to backend cluster.");
     } finally {
       setSendingLoading(false);
     }
@@ -150,20 +136,13 @@ export default function ForgotPassword() {
   return (
     <KeyboardAvoidingView
       style={styles.screen}
-      behavior={
-        Platform.OS === "ios"
-          ? "padding"
-          : undefined
-      }
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>
-          Forgot Password
-        </Text>
+        <Text style={styles.title}>Forgot Password</Text>
 
         <Text style={styles.subtitle}>
-          Enter your username to find the email
-          saved with your account.
+          Enter your username to find the email saved with your account.
         </Text>
 
         {!emailLocked && (
@@ -178,15 +157,9 @@ export default function ForgotPassword() {
           />
         )}
 
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={handleLockedEmailPress}
-        >
+        <TouchableOpacity activeOpacity={1} onPress={handleLockedEmailPress}>
           <TextInput
-            style={[
-              styles.input,
-              styles.lockedInput,
-            ]}
+            style={[styles.input, styles.lockedInput]}
             placeholder="Account Email"
             placeholderTextColor="#555"
             keyboardType="email-address"
@@ -200,53 +173,38 @@ export default function ForgotPassword() {
 
         {showLockedMessage && (
           <Text style={styles.errorText}>
-            Email entered while signup can only
-            change from settings.
+            Email entered while signup can only change from settings.
           </Text>
         )}
 
         {!emailLocked ? (
           <TouchableOpacity
-            style={[
-              styles.button,
-              busy && styles.buttonDisabled,
-            ]}
+            style={[styles.button, busy && styles.buttonDisabled]}
             onPress={handleLookupEmail}
             disabled={busy}
           >
             {lookupLoading ? (
               <ActivityIndicator color="#0a0c47" />
             ) : (
-              <Text style={styles.buttonText}>
-                Find Account Email
-              </Text>
+              <Text style={styles.buttonText}>Find Account Email</Text>
             )}
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
-            style={[
-              styles.button,
-              busy && styles.buttonDisabled,
-            ]}
+            style={[styles.button, busy && styles.buttonDisabled]}
             onPress={handleSendResetEmail}
             disabled={busy}
           >
             {sendingLoading ? (
               <ActivityIndicator color="#0a0c47" />
             ) : (
-              <Text style={styles.buttonText}>
-                Send Reset Email
-              </Text>
+              <Text style={styles.buttonText}>Send Reset Email</Text>
             )}
           </TouchableOpacity>
         )}
 
-        <TouchableOpacity
-          onPress={() => router.back()}
-        >
-          <Text style={styles.link}>
-            Back
-          </Text>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Text style={styles.link}>Back</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>

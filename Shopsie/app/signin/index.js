@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { API_URLS } from '../../src/services/apiConfig';
+import { API_URLS } from "../../src/services/apiConfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   View,
@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-  Animated
+  Animated,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import styles from "../styles/Authstyle";
@@ -29,24 +29,27 @@ export default function Signin() {
   const [alertVisible, setAlertVisible] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  const triggerToast = useCallback((msg) => {
-    setAlertMessage(msg);
-    setAlertVisible(true);
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-
-    // Auto dismiss after 3.5 seconds
-    setTimeout(() => {
+  const triggerToast = useCallback(
+    (msg) => {
+      setAlertMessage(msg);
+      setAlertVisible(true);
       Animated.timing(fadeAnim, {
-        toValue: 0,
+        toValue: 1,
         duration: 300,
         useNativeDriver: true,
-      }).start(() => setAlertVisible(false));
-    }, 3500);
-  }, [fadeAnim]);
+      }).start();
+
+      // Auto dismiss after 3.5 seconds
+      setTimeout(() => {
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start(() => setAlertVisible(false));
+      }, 3500);
+    },
+    [fadeAnim],
+  );
 
   useEffect(() => {
     if (params.resetSuccess === "1") {
@@ -75,21 +78,19 @@ export default function Signin() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username: loginData.username.trim(), // preserves strict typed casing
-          password: loginData.password
+          password: loginData.password,
         }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-  console.log("Login Error:", data);
+        console.log("Login Error:", data);
 
-  triggerToast(
-    data.message || "Login failed"
-  );
+        triggerToast(data.message || "Login failed");
 
-  return;
-}
+        return;
+      }
 
       // Check case validation matching explicitly on the client side to be 100% secure
       if (data.user && data.user.username !== loginData.username.trim()) {
@@ -110,7 +111,7 @@ export default function Signin() {
           email: data.user.email || "",
           role: data.user.role,
           profileImage: data.user.profileImage || "",
-        })
+        }),
       );
 
       if (data.user && data.user.shopName) {
@@ -127,7 +128,6 @@ export default function Signin() {
       } else {
         router.replace("/customerDashboard");
       }
-
     } catch (err) {
       console.error(err);
       triggerToast("Network error connecting to backend cluster.");
@@ -138,7 +138,7 @@ export default function Signin() {
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView 
+      <ScrollView
         style={styles.scrollContainer}
         contentContainerStyle={{ paddingTop: 60 }} // 💡 Adds padding inside the scrolling view to safely push your header down
       >
@@ -159,7 +159,9 @@ export default function Signin() {
                 autoCapitalize="none"
                 autoCorrect={false}
                 value={loginData.username}
-                onChangeText={(t) => setLoginData({ ...loginData, username: t })}
+                onChangeText={(t) =>
+                  setLoginData({ ...loginData, username: t })
+                }
               />
               <TextInput
                 style={styles.input}
@@ -168,7 +170,9 @@ export default function Signin() {
                 secureTextEntry
                 autoCapitalize="none"
                 value={loginData.password}
-                onChangeText={(t) => setLoginData({ ...loginData, password: t })}
+                onChangeText={(t) =>
+                  setLoginData({ ...loginData, password: t })
+                }
               />
             </View>
 
@@ -200,7 +204,9 @@ export default function Signin() {
 
       {/* ⚠️ ORANGE TOAST MODAL SYSTEM NOTIFICATION BAR */}
       {alertVisible && (
-        <Animated.View style={[customStyles.orangeToastContainer, { opacity: fadeAnim }]}>
+        <Animated.View
+          style={[customStyles.orangeToastContainer, { opacity: fadeAnim }]}
+        >
           <Ionicons name="alert-circle" size={20} color="white" />
           <Text style={customStyles.orangeToastText}>{alertMessage}</Text>
         </Animated.View>
@@ -227,19 +233,19 @@ const customStyles = {
     shadowOpacity: 0.15,
     shadowRadius: 6,
     elevation: 6,
-    zIndex: 99999
+    zIndex: 99999,
   },
   orangeToastText: {
     color: "white",
     fontSize: 13,
     fontWeight: "600",
     marginLeft: 10,
-    flex: 1
+    flex: 1,
   },
   forgotPasswordLink: {
     color: "#a8f0e6",
     fontWeight: "700",
     marginTop: 10,
-    textAlign: "center"
-  }
+    textAlign: "center",
+  },
 };

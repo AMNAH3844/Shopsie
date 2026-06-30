@@ -1,4 +1,3 @@
-
 import { StyleSheet } from "react-native";
 
 export default StyleSheet.create({
@@ -57,63 +56,63 @@ export default StyleSheet.create({
     borderRadius: 8,
   },
   tableHeader: {
-  flexDirection: "row",
-  backgroundColor: "#2e4466",
-  paddingVertical: 12,
-  borderTopLeftRadius: 10,
-  borderTopRightRadius: 10,
-},
+    flexDirection: "row",
+    backgroundColor: "#2e4466",
+    paddingVertical: 12,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
 
-tableRow: {
-  flexDirection: "row",
-  paddingVertical: 12,
-  backgroundColor: "white",
-  borderBottomWidth: 1,
-  borderColor: "#eee",
-  alignItems: "center",
-},
+  tableRow: {
+    flexDirection: "row",
+    paddingVertical: 12,
+    backgroundColor: "white",
+    borderBottomWidth: 1,
+    borderColor: "#eee",
+    alignItems: "center",
+  },
 
-cell: {
-  flex: 1,
-  textAlign: "center",
-  fontSize: 13,
-},
+  cell: {
+    flex: 1,
+    textAlign: "center",
+    fontSize: 13,
+  },
 
-headerCell: {
-  flex: 1,
-  textAlign: "center",
-  color: "white",
-  fontWeight: "bold",
-  fontSize: 13,
-},
+  headerCell: {
+    flex: 1,
+    textAlign: "center",
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 13,
+  },
 
-lowStockRow: {
-  backgroundColor: "#ffe5e5",  // light red
-},
-searchInput: {
-  backgroundColor: "#fff",
-  padding: 12,
-  borderRadius: 10,
-  marginBottom: 15,
-  elevation: 2,
-},
+  lowStockRow: {
+    backgroundColor: "#ffe5e5", // light red
+  },
+  searchInput: {
+    backgroundColor: "#fff",
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 15,
+    elevation: 2,
+  },
 
-buttonRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  marginTop: 10,
-},
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
 
-deleteButton: {
-  backgroundColor: "#af2828",
-  padding: 12,
-  borderRadius: 10,
-  flex: 0.48,
-  alignItems: "center",
-},
+  deleteButton: {
+    backgroundColor: "#af2828",
+    padding: 12,
+    borderRadius: 10,
+    flex: 0.48,
+    alignItems: "center",
+  },
 
-deleteButtonText: {
-  color: "#fff",
-  fontWeight: "600",
-},
+  deleteButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+  },
 });

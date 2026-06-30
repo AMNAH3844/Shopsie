@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { API_URLS } from '../../src/services/apiConfig';
+import { API_URLS } from "../../src/services/apiConfig";
 import {
   View,
   Text,
@@ -19,7 +19,7 @@ import axios from "axios";
 
 export default function RiderRequests() {
   const router = useRouter();
-  
+
   // ==========================================
   // STATE MANAGEMENT ENTRIES
   // ==========================================
@@ -56,7 +56,7 @@ export default function RiderRequests() {
       const requestData = Array.isArray(res.data) ? res.data : [];
 
       const filteredRequests = requestData.filter(
-        (req) => req.status === "PENDING" || req.customerArchivedAt
+        (req) => req.status === "PENDING" || req.customerArchivedAt,
       );
 
       setRequests(filteredRequests);
@@ -72,7 +72,7 @@ export default function RiderRequests() {
   useFocusEffect(
     useCallback(() => {
       loadRequests();
-    }, [loadRequests])
+    }, [loadRequests]),
   );
 
   const deleteExpiredRequest = async (requestId) => {
@@ -92,7 +92,9 @@ export default function RiderRequests() {
 
   const openDetail = (item) => {
     if (item.customerArchivedAt) {
-      triggerWarning("This request was cancelled by the customer before acceptance.");
+      triggerWarning(
+        "This request was cancelled by the customer before acceptance.",
+      );
       return;
     }
 
@@ -125,11 +127,15 @@ export default function RiderRequests() {
           <Text style={styles.meta}>Items: {item.items?.length || 0}</Text>
 
           {!!item.buyingLocationLabel && (
-            <Text style={styles.location}>Buy from: {item.buyingLocationLabel}</Text>
+            <Text style={styles.location}>
+              Buy from: {item.buyingLocationLabel}
+            </Text>
           )}
 
           {!!item.deliveryLocationLabel && (
-            <Text style={styles.location}>Deliver to: {item.deliveryLocationLabel}</Text>
+            <Text style={styles.location}>
+              Deliver to: {item.deliveryLocationLabel}
+            </Text>
           )}
 
           {!!item.customerArchivedAt && (
@@ -161,7 +167,6 @@ export default function RiderRequests() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <View style={styles.container}>
-        
         <LinearGradient
           colors={["#eef4fe", "#2e4466"]}
           start={{ x: 1, y: 0 }}
@@ -176,7 +181,11 @@ export default function RiderRequests() {
         </LinearGradient>
 
         {loading && !refreshing ? (
-          <ActivityIndicator size="large" color="#2e4466" style={{ marginTop: 50 }} />
+          <ActivityIndicator
+            size="large"
+            color="#2e4466"
+            style={{ marginTop: 50 }}
+          />
         ) : (
           <FlatList
             data={requests}
@@ -210,12 +219,18 @@ export default function RiderRequests() {
               <Text style={styles.modalMessage}>
                 Are you sure you want to delete this expired request?
               </Text>
-              
+
               <View style={styles.modalButtons}>
-                <TouchableOpacity style={[styles.modalBtn, styles.modalCancelBtn]} onPress={() => setModalVisible(false)}>
+                <TouchableOpacity
+                  style={[styles.modalBtn, styles.modalCancelBtn]}
+                  onPress={() => setModalVisible(false)}
+                >
                   <Text style={styles.modalCancelText}>Cancel</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.modalBtn, styles.modalDeleteBtn]} onPress={handleConfirmDelete}>
+                <TouchableOpacity
+                  style={[styles.modalBtn, styles.modalDeleteBtn]}
+                  onPress={handleConfirmDelete}
+                >
                   <Text style={styles.modalConfirmText}>Delete</Text>
                 </TouchableOpacity>
               </View>
@@ -305,19 +320,25 @@ const styles = StyleSheet.create({
   },
   expiredStatus: { color: "#ef4444" },
   warningBox: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 90,
     left: 20,
     right: 20,
-    backgroundColor: '#e67e22',
+    backgroundColor: "#e67e22",
     padding: 14,
     borderRadius: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     zIndex: 9999,
     elevation: 6,
   },
-  warningText: { color: '#fff', marginLeft: 10, fontSize: 14, fontWeight: '500', flex: 1 },
+  warningText: {
+    color: "#fff",
+    marginLeft: 10,
+    fontSize: 14,
+    fontWeight: "500",
+    flex: 1,
+  },
   deleteText: {
     color: "#fff",
     marginLeft: 8,

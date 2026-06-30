@@ -23,35 +23,35 @@ export default function Welcome() {
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    justifyContent: "center", 
-    alignItems: "center", 
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: "#3f5375", // Deep Slate Blue
-    padding: 20, 
+    padding: 20,
   },
-  title: { 
-    fontSize: 24, 
-    marginBottom: 30, 
-    fontWeight: "700", 
+  title: {
+    fontSize: 24,
+    marginBottom: 30,
+    fontWeight: "700",
     color: "#fff", // White text
   },
-  button: { 
+  button: {
     width: "100%", // Full width matching your form cards
     backgroundColor: "#FFD60A", // Vibrant Yellow Accent
-    padding: 15, 
+    padding: 15,
     borderRadius: 12, // Standard layout border radius
-    alignItems: "center", 
-    marginBottom: 20, 
+    alignItems: "center",
+    marginBottom: 20,
   },
-  buttonText: { 
+  buttonText: {
     color: "#0a0c47", // Deep Navy text on yellow
-    fontSize: 16, 
-    fontWeight: "700", 
+    fontSize: 16,
+    fontWeight: "700",
   },
-  signupText: { 
+  signupText: {
     color: "#a8f0e6", // Mint/Teal link accent for high visibility
-    fontSize: 14, 
+    fontSize: 14,
     fontWeight: "600",
   },
 });

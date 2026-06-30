@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { API_URLS } from '../../src/services/apiConfig';
+import { API_URLS } from "../../src/services/apiConfig";
 import {
   View,
   Text,
@@ -17,7 +17,7 @@ import axios from "axios";
 
 export default function RiderActiveDeliveries() {
   const router = useRouter();
-  
+
   // ==========================================
   // STATE MANAGEMENT
   // ==========================================
@@ -66,17 +66,21 @@ export default function RiderActiveDeliveries() {
   // SCREEN FOCUS TRIGGER HOOKS
   // ==========================================
   useFocusEffect(
-    useCallback(() => { 
-      loadDeliveries(); 
-    }, [loadDeliveries])
+    useCallback(() => {
+      loadDeliveries();
+    }, [loadDeliveries]),
   );
 
   const markDelivered = async (id) => {
     try {
       const token = await AsyncStorage.getItem("token");
-      await axios.post(`${API_URLS.COMPLETE_ORDER}/${id}/delivered`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.post(
+        `${API_URLS.COMPLETE_ORDER}/${id}/delivered`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       triggerWarning("Customer confirmation message sent!");
       loadDeliveries();
     } catch (e) {
@@ -90,9 +94,13 @@ export default function RiderActiveDeliveries() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <View style={styles.container}>
-        
         {/* TOP HEADER */}
-        <LinearGradient colors={["#eef4fe", "#2e4466"]} start={{ x: 1, y: 0 }} end={{ x: 0, y: 0 }} style={styles.header}>
+        <LinearGradient
+          colors={["#eef4fe", "#2e4466"]}
+          start={{ x: 1, y: 0 }}
+          end={{ x: 0, y: 0 }}
+          style={styles.header}
+        >
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="chevron-back" size={28} color="#eef4fe" />
           </TouchableOpacity>
@@ -102,7 +110,9 @@ export default function RiderActiveDeliveries() {
 
         {/* LOADING SPINNER OR MAIN LIST CONTENT */}
         {loading ? (
-          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <View
+            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+          >
             <ActivityIndicator size="large" color="#2e4466" />
           </View>
         ) : (
@@ -112,21 +122,32 @@ export default function RiderActiveDeliveries() {
             contentContainerStyle={styles.listContent}
             refreshing={refreshing}
             onRefresh={() => loadDeliveries(true)}
-            ListEmptyComponent={<Text style={styles.emptyText}>No active deliveries</Text>}
+            ListEmptyComponent={
+              <Text style={styles.emptyText}>No active deliveries</Text>
+            }
             renderItem={({ item }) => (
-              
               /* DELIVERY LIST CARD */
               <View style={styles.card}>
                 <View style={styles.cardHeader}>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.title}>{item.listName}</Text>
-                    <Text style={styles.meta}>Customer: {item.customer?.username || "Customer"}</Text>
+                    <Text style={styles.meta}>
+                      Customer: {item.customer?.username || "Customer"}
+                    </Text>
                   </View>
                   <Text style={styles.statusPill}>{item.status}</Text>
                 </View>
 
-                {!!item.buyingLocationLabel && <Text style={styles.locationText}>Buy from: {item.buyingLocationLabel}</Text>}
-                {!!item.deliveryLocationLabel && <Text style={styles.locationText}>Deliver to: {item.deliveryLocationLabel}</Text>}
+                {!!item.buyingLocationLabel && (
+                  <Text style={styles.locationText}>
+                    Buy from: {item.buyingLocationLabel}
+                  </Text>
+                )}
+                {!!item.deliveryLocationLabel && (
+                  <Text style={styles.locationText}>
+                    Deliver to: {item.deliveryLocationLabel}
+                  </Text>
+                )}
 
                 {/* CARD ACTION BUTTONS */}
                 <View style={styles.row}>
@@ -139,7 +160,11 @@ export default function RiderActiveDeliveries() {
                       })
                     }
                   >
-                    <Ionicons name="chatbubble-ellipses-outline" size={16} color="#fff" />
+                    <Ionicons
+                      name="chatbubble-ellipses-outline"
+                      size={16}
+                      color="#fff"
+                    />
                     <Text style={styles.btnText}>Chat</Text>
                   </TouchableOpacity>
 
@@ -152,7 +177,11 @@ export default function RiderActiveDeliveries() {
                     disabled={item.status === "DELIVERED"}
                   >
                     <Ionicons
-                      name={item.status === "DELIVERED" ? "time-outline" : "checkmark-done-outline"}
+                      name={
+                        item.status === "DELIVERED"
+                          ? "time-outline"
+                          : "checkmark-done-outline"
+                      }
                       size={16}
                       color="#fff"
                     />
@@ -176,17 +205,26 @@ export default function RiderActiveDeliveries() {
 
         {/* FIXED BOTTOM NAVIGATION BAR */}
         <View style={styles.bottomNav}>
-          <TouchableOpacity style={styles.tabItem} onPress={() => router.replace("/riderDashboard")}>
+          <TouchableOpacity
+            style={styles.tabItem}
+            onPress={() => router.replace("/riderDashboard")}
+          >
             <Ionicons name="home" size={22} color="white" />
             <Text style={styles.navText}>Home</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.tabItem} onPress={() => router.push("/riderDashboard/history")}>
+          <TouchableOpacity
+            style={styles.tabItem}
+            onPress={() => router.push("/riderDashboard/history")}
+          >
             <Ionicons name="time-outline" size={22} color="white" />
             <Text style={styles.navText}>History</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.tabItem} onPress={() => router.push("/riderDashboard/downladedlistsrider")}>
+          <TouchableOpacity
+            style={styles.tabItem}
+            onPress={() => router.push("/riderDashboard/downladedlistsrider")}
+          >
             <Ionicons name="download-outline" size={22} color="white" />
             <Text style={styles.navText}>Downloads</Text>
           </TouchableOpacity>
@@ -211,7 +249,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 20,
   },
-  
+
   // Explicit Heading set to 700
   headerTitle: {
     flex: 1,
@@ -220,7 +258,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     textAlign: "center",
   },
-  
+
   listContent: {
     padding: 16,
     paddingBottom: 75,
@@ -245,7 +283,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  
+
   // Custom nonheadings standardized to 600 or 500
   title: {
     color: "#1e293b",
@@ -306,15 +344,15 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   warningBox: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 80,
     left: 20,
     right: 20,
-    backgroundColor: '#e67e22',
+    backgroundColor: "#e67e22",
     padding: 12,
     borderRadius: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     zIndex: 9999,
     elevation: 5,
     shadowColor: "#000",
@@ -322,10 +360,10 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
   },
   warningText: {
-    color: '#fff',
+    color: "#fff",
     marginLeft: 10,
     fontSize: 14,
-    fontWeight: '500'
+    fontWeight: "500",
   },
   bottomNav: {
     position: "absolute",

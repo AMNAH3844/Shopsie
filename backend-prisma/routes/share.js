@@ -17,18 +17,30 @@ const createDownloadedItemPayload = (item) => ({
   categoryName: item.categoryName || item.category || "Uncategorized",
   selectedShopId: item.selectedShopId ? Number(item.selectedShopId) : null,
   selectedShopName: item.selectedShopName || null,
-  selectedShopPrice: item.selectedShopPrice != null ? Number(item.selectedShopPrice) : null,
-  selectedShopLatitude: item.selectedShopLatitude != null ? Number(item.selectedShopLatitude) : null,
-  selectedShopLongitude: item.selectedShopLongitude != null ? Number(item.selectedShopLongitude) : null,
+  selectedShopPrice:
+    item.selectedShopPrice != null ? Number(item.selectedShopPrice) : null,
+  selectedShopLatitude:
+    item.selectedShopLatitude != null
+      ? Number(item.selectedShopLatitude)
+      : null,
+  selectedShopLongitude:
+    item.selectedShopLongitude != null
+      ? Number(item.selectedShopLongitude)
+      : null,
   selectedShopPhone: item.selectedShopPhone || null,
   selectedShopTiming: item.selectedShopTiming || null,
-  availableQuantity: item.availableQuantity != null ? Number(item.availableQuantity) : null,
+  availableQuantity:
+    item.availableQuantity != null ? Number(item.availableQuantity) : null,
   lineTotal: item.lineTotal != null ? Number(item.lineTotal) : null,
-  buyingLocationLat: item.buyingLocationLat != null ? Number(item.buyingLocationLat) : null,
-  buyingLocationLng: item.buyingLocationLng != null ? Number(item.buyingLocationLng) : null,
+  buyingLocationLat:
+    item.buyingLocationLat != null ? Number(item.buyingLocationLat) : null,
+  buyingLocationLng:
+    item.buyingLocationLng != null ? Number(item.buyingLocationLng) : null,
   buyingLocationLabel: item.buyingLocationLabel || null,
-  deliveryLocationLat: item.deliveryLocationLat != null ? Number(item.deliveryLocationLat) : null,
-  deliveryLocationLng: item.deliveryLocationLng != null ? Number(item.deliveryLocationLng) : null,
+  deliveryLocationLat:
+    item.deliveryLocationLat != null ? Number(item.deliveryLocationLat) : null,
+  deliveryLocationLng:
+    item.deliveryLocationLng != null ? Number(item.deliveryLocationLng) : null,
   deliveryLocationLabel: item.deliveryLocationLabel || null,
 });
 

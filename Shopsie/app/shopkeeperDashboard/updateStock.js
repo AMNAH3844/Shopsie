@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { API_URLS } from '../../src/services/apiConfig';
+import { API_URLS } from "../../src/services/apiConfig";
 import {
   View,
   Text,
@@ -31,7 +31,10 @@ export default function UpdateStock() {
 
   // ─── MODAL STATES ──────────────────────────────────────────
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState({ id: null, name: "" });
+  const [selectedProduct, setSelectedProduct] = useState({
+    id: null,
+    name: "",
+  });
 
   // ─── TRANSIENT WARNING NOTIFICATION STATE ───────────────────
   const [warningMessage, setWarningMessage] = useState("");
@@ -42,7 +45,7 @@ export default function UpdateStock() {
     setWarningMessage(msg);
     warningTimerRef.current = setTimeout(() => {
       setWarningMessage("");
-    }, 4500); 
+    }, 4500);
   };
 
   useEffect(() => {
@@ -144,7 +147,7 @@ export default function UpdateStock() {
         const updatedProduct = await res.json();
 
         setProducts((prev) =>
-          prev.map((p) => (p.id === id ? updatedProduct : p))
+          prev.map((p) => (p.id === id ? updatedProduct : p)),
         );
 
         setUpdates({ ...updates, [id]: {} });
@@ -195,35 +198,37 @@ export default function UpdateStock() {
 
   // ================= SEARCH FILTER =================
   const filteredProducts = products.filter((p) =>
-    p.name?.toLowerCase().includes(search.toLowerCase())
+    p.name?.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <View style={localStyles.mainContainer}>
-
         {/* FIXED STRUCTURE: Keyboard avoiding handles inner inputs */}
-        <KeyboardAvoidingView 
-          style={{ flex: 1 }} 
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={{ flex: 1 }}>
-              
               {/* EXACT HEADER IMPLEMENTATION */}
-              <LinearGradient 
-                colors={["#eef4fe", "#2e4466"]} 
-                start={{ x: 1, y: 0 }} 
-                end={{ x: 0, y: 0 }} 
+              <LinearGradient
+                colors={["#eef4fe", "#2e4466"]}
+                start={{ x: 1, y: 0 }}
+                end={{ x: 0, y: 0 }}
                 style={localStyles.gradientHeader}
               >
-                <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace("/shopkeeperDashboard")}>
+                <TouchableOpacity
+                  onPress={() =>
+                    router.canGoBack()
+                      ? router.back()
+                      : router.replace("/shopkeeperDashboard")
+                  }
+                >
                   <Ionicons name="chevron-back" size={28} color="#eef4fe" />
                 </TouchableOpacity>
                 <View style={localStyles.headerCenterContainer}>
-                  <Text style={localStyles.headerTitleText}>
-                    Update Stock
-                  </Text>
+                  <Text style={localStyles.headerTitleText}>Update Stock</Text>
                 </View>
                 <View style={{ width: 28 }} />
               </LinearGradient>
@@ -231,7 +236,12 @@ export default function UpdateStock() {
               {/* SEARCH BAR CONTAINER */}
               <View style={localStyles.searchSectionWrapper}>
                 <View style={localStyles.searchBarContainer}>
-                  <Ionicons name="search-outline" size={20} color="#64748B" style={localStyles.inputIcon} />
+                  <Ionicons
+                    name="search-outline"
+                    size={20}
+                    color="#64748B"
+                    style={localStyles.inputIcon}
+                  />
                   <TextInput
                     placeholder="Search product by name..."
                     placeholderTextColor="#94A3B8"
@@ -249,7 +259,13 @@ export default function UpdateStock() {
 
               {/* PRODUCT LIST ENGINE */}
               {isFetching ? (
-                <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                <View
+                  style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
                   <ActivityIndicator size="large" color="#2e4466" />
                 </View>
               ) : (
@@ -258,7 +274,11 @@ export default function UpdateStock() {
                   keyExtractor={(item) => item.id.toString()}
                   contentContainerStyle={localStyles.scrollContainer}
                   showsVerticalScrollIndicator={false}
-                  ListHeaderComponent={<Text style={localStyles.sectionHeading}>Inventory Items</Text>}
+                  ListHeaderComponent={
+                    <Text style={localStyles.sectionHeading}>
+                      Inventory Items
+                    </Text>
+                  }
                   renderItem={({ item }) => (
                     <View style={localStyles.card}>
                       <Text style={localStyles.productTitle}>{item.name}</Text>
@@ -266,13 +286,20 @@ export default function UpdateStock() {
                       {/* Price Row */}
                       <Text style={localStyles.fieldLabel}>Price</Text>
                       <View style={localStyles.inputWrapper}>
-                        <Ionicons name="pricetag-outline" size={18} color="#64748B" style={localStyles.inputIcon} />
+                        <Ionicons
+                          name="pricetag-outline"
+                          size={18}
+                          color="#64748B"
+                          style={localStyles.inputIcon}
+                        />
                         <TextInput
                           placeholder={`Current: Rs ${item.price}`}
                           placeholderTextColor="#94A3B8"
                           keyboardType="decimal-pad"
                           style={localStyles.baseInputOverride}
-                          onChangeText={(t) => handlePriceInputChange(t, item.id)}
+                          onChangeText={(t) =>
+                            handlePriceInputChange(t, item.id)
+                          }
                           value={updates[item.id]?.price || ""}
                         />
                       </View>
@@ -280,30 +307,48 @@ export default function UpdateStock() {
                       {/* Quantity Row */}
                       <Text style={localStyles.fieldLabel}>Quantity</Text>
                       <View style={localStyles.inputWrapper}>
-                        <MaterialCommunityIcons name="numeric" size={18} color="#64748B" style={localStyles.inputIcon} />
+                        <MaterialCommunityIcons
+                          name="numeric"
+                          size={18}
+                          color="#64748B"
+                          style={localStyles.inputIcon}
+                        />
                         <TextInput
                           placeholder={`Current: ${item.quantity}`}
                           placeholderTextColor="#94A3B8"
                           keyboardType="number-pad"
                           style={localStyles.baseInputOverride}
-                          onChangeText={(t) => handleQuantityInputChange(t, item.id)}
+                          onChangeText={(t) =>
+                            handleQuantityInputChange(t, item.id)
+                          }
                           value={updates[item.id]?.quantity || ""}
                         />
                       </View>
 
                       {/* Specification Row */}
                       <Text style={localStyles.fieldLabel}>Specification</Text>
-                      <View style={[localStyles.inputWrapper, localStyles.textAreaWrapper]}>
+                      <View
+                        style={[
+                          localStyles.inputWrapper,
+                          localStyles.textAreaWrapper,
+                        ]}
+                      >
                         <TextInput
                           placeholder={`Current: ${item.specification || "-"}`}
                           placeholderTextColor="#94A3B8"
-                          style={[localStyles.baseInputOverride, localStyles.textAreaInput]}
+                          style={[
+                            localStyles.baseInputOverride,
+                            localStyles.textAreaInput,
+                          ]}
                           multiline={true}
                           numberOfLines={3}
                           onChangeText={(t) =>
                             setUpdates({
                               ...updates,
-                              [item.id]: { ...updates[item.id], specification: t },
+                              [item.id]: {
+                                ...updates[item.id],
+                                specification: t,
+                              },
                             })
                           }
                           value={updates[item.id]?.specification || ""}
@@ -313,21 +358,43 @@ export default function UpdateStock() {
                       {/* ACTION ROW UTILITY BUTTONS */}
                       <View style={localStyles.actionRow}>
                         <TouchableOpacity
-                          style={[localStyles.actionButtonHalf, localStyles.saveButtonColor]}
+                          style={[
+                            localStyles.actionButtonHalf,
+                            localStyles.saveButtonColor,
+                          ]}
                           onPress={() => updateProduct(item.id)}
                           activeOpacity={0.8}
                         >
-                          <Ionicons name="checkmark-circle-outline" size={18} color="white" style={{ marginRight: 4 }} />
-                          <Text style={localStyles.actionButtonText}>Update</Text>
+                          <Ionicons
+                            name="checkmark-circle-outline"
+                            size={18}
+                            color="white"
+                            style={{ marginRight: 4 }}
+                          />
+                          <Text style={localStyles.actionButtonText}>
+                            Update
+                          </Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                          style={[localStyles.actionButtonHalf, localStyles.cancelButtonColor]}
-                          onPress={() => openDeleteConfirmation(item.id, item.name)}
+                          style={[
+                            localStyles.actionButtonHalf,
+                            localStyles.cancelButtonColor,
+                          ]}
+                          onPress={() =>
+                            openDeleteConfirmation(item.id, item.name)
+                          }
                           activeOpacity={0.7}
                         >
-                          <Ionicons name="trash-outline" size={18} color="white" style={{ marginRight: 4 }} />
-                          <Text style={localStyles.actionButtonText}>Delete</Text>
+                          <Ionicons
+                            name="trash-outline"
+                            size={18}
+                            color="white"
+                            style={{ marginRight: 4 }}
+                          />
+                          <Text style={localStyles.actionButtonText}>
+                            Delete
+                          </Text>
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -347,27 +414,39 @@ export default function UpdateStock() {
         >
           <View style={localStyles.modalOverlay}>
             <View style={localStyles.modalBox}>
-              <TouchableOpacity onPress={() => setDeleteModalVisible(false)} style={localStyles.closeCornerBtn}>
+              <TouchableOpacity
+                onPress={() => setDeleteModalVisible(false)}
+                style={localStyles.closeCornerBtn}
+              >
                 <Text style={localStyles.closeX}>✕</Text>
               </TouchableOpacity>
 
-              <Text style={[localStyles.modalTitle, { color: '#EF4444' }]}>Delete Product</Text>
-              <Text style={localStyles.modalSubtitle}>
-                Are you sure you want to permanently remove "{selectedProduct.name}" from stock records?
+              <Text style={[localStyles.modalTitle, { color: "#EF4444" }]}>
+                Delete Product
               </Text>
-              
+              <Text style={localStyles.modalSubtitle}>
+                Are you sure you want to permanently remove "
+                {selectedProduct.name}" from stock records?
+              </Text>
+
               <View style={localStyles.modalButtonsRow}>
-                <TouchableOpacity 
-                  style={[localStyles.modalBtn, { backgroundColor: '#E2E8F0' }]} 
+                <TouchableOpacity
+                  style={[localStyles.modalBtn, { backgroundColor: "#E2E8F0" }]}
                   onPress={() => setDeleteModalVisible(false)}
                 >
-                  <Text style={[localStyles.modalBtnText, { color: '#334155' }]}>Cancel</Text>
+                  <Text
+                    style={[localStyles.modalBtnText, { color: "#334155" }]}
+                  >
+                    Cancel
+                  </Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[localStyles.modalBtn, { backgroundColor: '#EF4444' }]} 
+                <TouchableOpacity
+                  style={[localStyles.modalBtn, { backgroundColor: "#EF4444" }]}
                   onPress={executeDeleteProduct}
                 >
-                  <Text style={[localStyles.modalBtnText, { color: '#fff' }]}>Delete</Text>
+                  <Text style={[localStyles.modalBtnText, { color: "#fff" }]}>
+                    Delete
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -377,10 +456,14 @@ export default function UpdateStock() {
         {/* TRANSIENT BANNER LAYER */}
         {warningMessage ? (
           <View style={localStyles.warningBox}>
-            <Ionicons 
-              name={warningMessage.startsWith("Success") ? "checkmark-circle-outline" : "warning-outline"} 
-              size={22} 
-              color="#fff" 
+            <Ionicons
+              name={
+                warningMessage.startsWith("Success")
+                  ? "checkmark-circle-outline"
+                  : "warning-outline"
+              }
+              size={22}
+              color="#fff"
             />
             <Text style={localStyles.warningText}>{warningMessage}</Text>
           </View>
@@ -394,53 +477,186 @@ export default function UpdateStock() {
 }
 
 const localStyles = StyleSheet.create({
-  mainContainer: { flex: 1, backgroundColor: '#F8FAFC' },
+  mainContainer: { flex: 1, backgroundColor: "#F8FAFC" },
   searchSectionWrapper: { paddingHorizontal: 20, marginTop: 16 },
   scrollContainer: {
     paddingHorizontal: 20,
     paddingBottom: 95,
   },
   gradientHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justify: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justify: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 26,
-    width: '100%',
-    elevation: 3
+    width: "100%",
+    elevation: 3,
   },
-  headerCenterContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  headerTitleText: { fontSize: 20, fontWeight: '700', color: '#2e4466', textAlign: 'center' },
-  
-  searchBarContainer: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: '#CBD5E1', borderRadius: 14, paddingHorizontal: 14, backgroundColor: '#FFFFFF', height: 50 },
+  headerCenterContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerTitleText: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#2e4466",
+    textAlign: "center",
+  },
+
+  searchBarContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderColor: "#CBD5E1",
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    backgroundColor: "#FFFFFF",
+    height: 50,
+  },
   inputIcon: { marginRight: 8 },
-  baseInputOverride: { flex: 1, height: '100%', fontSize: 14, color: '#0F172A', ...Platform.select({ web: { outlineStyle: 'none' } }) },
-  
-  sectionHeading: { fontSize: 16, fontWeight: '700', color: '#1E293B', marginTop: 14, marginBottom: 6 },
-  card: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 16, marginTop: 6, marginBottom: 12, shadowColor: '#475569', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.12, shadowRadius: 12, elevation: 4 },
-  productTitle: { fontSize: 17, fontWeight: '700', color: '#0F172A', marginBottom: 12 },
-  fieldLabel: { fontSize: 11, fontWeight: '700', color: '#475569', marginBottom: 5, textTransform: 'uppercase', letterSpacing: 0.5 },
-  
-  inputWrapper: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: '#E2E8F0', borderRadius: 10, marginBottom: 12, paddingHorizontal: 12, backgroundColor: '#FAFAFA', height: 44 },
-  textAreaWrapper: { alignItems: 'flex-start', paddingVertical: 8, height: 68 },
-  textAreaInput: { textAlignVertical: 'top' },
+  baseInputOverride: {
+    flex: 1,
+    height: "100%",
+    fontSize: 14,
+    color: "#0F172A",
+    ...Platform.select({ web: { outlineStyle: "none" } }),
+  },
 
-  actionRow: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginTop: 14, gap: 10 },
-  actionButtonHalf: { flex: 1, borderRadius: 10, height: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', elevation: 2 },
-  cancelButtonColor: { backgroundColor: '#EF4444' },
-  saveButtonColor: { backgroundColor: '#22C55E' },
-  actionButtonText: { color: 'white', fontWeight: '700', fontSize: 14 },
+  sectionHeading: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#1E293B",
+    marginTop: 14,
+    marginBottom: 6,
+  },
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 6,
+    marginBottom: 12,
+    shadowColor: "#475569",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  productTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#0F172A",
+    marginBottom: 12,
+  },
+  fieldLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#475569",
+    marginBottom: 5,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
 
-  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center" },
-  modalBox: { width: "85%", backgroundColor: "#fff", borderRadius: 20, paddingTop: 20, paddingBottom: 24, paddingHorizontal: 24, alignItems: "center", position: 'relative', elevation: 10 },
-  closeCornerBtn: { position: 'absolute', top: 16, right: 20, zIndex: 10, padding: 4 },
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
+    borderRadius: 10,
+    marginBottom: 12,
+    paddingHorizontal: 12,
+    backgroundColor: "#FAFAFA",
+    height: 44,
+  },
+  textAreaWrapper: { alignItems: "flex-start", paddingVertical: 8, height: 68 },
+  textAreaInput: { textAlignVertical: "top" },
+
+  actionRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    marginTop: 14,
+    gap: 10,
+  },
+  actionButtonHalf: {
+    flex: 1,
+    borderRadius: 10,
+    height: 44,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 2,
+  },
+  cancelButtonColor: { backgroundColor: "#EF4444" },
+  saveButtonColor: { backgroundColor: "#22C55E" },
+  actionButtonText: { color: "white", fontWeight: "700", fontSize: 14 },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalBox: {
+    width: "85%",
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    paddingTop: 20,
+    paddingBottom: 24,
+    paddingHorizontal: 24,
+    alignItems: "center",
+    position: "relative",
+    elevation: 10,
+  },
+  closeCornerBtn: {
+    position: "absolute",
+    top: 16,
+    right: 20,
+    zIndex: 10,
+    padding: 4,
+  },
   closeX: { fontSize: 20, color: "#94A3B8", fontWeight: "bold" },
   modalTitle: { fontSize: 19, fontWeight: "700", marginTop: 10 },
-  modalSubtitle: { fontSize: 14, color: "#475569", marginTop: 12, marginBottom: 24, textAlign: 'center', lineHeight: 20 },
-  modalButtonsRow: { width: "100%", flexDirection: "row", justifyContent: "space-between", gap: 12 },
-  modalBtn: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: "center" },
-  modalBtnText: { fontWeight: '700', fontSize: 15 },
+  modalSubtitle: {
+    fontSize: 14,
+    color: "#475569",
+    marginTop: 12,
+    marginBottom: 24,
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  modalButtonsRow: {
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  modalBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  modalBtnText: { fontWeight: "700", fontSize: 15 },
 
-  warningBox: { position: 'absolute', bottom: 85, left: 20, right: 20, backgroundColor: '#e67e22', padding: 14, borderRadius: 14, flexDirection: 'row', alignItems: 'center', zIndex: 9999, elevation: 6 },
-  warningText: { color: '#fff', marginLeft: 10, fontSize: 14, fontWeight: '600', flex: 1 },
+  warningBox: {
+    position: "absolute",
+    bottom: 85,
+    left: 20,
+    right: 20,
+    backgroundColor: "#e67e22",
+    padding: 14,
+    borderRadius: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    zIndex: 9999,
+    elevation: 6,
+  },
+  warningText: {
+    color: "#fff",
+    marginLeft: 10,
+    fontSize: 14,
+    fontWeight: "600",
+    flex: 1,
+  },
 });

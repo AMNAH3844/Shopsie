@@ -12,7 +12,7 @@ const createAdmin = async () => {
   const existing = await prisma.user.findUnique({ where: { username } });
   if (existing) {
     console.log("Admin already exists");
-    return; 
+    return;
   }
 
   const user = await prisma.user.create({
