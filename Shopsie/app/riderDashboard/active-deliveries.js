@@ -19,7 +19,7 @@ export default function RiderActiveDeliveries() {
   const router = useRouter();
   
   // ==========================================
-  // STATE MANAGEMENT (Variables to save data)
+  // STATE MANAGEMENT
   // ==========================================
   const [deliveries, setDeliveries] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,7 +28,7 @@ export default function RiderActiveDeliveries() {
   const [toastMessage, setToastMessage] = useState("");
 
   // ==========================================
-  // WARNING TOAST FUNCTION (Show orange box)
+  // WARNING TOAST ACTIONS
   // ==========================================
   const triggerWarning = (message) => {
     setToastMessage(message);
@@ -39,7 +39,7 @@ export default function RiderActiveDeliveries() {
   };
 
   // ==========================================
-  // API CALLS (Get data and update backend)
+  // DATA FETCHING & API COMMUNICATIONS
   // ==========================================
   const loadDeliveries = useCallback(async (isRefresh = false) => {
     try {
@@ -63,7 +63,7 @@ export default function RiderActiveDeliveries() {
   }, []);
 
   // ==========================================
-  // SCREEN FOCUS TRIGGER (Auto reload data)
+  // SCREEN FOCUS TRIGGER HOOKS
   // ==========================================
   useFocusEffect(
     useCallback(() => { 
@@ -85,7 +85,7 @@ export default function RiderActiveDeliveries() {
   };
 
   // ==========================================
-  // UI LAYOUT (What the user sees)
+  // MAIN COMPONENT LAYOUT UI
   // ==========================================
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -100,7 +100,7 @@ export default function RiderActiveDeliveries() {
           <View style={{ width: 28 }} />
         </LinearGradient>
 
-        {/* LOADING SPINNER OR MAIN LIST */}
+        {/* LOADING SPINNER OR MAIN LIST CONTENT */}
         {loading ? (
           <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
             <ActivityIndicator size="large" color="#2e4466" />
@@ -115,7 +115,7 @@ export default function RiderActiveDeliveries() {
             ListEmptyComponent={<Text style={styles.emptyText}>No active deliveries</Text>}
             renderItem={({ item }) => (
               
-              /* DELIVERY CARD */
+              /* DELIVERY LIST CARD */
               <View style={styles.card}>
                 <View style={styles.cardHeader}>
                   <View style={{ flex: 1 }}>
@@ -128,6 +128,7 @@ export default function RiderActiveDeliveries() {
                 {!!item.buyingLocationLabel && <Text style={styles.locationText}>Buy from: {item.buyingLocationLabel}</Text>}
                 {!!item.deliveryLocationLabel && <Text style={styles.locationText}>Deliver to: {item.deliveryLocationLabel}</Text>}
 
+                {/* CARD ACTION BUTTONS */}
                 <View style={styles.row}>
                   <TouchableOpacity
                     style={styles.chatBtn}
@@ -165,7 +166,7 @@ export default function RiderActiveDeliveries() {
           />
         )}
 
-        {/* ORANGE WARNING TOAST */}
+        {/* ORANGE WARNING TOAST ALERT */}
         {showWarningBox && (
           <View style={styles.warningBox}>
             <Ionicons name="alert-circle-outline" size={20} color="#fff" />
@@ -173,7 +174,7 @@ export default function RiderActiveDeliveries() {
           </View>
         )}
 
-        {/* BOTTOM NAVIGATION BAR */}
+        {/* FIXED BOTTOM NAVIGATION BAR */}
         <View style={styles.bottomNav}>
           <TouchableOpacity style={styles.tabItem} onPress={() => router.replace("/riderDashboard")}>
             <Ionicons name="home" size={22} color="white" />
@@ -196,7 +197,7 @@ export default function RiderActiveDeliveries() {
 }
 
 // ==========================================
-// CSS STYLES (Colors, shapes and spacing)
+// STYLESHEET REGISTRY
 // ==========================================
 const styles = StyleSheet.create({
   container: {
@@ -210,13 +211,16 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 20,
   },
+  
+  // Explicit Heading set to 700
   headerTitle: {
     flex: 1,
     color: "#2e4466",
     fontSize: 22,
-    fontWeight: "800",
+    fontWeight: "700",
     textAlign: "center",
   },
+  
   listContent: {
     padding: 16,
     paddingBottom: 75,
@@ -224,7 +228,7 @@ const styles = StyleSheet.create({
   emptyText: {
     textAlign: "center",
     color: "#64748b",
-    fontWeight: "800",
+    fontWeight: "600",
     marginTop: 30,
   },
   card: {
@@ -241,16 +245,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
+  
+  // Custom nonheadings standardized to 600 or 500
   title: {
     color: "#1e293b",
     fontSize: 16,
-    fontWeight: "900",
+    fontWeight: "600",
   },
   meta: {
     color: "#64748b",
     fontSize: 12,
     marginTop: 4,
-    fontWeight: "700",
+    fontWeight: "500",
   },
   statusPill: {
     color: "#2e4466",
@@ -259,14 +265,14 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 999,
     fontSize: 11,
-    fontWeight: "900",
+    fontWeight: "600",
     overflow: "hidden",
   },
   locationText: {
     color: "#475569",
     fontSize: 12,
     marginTop: 8,
-    fontWeight: "700",
+    fontWeight: "500",
   },
   row: {
     flexDirection: "row",
@@ -296,7 +302,7 @@ const styles = StyleSheet.create({
   },
   btnText: {
     color: "#fff",
-    fontWeight: "800",
+    fontWeight: "600",
     marginLeft: 6,
   },
   warningBox: {
@@ -319,7 +325,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginLeft: 10,
     fontSize: 14,
-    fontWeight: '600'
+    fontWeight: '500'
   },
   bottomNav: {
     position: "absolute",

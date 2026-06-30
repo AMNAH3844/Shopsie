@@ -29,6 +29,9 @@ export default function RiderOptimizer() {
   const isDownloadedListMode = optimizerMode === "downloaded" || !!downloadedListId;
   const optimizerId = isDownloadedListMode ? downloadedListId : requestId;
 
+  // ==========================================
+  // STATE MANAGEMENT ENTRIES
+  // ==========================================
   const [loading, setLoading] = useState(true);
   const [savingItemId, setSavingItemId] = useState(null);
   const [plan, setPlan] = useState(null);
@@ -41,6 +44,9 @@ export default function RiderOptimizer() {
   const [showWarningBox, setShowWarningBox] = useState(false);
   const [warningMessage, setWarningMessage] = useState("");
 
+  // ==========================================
+  // COMPUTED MEMOIZED VALUES
+  // ==========================================
   const allItemsDone = useMemo(() => {
     const stops = optimized?.stops || plan?.stops || [];
     const items = stops.flatMap((stop) => stop.items || []);
@@ -67,6 +73,9 @@ export default function RiderOptimizer() {
     ];
   }, [deliveryRoute, optimized]);
 
+  // ==========================================
+  // MAP WEBVIEW COMMUNICATIONS
+  // ==========================================
   const pushWaypointsToMap = useCallback((points) => {
     const messageObj = { type: "UPDATE_WAYPOINTS", data: points };
 
@@ -93,6 +102,9 @@ export default function RiderOptimizer() {
     if (waypoints.length > 0) pushWaypointsToMap(waypoints);
   }, [pushWaypointsToMap, waypoints]);
 
+  // ==========================================
+  // CORE GEOLOCATION UTILITIES
+  // ==========================================
   const getLiveLocation = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
@@ -107,6 +119,9 @@ export default function RiderOptimizer() {
     return { riderLat: location.coords.latitude, riderLng: location.coords.longitude };
   };
 
+  // ==========================================
+  // REMOTE DATA ASYNC FETCHING & MUTATION
+  // ==========================================
   const loadPlan = useCallback(async () => {
     if (!optimizerId) {
       Alert.alert("Error", isDownloadedListMode ? "Missing downloaded list id" : "Missing request id");
@@ -218,6 +233,9 @@ export default function RiderOptimizer() {
     }
   };
 
+  // ==========================================
+  // REVENUE AND INCIDENT FEEDBACK SYSTEM
+  // ==========================================
   const triggerWarning = (msg) => {
     setWarningMessage(msg);
     setShowWarningBox(true);
@@ -387,11 +405,13 @@ export default function RiderOptimizer() {
 
   const visibleStops = optimized?.stops || plan?.stops || [];
 
+  // ==========================================
+  // ROOT SCREEN VIEW RENDER SYSTEM
+  // ==========================================
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f8fafc" }}>
       
       <View style={styles.container}>
-        {/* TOP GADIENT HEADER */}
         <LinearGradient 
           colors={["#eef4fe", "#2e4466"]} 
           start={{ x: 1, y: 0 }} 
@@ -406,7 +426,6 @@ export default function RiderOptimizer() {
           </Text>
         </LinearGradient>
 
-        {/* CONTENT LAYER */}
         <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
           <View style={styles.mapCard}>
             {Platform.OS === "web" ? (
@@ -482,7 +501,7 @@ export default function RiderOptimizer() {
                         onPress={() => updateItemDone(item.id, !(item.optimizerDone || item.riderOptimizerDone || item.customerOptimizerDone))}
                         disabled={savingItemId === item.id}
                         activeOpacity={0.7}
-                    >
+                      >
                         <Ionicons
                           name={(item.optimizerDone || item.riderOptimizerDone || item.customerOptimizerDone) ? "checkbox" : "square-outline"}
                           size={22}
@@ -504,7 +523,6 @@ export default function RiderOptimizer() {
           </View>
         </ScrollView>
 
-        {/* BOTTOM NAVIGATION BAR LAYER */}
         <View style={styles.bottomNav}>
           <TouchableOpacity
             style={styles.tabItem}
@@ -532,7 +550,6 @@ export default function RiderOptimizer() {
         </View>
       </View>
 
-      {/* REPORT CONTEXT MODAL */}
       <Modal visible={reportModal.visible} transparent animationType="fade" onRequestClose={closeReportModal}>
         <View style={styles.modalOverlay}>
           <View style={styles.reportModalBox}>
@@ -599,9 +616,12 @@ export default function RiderOptimizer() {
   );
 }
 
+// ==========================================
+// CENTRAL LAYOUT STYLES AND CONFIGURATION
+// ==========================================
 const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#f8fafc" },
-  loadingText: { marginTop: 12, color: "#64748b", fontWeight: "700" },
+  loadingText: { marginTop: 12, color: "#64748b", fontWeight: "600" },
   container: { flex: 1, backgroundColor: "#f8fafc" },
   
   header: { 
@@ -623,41 +643,40 @@ const styles = StyleSheet.create({
   mapCard: { width: "100%", height: 240, borderRadius: 16, overflow: "hidden", backgroundColor: "#e2e8f0", marginBottom: 16, borderWidth: 1, borderColor: "#e2e8f0" },
   map: { flex: 1 },
   sectionCard: { backgroundColor: "#fff", borderRadius: 16, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: "#e2e8f0" },
-  sectionTitle: { fontSize: 15, fontWeight: "800", color: "#1e293b", marginBottom: 12 },
+  sectionTitle: { fontSize: 15, fontWeight: "700", color: "#1e293b", marginBottom: 12 },
   metricRow: { flexDirection: "row", alignItems: "center", paddingVertical: 6 },
-  metricLabel: { flex: 1, fontSize: 13, color: "#475569", marginLeft: 10, fontWeight: "600" },
-  metricValue: { fontSize: 13, fontWeight: "800", color: "#1e293b" },
-  locationText: { color: "#475569", fontSize: 12, fontWeight: "600", marginTop: 6 },
+  metricLabel: { flex: 1, fontSize: 13, color: "#475569", marginLeft: 10, fontWeight: "500" },
+  metricValue: { fontSize: 13, fontWeight: "600", color: "#1e293b" },
+  locationText: { color: "#475569", fontSize: 12, fontWeight: "500", marginTop: 6 },
   deliveryRouteBtn: { backgroundColor: "#10b981", borderRadius: 12, paddingVertical: 14, marginBottom: 16, flexDirection: "row", alignItems: "center", justifyContent: "center" },
-  deliveryRouteText: { color: "#fff", fontWeight: "800", fontSize: 14, marginLeft: 8 },
-  emptyText: { textAlign: "center", color: "#94a3b8", paddingVertical: 20, fontSize: 14, fontWeight: "600" },
+  deliveryRouteText: { color: "#fff", fontWeight: "600", fontSize: 14, marginLeft: 8 },
+  emptyText: { textAlign: "center", color: "#94a3b8", paddingVertical: 20, fontSize: 14, fontWeight: "500" },
   stopCard: { marginBottom: 12, backgroundColor: "#f8fafc", borderRadius: 12, borderWidth: 1, borderColor: "#e2e8f0", padding: 12 },
   stopHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderBottomWidth: 1, borderBottomColor: "#e2e8f0", paddingBottom: 8, marginBottom: 8 },
   stopTitleRow: { flexDirection: "row", alignItems: "center", flex: 1 },
   stopBadge: { width: 24, height: 24, borderRadius: 12, backgroundColor: "#2e4466", alignItems: "center", justifyContent: "center", marginRight: 8 },
-  stopBadgeText: { color: "#fff", fontWeight: "700", fontSize: 12 },
-  stopTitle: { color: "#1e293b", fontSize: 14, fontWeight: "700", flex: 1 },
-  stopMeta: { color: "#10b981", fontSize: 11, marginTop: 2, fontWeight: "700" },
+  stopBadgeText: { color: "#fff", fontWeight: "600", fontSize: 12 },
+  stopTitle: { color: "#1e293b", fontSize: 14, fontWeight: "600", flex: 1 },
+  stopMeta: { color: "#10b981", fontSize: 11, marginTop: 2, fontWeight: "600" },
   reportShopBtn: { flexDirection: "row", alignItems: "center", backgroundColor: "#fef2f2", borderRadius: 8, borderWidth: 1, borderColor: "#fecaca", paddingHorizontal: 8, paddingVertical: 4 },
-  reportShopText: { color: "#ef4444", fontSize: 11, fontWeight: "700", marginLeft: 4 },
+  reportShopText: { color: "#ef4444", fontSize: 11, fontWeight: "600", marginLeft: 4 },
   itemRow: { flexDirection: "row", alignItems: "center", paddingVertical: 10, borderTopWidth: 1, borderTopColor: "#e2e8f0" },
-  itemName: { color: "#334155", fontSize: 13, fontWeight: "700" },
+  itemName: { color: "#334155", fontSize: 13, fontWeight: "600" },
   doneText: { color: "#10b981", textDecorationLine: "line-through" },
   itemMeta: { color: "#64748b", fontSize: 11, marginTop: 2, lineHeight: 16 },
   modalOverlay: { flex: 1, backgroundColor: "rgba(15,23,42,0.6)", justifyContent: "center", alignItems: "center", padding: 20 },
   reportModalBox: { width: "100%", maxWidth: 400, backgroundColor: "#fff", borderRadius: 16, padding: 16, borderWidth: 1, borderColor: "#e2e8f0" },
   modalCloseIcon: { position: "absolute", top: 12, right: 12, zIndex: 2, width: 28, height: 28, borderRadius: 14, backgroundColor: "#f8fafc", alignItems: "center", justifyContent: "center" },
-  reportModalTitle: { color: "#1e293b", fontSize: 17, fontWeight: "800", paddingRight: 34 },
-  reportModalSubtitle: { color: "#64748b", fontSize: 13, fontWeight: "600", marginTop: 4, marginBottom: 16 },
+  reportModalTitle: { color: "#1e293b", fontSize: 17, fontWeight: "700", paddingRight: 34 },
+  reportModalSubtitle: { color: "#64748b", fontSize: 13, fontWeight: "500", marginTop: 4, marginBottom: 16 },
   reportOptionBtn: { flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: "#dbeafe", backgroundColor: "#eff6ff", borderRadius: 12, padding: 12, marginTop: 10 },
-  reportOptionText: { color: "#2e4466", fontSize: 14, fontWeight: "700", marginLeft: 10 },
+  reportOptionText: { color: "#2e4466", fontSize: 14, fontWeight: "600", marginLeft: 10 },
   reportInput: { minHeight: 120, textAlignVertical: "top", borderWidth: 1, borderColor: "#cbd5e1", borderRadius: 12, padding: 12, color: "#1e293b", backgroundColor: "#f8fafc", fontSize: 14, lineHeight: 20 },
-  wordCounter: { textAlign: "right", color: "#64748b", fontSize: 11, fontWeight: "600", marginTop: 6 },
+  wordCounter: { textAlign: "right", color: "#64748b", fontSize: 11, fontWeight: "500", marginTop: 6 },
   wordCounterError: { color: "#ef4444" },
   sendReportBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: "#2e4466", borderRadius: 12, paddingVertical: 12, marginTop: 12 },
-  sendReportText: { color: "#fff", fontSize: 14, fontWeight: "700", marginLeft: 8 },
+  sendReportText: { color: "#fff", fontSize: 14, fontWeight: "600", marginLeft: 8 },
   
-  // Bottom Navigation Bar Styles matching RiderSetLocation explicitly
   bottomNav: {
     position: "absolute",
     left: 0,
@@ -688,7 +707,7 @@ const styles = StyleSheet.create({
   
   warningBox: {
     position: "absolute",
-    bottom: 90, // Raised above the bottom navigation panel
+    bottom: 90,
     left: 16,
     right: 16,
     backgroundColor: "#e67e22",
@@ -702,7 +721,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     marginLeft: 8,
     fontSize: 13,
-    fontWeight: "600",
+    fontWeight: "500",
     flex: 1,
   },
 });

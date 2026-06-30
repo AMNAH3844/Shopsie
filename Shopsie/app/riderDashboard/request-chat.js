@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-// Import API_URLS
 import { API_URLS } from '../../src/services/apiConfig'; 
 import {
   View,
@@ -13,7 +12,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StatusBar,
 } from "react-native";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -23,6 +21,9 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
+// ==========================================
+// GLOBALS & HELPER FUNCTIONS
+// ==========================================
 const formatCoords = (lat, lng) => {
   if (lat == null || lng == null) return "";
   return `Lat: ${Number(lat).toFixed(6)} | Lng: ${Number(lng).toFixed(6)}`;
@@ -32,6 +33,9 @@ export default function RiderChat(props) {
   const router = useRouter();
   const localParams = useLocalSearchParams();
 
+  // ==========================================
+  // INITIALIZATION & LOCAL STATE MANAGEMENT
+  // ==========================================
   const requestId =
     props?.route?.params?.requestId ??
     localParams?.requestId ??
@@ -45,12 +49,15 @@ export default function RiderChat(props) {
   const [requestInfo, setRequestInfo] = useState(null);
   const [confirming, setConfirming] = useState(false);
   const [selectedList, setSelectedList] = useState(null);
-  const [selectedListOwnerId, setSelectedListOwnerId] = useState(null);
+  const [, setSelectedListOwnerId] = useState(null);
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
 
   const quickMessages = ["Ok", "Done", "Received", "On the way", "Updated", "Yes", "No"];
 
+  // ==========================================
+  // DATA PARSERS & COMPUTED PROPERTIES
+  // ==========================================
   const getQuantity = (item) => item?.quantity || 1;
   const getSpecification = (item) => {
     const spec = item?.specification?.toString().trim();
@@ -141,6 +148,9 @@ export default function RiderChat(props) {
     setTimeout(() => setShowToast(false), 2500);
   };
 
+  // ==========================================
+  // HTTP NETWORK REQUEST SIDE-EFFECTS
+  // ==========================================
   const loadChat = useCallback(async () => {
     if (!requestId) {
       Alert.alert("Error", "Missing request id");
@@ -260,6 +270,9 @@ export default function RiderChat(props) {
     }
   };
 
+  // ==========================================
+  // VIEW SUB-RENDER PATTERNS
+  // ==========================================
   const renderListPreviewItem = (i, index, isMe) => (
     <View key={index} style={styles.previewItemBlock}>
       <Text style={[styles.previewCategory, { color: isMe ? "#bae6fd" : "#1e40af" }]}>{getCategory(i)}</Text>
@@ -335,7 +348,7 @@ export default function RiderChat(props) {
             {item.listData.items?.slice(0, 4).map((i, index) => renderListPreviewItem(i, index, isMine))}
 
             {item.listData.items?.length > 4 && (
-              <Text style={{ color: isMine ? "#bae6fd" : "#64748b", fontSize: 12, marginTop: 6 }}>
+              <Text style={{ color: isMine ? "#bae6fd" : "#64748b", fontSize: 12, marginTop: 6, fontWeight: "500" }}>
                 +{item.listData.items.length - 4} more items
               </Text>
             )}
@@ -386,6 +399,9 @@ export default function RiderChat(props) {
     );
   }
 
+  // ==========================================
+  // MAIN VIEW PORT DESIGN STRUCUTAL ENGINE
+  // ==========================================
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
 
@@ -534,6 +550,9 @@ export default function RiderChat(props) {
   );
 }
 
+// ==========================================
+// CENTRAL DESIGN SHEET REGISTRY
+// ==========================================
 const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#ffffff" },
   header: { height: 85, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
@@ -541,7 +560,7 @@ const styles = StyleSheet.create({
   keyboardContainer: { flex: 1, backgroundColor: "#ffffff" },
   container: { flex: 1 },
   completedBanner: { margin: 10, marginBottom: 0, backgroundColor: "#d1fae5", borderColor: "#6ee7b7", borderWidth: 1, padding: 10, borderRadius: 12, flexDirection: "row", alignItems: "center", justifyContent: "center" },
-  completedText: { color: "#047857", textAlign: "center", fontWeight: "800", marginLeft: 8 },
+  completedText: { color: "#047857", textAlign: "center", fontWeight: "600", marginLeft: 8 },
   messagesList: { padding: 10, paddingBottom: 10 },
   messageContainer: { flexDirection: "row", marginVertical: 6, alignItems: "flex-end" },
   alignRight: { justifyContent: "flex-end" },
@@ -549,58 +568,58 @@ const styles = StyleSheet.create({
   bubble: { maxWidth: "78%", borderRadius: 16, paddingHorizontal: 14, paddingVertical: 10 },
   bubbleMe: { backgroundColor: "#2e4466", borderBottomRightRadius: 4 },
   bubbleOther: { backgroundColor: "#f1f5f9", borderWidth: 1, borderColor: "#cbd5e1", borderBottomLeftRadius: 4 },
-  textMe: { color: "#fff", fontSize: 14, lineHeight: 20 },
+  textMe: { color: "#fff", fontSize: 14, lineHeight: 20, fontWeight: "500" },
   textOther: { color: "#0f172a", fontSize: 14, lineHeight: 20, fontWeight: "500" },
   listBox: { maxWidth: "86%", borderRadius: 16, padding: 12, elevation: 2 },
   listMe: { backgroundColor: "#2e4466", borderBottomRightRadius: 4 },
   listOther: { backgroundColor: "#fff", borderBottomLeftRadius: 4, borderWidth: 1, borderColor: "#e2e8f0" },
   listHeaderRow: { flexDirection: "row", alignItems: "center", marginBottom: 6 },
-  listTitleMe: { color: "#fff", fontWeight: "800", fontSize: 15, flex: 1 },
-  listTitleOther: { color: "#1e3a8a", fontWeight: "800", fontSize: 15, flex: 1 },
+  listTitleMe: { color: "#fff", fontWeight: "600", fontSize: 15, flex: 1 },
+  listTitleOther: { color: "#1e3a8a", fontWeight: "600", fontSize: 15, flex: 1 },
   optimizeIconBtn: { width: 32, height: 32, borderRadius: 16, alignItems: "center", justifyContent: "center", marginLeft: 8 },
   previewItemBlock: { marginTop: 5 },
   previewItemNameRow: { flexDirection: "row", alignItems: "center" },
   previewDoneText: { textDecorationLine: "line-through", opacity: 0.85 },
   previewLocationBlock: { marginTop: 6 },
-  previewLocationTitle: { fontSize: 12, fontWeight: "900", marginBottom: 1 },
-  previewCategory: { fontSize: 12, fontWeight: "800", marginBottom: 2 },
-  listItemMe: { color: "#fff", fontSize: 13, fontWeight: "700" },
-  listItemOther: { color: "#334155", fontSize: 13, fontWeight: "700" },
-  previewMeta: { fontSize: 12, marginTop: 2, lineHeight: 17 },
-  previewTotal: { fontSize: 12, marginTop: 6, fontWeight: "900" },
+  previewLocationTitle: { fontSize: 12, fontWeight: "600", marginBottom: 1 },
+  previewCategory: { fontSize: 12, fontWeight: "600", marginBottom: 2 },
+  listItemMe: { color: "#fff", fontSize: 13, fontWeight: "600" },
+  listItemOther: { color: "#334155", fontSize: 13, fontWeight: "600" },
+  previewMeta: { fontSize: 12, marginTop: 2, lineHeight: 17, fontWeight: "500" },
+  previewTotal: { fontSize: 12, marginTop: 6, fontWeight: "700" },
   tapOpenRow: { marginTop: 10, paddingTop: 8, borderTopWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   confirmBox: { marginTop: 10, backgroundColor: "#ecfdf5", borderRadius: 10, paddingVertical: 9, paddingHorizontal: 10, borderWidth: 1, borderColor: "#10b981", flexDirection: "row", alignItems: "center" },
-  confirmBoxText: { color: "#047857", fontWeight: "800", fontSize: 12, marginLeft: 6 },
+  confirmBoxText: { color: "#047857", fontWeight: "600", fontSize: 12, marginLeft: 6 },
   emptyText: { textAlign: "center", marginTop: 20, color: "#94a3b8", fontWeight: "600" },
   quickRow: { paddingHorizontal: 8, paddingVertical: 8, backgroundColor: "#f8fafc", borderTopWidth: 1, borderTopColor: "#e2e8f0" },
   quickBtn: { backgroundColor: "#eef4fe", borderRadius: 16, paddingHorizontal: 14, paddingVertical: 8, marginRight: 8 },
-  quickText: { color: "#2e4466", fontWeight: "700", fontSize: 13 },
+  quickText: { color: "#2e4466", fontWeight: "600", fontSize: 13 },
   inputRow: { flexDirection: "row", alignItems: "center", padding: 12, backgroundColor: "#fff", borderTopWidth: 1, borderTopColor: "#e2e8f0" },
-  input: { flex: 1, backgroundColor: "#f1f5f9", borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10, color: "#1e293b", fontSize: 15 },
+  input: { flex: 1, backgroundColor: "#f1f5f9", borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10, color: "#1e293b", fontSize: 15, fontWeight: "500" },
   sendBtn: { paddingVertical: 6, paddingHorizontal: 4 },
-  send: { color: "#2e4466", fontWeight: "800", marginLeft: 12, fontSize: 15 },
+  send: { color: "#2e4466", fontWeight: "700", marginLeft: 12, fontSize: 15 },
   modalOverlay: { position: "absolute", top: 0, bottom: 0, left: 0, right: 0, backgroundColor: "rgba(15,23,42,0.6)", justifyContent: "center", alignItems: "center", padding: 20 },
   modalBoxLarge: { width: "100%", maxWidth: 470, maxHeight: "85%", backgroundColor: "#fff", borderRadius: 20, padding: 16 },
   modalHeaderRow: { width: "100%", flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
-  modalListTitle: { fontWeight: "800", fontSize: 20, color: "#2e4466", flex: 1, marginRight: 10 },
+  modalListTitle: { fontWeight: "700", fontSize: 20, color: "#2e4466", flex: 1, marginRight: 10 },
   beautifiedDownloadBtn: { flexDirection: "row", alignItems: "center", backgroundColor: "#10b981", borderRadius: 12, paddingHorizontal: 10, paddingVertical: 8 },
-  beautifiedDownloadText: { color: "#fff", fontWeight: "800", fontSize: 12 },
+  beautifiedDownloadText: { color: "#fff", fontWeight: "600", fontSize: 12 },
   locationSummary: { width: "100%", backgroundColor: "#f8fafc", borderRadius: 12, borderWidth: 1, borderColor: "#e2e8f0", padding: 10, marginBottom: 10 },
-  locationTitle: { color: "#2e4466", fontSize: 13, fontWeight: "900" },
-  locationText: { color: "#475569", fontSize: 12, marginTop: 3 },
+  locationTitle: { color: "#2e4466", fontSize: 13, fontWeight: "600" },
+  locationText: { color: "#475569", fontSize: 12, marginTop: 3, fontWeight: "500" },
   modalItemBlock: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#f1f5f9" },
-  modalCategory: { color: "#2e4466", fontSize: 14, fontWeight: "800", marginBottom: 4 },
+  modalCategory: { color: "#2e4466", fontSize: 14, fontWeight: "600", marginBottom: 4 },
   modalItemNameRow: { flexDirection: "row", alignItems: "center" },
-  modalItemName: { color: "#334155", fontSize: 14, fontWeight: "700" },
+  modalItemName: { color: "#334155", fontSize: 14, fontWeight: "600" },
   modalDoneText: { color: "#10b981", textDecorationLine: "line-through", opacity: 0.65 },
-  modalMeta: { color: "#64748b", marginTop: 3, fontSize: 12, lineHeight: 18 },
-  modalShop: { color: "#10b981", marginTop: 3, fontSize: 12, lineHeight: 18, fontWeight: "800" },
-  modalTotal: { color: "#10b981", marginTop: 3, fontSize: 12, fontWeight: "800" },
+  modalMeta: { color: "#64748b", marginTop: 3, fontSize: 12, lineHeight: 18, fontWeight: "500" },
+  modalShop: { color: "#10b981", marginTop: 3, fontSize: 12, lineHeight: 18, fontWeight: "600" },
+  modalTotal: { color: "#10b981", marginTop: 3, fontSize: 12, fontWeight: "600" },
   billRow: { width: "100%", flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingTop: 12, marginTop: 8, borderTopWidth: 1, borderTopColor: "#e2e8f0" },
-  billLabel: { color: "#1e293b", fontSize: 15, fontWeight: "900" },
-  billValue: { color: "#10b981", fontSize: 17, fontWeight: "900" },
+  billLabel: { color: "#1e293b", fontSize: 15, fontWeight: "600" },
+  billValue: { color: "#10b981", fontSize: 17, fontWeight: "700" },
   modalCloseButton: { backgroundColor: "#2e4466", borderRadius: 14, paddingVertical: 12, alignItems: "center", marginTop: 14 },
-  modalCloseButtonText: { color: "#fff", fontWeight: "800", fontSize: 14 },
+  modalCloseButtonText: { color: "#fff", fontWeight: "700", fontSize: 14 },
   warningBox: { position: "absolute", bottom: 30, left: 15, right: 15, backgroundColor: "#e67e22", padding: 14, borderRadius: 14, flexDirection: "row", alignItems: "center", zIndex: 9999 },
-  warningText: { color: "#fff", marginLeft: 10, fontSize: 14, fontWeight: "700", flex: 1 },
+  warningText: { color: "#fff", marginLeft: 10, fontSize: 14, fontWeight: "600", flex: 1 },
 });

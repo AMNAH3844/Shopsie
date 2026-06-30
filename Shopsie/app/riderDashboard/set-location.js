@@ -33,7 +33,7 @@ export default function RiderSetLocation() {
   const webViewRef = useRef(null);
 
   // ==========================================
-  // STATE MANAGEMENT
+  // STATE MANAGEMENT ENTRIES
   // ==========================================
   const [lat, setLat] = useState(DEFAULT_LAT);
   const [lng, setLng] = useState(DEFAULT_LNG);
@@ -46,7 +46,7 @@ export default function RiderSetLocation() {
   const [warning, setWarning] = useState("");
 
   // ==========================================
-  // WARNING TOAST FUNCTION (Orange feedback box)
+  // UTILITY NOTIFICATION HANDLERS
   // ==========================================
   const triggerWarning = (message) => {
     setWarning(message);
@@ -56,7 +56,7 @@ export default function RiderSetLocation() {
   };
 
   // ==========================================
-  // API CALLS (Load saved location configuration)
+  // HTTP REMOTE API DATA INTERACTIONS
   // ==========================================
   const loadLocation = useCallback(async () => {
     try {
@@ -109,7 +109,7 @@ export default function RiderSetLocation() {
   }, [lat, lng]);
 
   // ==========================================
-  // SAVE, GPS, SEARCH HANDLERS
+  // HARDWARE PERMISSION AND LOCATION HANDLERS
   // ==========================================
   const saveLocation = async (nextOnline = isLocationOn) => {
     try {
@@ -279,11 +279,13 @@ export default function RiderSetLocation() {
     );
   }
 
+  // ==========================================
+  // ROOT UI SCREEN PRESENTATION ENGINE
+  // ==========================================
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <View style={styles.container}>
         
-        {/* TOP HEADER - Exact identical structure and style matching History */}
         <LinearGradient colors={["#eef4fe", "#2e4466"]} start={{ x: 1, y: 0 }} end={{ x: 0, y: 0 }} style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="chevron-back" size={28} color="#eef4fe" />
@@ -292,7 +294,6 @@ export default function RiderSetLocation() {
           <View style={{ width: 28 }} />
         </LinearGradient>
 
-        {/* MAIN CONTROLS & WEB CONTAINER */}
         <KeyboardAvoidingView 
           behavior={Platform.OS === "ios" ? "padding" : "height"} 
           style={{ flex: 1 }}
@@ -314,6 +315,7 @@ export default function RiderSetLocation() {
                 placeholder="Search location"
                 style={styles.input}
                 placeholderTextColor="#94a3b8"
+                color="#334155"
               />
               <TouchableOpacity style={styles.iconBtn} onPress={searchLocation}>
                 <Ionicons name="search" size={20} color="#fff" />
@@ -374,7 +376,6 @@ export default function RiderSetLocation() {
           </ScrollView>
         </KeyboardAvoidingView>
 
-        {/* ORANGE WARNING TOAST */}
         {!!warning && (
           <View style={styles.warningBox}>
             <Ionicons name="warning" size={20} color="#fff" />
@@ -382,7 +383,6 @@ export default function RiderSetLocation() {
           </View>
         )}
 
-        {/* BOTTOM NAVIGATION BAR - Exact identical structure matching History */}
         <View style={styles.bottomNav}>
           <TouchableOpacity
             style={styles.tabItem}
@@ -415,13 +415,13 @@ export default function RiderSetLocation() {
 }
 
 // ==========================================
-// CSS STYLES (Synchronized with History page specs)
+// CENTRAL DESIGN LAYOUT REGISTRY
 // ==========================================
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8fafc" },
   centered: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#f8fafc" },
   header: { height: 85, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  headerTitle: { flex: 1, color: "#2e4466", fontSize: 22, fontWeight: "800", textAlign: "center" },
+  headerTitle: { flex: 1, color: "#2e4466", fontSize: 22, fontWeight: "700", textAlign: "center" },
   scrollBody: { padding: 16, paddingBottom: 100 },
   successBox: { backgroundColor: "#d1fae5", padding: 10, borderRadius: 10, marginBottom: 12 },
   successText: { color: "#065f46", fontWeight: "700", textAlign: "center" },
@@ -466,7 +466,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#e2e8f0",
   },
-  toggleTitle: { fontWeight: "800", color: "#1e293b", fontSize: 14 },
+  toggleTitle: { fontWeight: "700", color: "#1e293b", fontSize: 14 },
   toggleSub: { color: "#64748b", fontSize: 12, marginTop: 2 },
   saveBtn: {
     marginTop: 14,

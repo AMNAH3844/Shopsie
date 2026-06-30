@@ -19,6 +19,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 
+// ==========================================
+// CONFIGURATION & CONSTANTS
+// ==========================================
 const methodOptions = [
   { label: "Wallet", value: "wallet" },
   { label: "Bank", value: "bank" },
@@ -27,6 +30,10 @@ const methodOptions = [
 
 export default function RiderAccountDetails() {
   const router = useRouter();
+  
+  // ==========================================
+  // STATE MANAGEMENT
+  // ==========================================
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dailyCashLimit, setDailyCashLimit] = useState("");
@@ -37,8 +44,14 @@ export default function RiderAccountDetails() {
   const [providers, setProviders] = useState([]);
   const [providerSearch, setProviderSearch] = useState("");
 
+  // ==========================================
+  // UTILITY & SANITIZATION FUNCTIONS
+  // ==========================================
   const digitsOnly = (value) => value.replace(/\D/g, "");
 
+  // ==========================================
+  // DATA FETCHING HOOKS & ACTIONS
+  // ==========================================
   const loadAccount = useCallback(async () => {
     try {
       const token = await AsyncStorage.getItem("token");
@@ -90,6 +103,9 @@ export default function RiderAccountDetails() {
     loadProviders();
   }, [loadProviders]);
 
+  // ==========================================
+  // PERSISTENCE / MUTATION HANDLING
+  // ==========================================
   const saveDetails = async () => {
     if (dailyCashLimit && !/^\d+$/.test(dailyCashLimit)) {
       Alert.alert("Error", "Daily cash limit must contain digits only.");
@@ -138,6 +154,9 @@ export default function RiderAccountDetails() {
 
   const accountLabel = paymentMethodType === "wallet" ? "Mobile Wallet Number" : paymentMethodType === "bank" ? "Account Number" : "Card/Account Number";
 
+  // ==========================================
+  // CONDITIONAL INITIAL LOADING RENDER
+  // ==========================================
   if (loading) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -148,6 +167,9 @@ export default function RiderAccountDetails() {
     );
   }
 
+  // ==========================================
+  // MAIN COMPONENT LAYOUT UI
+  // ==========================================
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <View style={styles.mainContainer}>
@@ -328,36 +350,45 @@ export default function RiderAccountDetails() {
   );
 }
 
+// ==========================================
+// STYLESHEET REGISTRY
+// ==========================================
 const styles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: "#F8FAFC" },
   center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#F8FAFC" },
   header: { height: 85, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  headerTitle: { flex: 1, textAlign: "center", fontSize: 22, fontWeight: "800", color: "#2e4466" },
+  
+  // Headings use 700
+  headerTitle: { flex: 1, textAlign: "center", fontSize: 22, fontWeight: "700", color: "#2e4466" },
+  sectionHeading: { fontSize: 16, fontWeight: "700", color: "#1E293B", marginTop: 20, marginBottom: 8 },
+  summaryTitle: { color: "#2e4466", fontSize: 15, fontWeight: "700", marginLeft: 8 },
+  
   content: { paddingHorizontal: 20, paddingBottom: 110 },
-  sectionHeading: { fontSize: 16, fontWeight: "800", color: "#1E293B", marginTop: 20, marginBottom: 8 },
   card: { backgroundColor: "#FFFFFF", borderRadius: 16, padding: 16, borderWidth: 1, borderColor: "#E2E8F0", elevation: 2 },
   footerCard: { backgroundColor: "#FFFFFF", borderRadius: 16, padding: 16, borderWidth: 1, borderColor: "#E2E8F0", elevation: 2, marginTop: 10 },
-  label: { fontSize: 12, fontWeight: "800", color: "#475569", marginBottom: 7, textTransform: "uppercase" },
+  
+  // Custom non-headings standardized to 600 or 500
+  label: { fontSize: 12, fontWeight: "600", color: "#475569", marginBottom: 7, textTransform: "uppercase" },
   inputWrapper: { flexDirection: "row", alignItems: "center", borderWidth: 1.5, borderColor: "#CBD5E1", borderRadius: 12, paddingHorizontal: 12, height: 48, backgroundColor: "#FFFFFF", marginBottom: 14 },
   inputIcon: { marginRight: 8 },
-  input: { flex: 1, height: "100%", color: "#0F172A", fontSize: 15, ...Platform.select({ web: { outlineStyle: "none" } }) },
+  input: { flex: 1, height: "100%", color: "#0F172A", fontSize: 15, fontWeight: "500", ...Platform.select({ web: { outlineStyle: "none" } }) },
   segmentRow: { flexDirection: "row", gap: 8, marginBottom: 14 },
   segmentBtn: { flex: 1, height: 42, borderRadius: 12, borderWidth: 1, borderColor: "#CBD5E1", alignItems: "center", justifyContent: "center", backgroundColor: "#F8FAFC" },
   segmentBtnActive: { backgroundColor: "#2e4466", borderColor: "#2e4466" },
-  segmentText: { color: "#475569", fontWeight: "800" },
+  segmentText: { color: "#475569", fontWeight: "600" },
   segmentTextActive: { color: "#FFFFFF" },
   providerRow: { flexDirection: "row", alignItems: "center", backgroundColor: "#FFFFFF", borderRadius: 12, padding: 12, marginTop: 8, borderWidth: 1, borderColor: "#E2E8F0" },
   providerRowActive: { backgroundColor: "#ECFDF5", borderColor: "#10B981" },
-  providerText: { marginLeft: 8, color: "#334155", fontWeight: "700" },
+  providerText: { marginLeft: 8, color: "#334155", fontWeight: "600" },
   providerTextActive: { color: "#047857" },
   saveBtn: { height: 50, borderRadius: 14, backgroundColor: "#22C55E", alignItems: "center", justifyContent: "center", marginTop: 8 },
-  saveText: { color: "#FFFFFF", fontWeight: "900", fontSize: 15 },
+  saveText: { color: "#FFFFFF", fontWeight: "600", fontSize: 15 },
   summaryCard: { marginTop: 16, backgroundColor: "#F8FAFC", borderRadius: 14, borderWidth: 1, borderColor: "#CBD5E1", padding: 14 },
   summaryHeader: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
-  summaryTitle: { color: "#2e4466", fontSize: 15, fontWeight: "900", marginLeft: 8 },
   summaryRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 7, borderTopWidth: 1, borderTopColor: "#E2E8F0" },
-  summaryLabel: { color: "#64748B", fontSize: 12, fontWeight: "800", flex: 1 },
-  summaryValue: { color: "#0F172A", fontSize: 13, fontWeight: "900", flex: 1, textAlign: "right" },
+  summaryLabel: { color: "#64748B", fontSize: 12, fontWeight: "500", flex: 1 },
+  summaryValue: { color: "#0F172A", fontSize: 13, fontWeight: "600", flex: 1, textAlign: "right" },
+  
   bottomNav: {
     position: "absolute",
     left: 0,

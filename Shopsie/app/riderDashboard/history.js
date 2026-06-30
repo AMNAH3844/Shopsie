@@ -18,37 +18,33 @@ export default function RiderHistory() {
   const [loading, setLoading] = useState(true);
 
   // ==========================================
-  // API CALLS (Fetch data from backend)
+  // DATA FETCHING & API COMMUNICATIONS
   // ==========================================
   const loadHistory = useCallback(async () => {
     try {
-      // Retrieve the authentication token from storage
       const token = await AsyncStorage.getItem("token");
       
-      // Make an authorized GET request to the history endpoint
       const res = await axios.get(API_URLS.RIDER_HISTORY, { 
         headers: { Authorization: `Bearer ${token}` } 
       });
       
-      // Fallback to empty array if response data isn't a valid array
       setHistory(Array.isArray(res.data) ? res.data : []);
     } catch (e) {
       console.log("Rider history error:", e.message);
     } finally {
-      // Hide active loader
       setLoading(false);
     }
   }, []);
 
   // ==========================================
-  // SCREEN FOCUS TRIGGER (Auto-reload data)
+  // SCREEN FOCUS TRIGGER HOOKS
   // ==========================================
   useFocusEffect(useCallback(() => { 
     loadHistory(); 
   }, [loadHistory]));
 
   // ==========================================
-  // UI LAYOUT
+  // MAIN COMPONENT LAYOUT UI
   // ==========================================
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -73,6 +69,8 @@ export default function RiderHistory() {
             contentContainerStyle={styles.list}
             ListEmptyComponent={<Text style={styles.empty}>No completed deliveries yet.</Text>}
             renderItem={({ item }) => (
+              
+              /* HISTORY LIST CARD */
               <View style={styles.card}>
                 <Text style={styles.title}>{item.listName}</Text>
                 <Text style={styles.meta}>Customer: {item.customer?.username || "Customer"}</Text>
@@ -85,7 +83,7 @@ export default function RiderHistory() {
           />
         )}
 
-        {/* BOTTOM NAVIGATION BAR */}
+        {/* FIXED BOTTOM NAVIGATION BAR */}
         <View style={styles.bottomNav}>
           <TouchableOpacity
             style={styles.tabItem}
@@ -96,12 +94,12 @@ export default function RiderHistory() {
           </TouchableOpacity>
 
           <TouchableOpacity
-                      style={styles.tabItem}
-                      onPress={() => router.push("/riderDashboard/history")}
-                    >
-                      <Ionicons name="time-outline" size={22} color="white" />
-                      <Text style={styles.navText}>History</Text>
-                    </TouchableOpacity>
+            style={styles.tabItem}
+            onPress={() => router.push("/riderDashboard/history")}
+          >
+            <Ionicons name="time-outline" size={22} color="white" />
+            <Text style={styles.navText}>History</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.tabItem}
@@ -118,26 +116,32 @@ export default function RiderHistory() {
 }
 
 // ==========================================
-// CSS STYLES (Colors, shapes and layout formatting)
+// STYLESHEET REGISTRY
 // ==========================================
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8fafc" },
   header: { height: 85, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  headerTitle: { flex: 1, color: "#2e4466", fontSize: 22, fontWeight: "800", textAlign: "center" }, // Remained original dark blue
+  
+  // Primary Heading weight normalized to 700
+  headerTitle: { flex: 1, color: "#2e4466", fontSize: 22, fontWeight: "700", textAlign: "center" },
+  
   list: {
     padding: 16,
-    paddingBottom: 90, // Keeps cards from flowing behind the navigation bar
+    paddingBottom: 90,
   },
   card: { backgroundColor: "#fff", borderRadius: 16, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: "#e2e8f0" },
-  title: { color: "#1e293b", fontSize: 17, fontWeight: "900" },
-  meta: { color: "#64748b", fontSize: 12, marginTop: 4 },
-  empty: { textAlign: "center", marginTop: 50, color: "#94a3b8", fontWeight: "700" },
+  
+  // Core text styles re-weighted for clean look (600 and 500 instead of 800/900)
+  title: { color: "#1e293b", fontSize: 17, fontWeight: "600" },
+  meta: { color: "#64748b", fontSize: 12, marginTop: 4, fontWeight: "500" },
+  empty: { textAlign: "center", marginTop: 50, color: "#94a3b8", fontWeight: "600" },
+  
   bottomNav: {
     position: "absolute",
     left: 0,
     right: 0,
     bottom: 0,
-    height: 75, // Matching fixed height from Downloads container
+    height: 75,
     backgroundColor: "#2e4466",
     flexDirection: "row",
     justifyContent: "space-around",

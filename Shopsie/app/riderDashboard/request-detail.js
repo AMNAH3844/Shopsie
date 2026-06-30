@@ -13,7 +13,7 @@ export default function RiderRequestDetail() {
   const { requestId } = useLocalSearchParams();
   
   // ==========================================
-  // STATE MANAGEMENT (Variables to save data)
+  // STATE MANAGEMENT ENTRIES
   // ==========================================
   const [request, setRequest] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -21,12 +21,11 @@ export default function RiderRequestDetail() {
   const [showWarningBox, setShowWarningBox] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
-  // --- Confirmation Modal States ---
   const [modalVisible, setModalVisible] = useState(false);
-  const [pendingAction, setPendingAction] = useState(null); // Tracks "accept" or "reject"
+  const [pendingAction, setPendingAction] = useState(null); 
 
   // ==========================================
-  // WARNING TOAST FUNCTION (Show orange box)
+  // UTILITY NOTIFICATION HANDLERS
   // ==========================================
   const triggerWarning = (message) => {
     setToastMessage(message);
@@ -37,7 +36,7 @@ export default function RiderRequestDetail() {
   };
 
   // ==========================================
-  // API CALLS (Get data and update backend)
+  // HTTP REMOTE API DATA INTERACTIONS
   // ==========================================
   const loadDetail = useCallback(async () => {
     try {
@@ -53,18 +52,13 @@ export default function RiderRequestDetail() {
     }
   }, [requestId]);
 
-  // ==========================================
-  // SCREEN FOCUS TRIGGER (Auto reload data)
-  // ==========================================
   useFocusEffect(useCallback(() => { loadDetail(); }, [loadDetail]));
 
-  // --- Opens the confirmation modal overlay ---
   const confirmAction = (action) => {
     setPendingAction(action);
     setModalVisible(true);
   };
 
-  // --- Executes the action after confirming ---
   const handleConfirmSubmit = async () => {
     setModalVisible(false);
     const action = pendingAction;
@@ -80,7 +74,6 @@ export default function RiderRequestDetail() {
       
       if (action === "accept") {
         triggerWarning("You accepted this request!");
-        // Small delay so they can see your beautiful orange warning message before routing
         setTimeout(() => {
           router.replace({ pathname: "/riderDashboard/request-chat", params: { requestId } });
         }, 1500);
@@ -107,13 +100,12 @@ export default function RiderRequestDetail() {
   );
 
   // ==========================================
-  // UI LAYOUT (What the user sees)
+  // ROOT UI SCREEN PRESENTATION ENGINE
   // ==========================================
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <View style={styles.container}>
         
-        {/* TOP HEADER */}
         <LinearGradient colors={["#eef4fe", "#2e4466"]} start={{ x: 1, y: 0 }} end={{ x: 0, y: 0 }} style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="chevron-back" size={28} color="#eef4fe" />
@@ -159,7 +151,6 @@ export default function RiderRequestDetail() {
           )}
         </ScrollView>
 
-        {/* CUSTOM CONFIRMATION ACTION MODAL */}
         <Modal
           animationType="fade"
           transparent={true}
@@ -185,7 +176,6 @@ export default function RiderRequestDetail() {
           </View>
         </Modal>
 
-        {/* ORANGE WARNING TOAST */}
         {showWarningBox && (
           <View style={styles.warningBox}>
             <Ionicons name="alert-circle-outline" size={20} color="#fff" />
@@ -193,7 +183,6 @@ export default function RiderRequestDetail() {
           </View>
         )}
 
-        {/* BOTTOM NAVIGATION BAR */}
         <View style={styles.bottomNav}>
           <TouchableOpacity style={styles.tabItem} onPress={() => router.replace("/riderDashboard")}>
             <Ionicons name="home" size={22} color="white" />
@@ -216,7 +205,7 @@ export default function RiderRequestDetail() {
 }
 
 // ==========================================
-// CSS STYLES (Colors, shapes and spacing)
+// CENTRAL DESIGN LAYOUT REGISTRY
 // ==========================================
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8fafc" },
@@ -311,8 +300,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "500",
   },
-  
-  // --- New Custom Confirmation Modal Styles ---
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",

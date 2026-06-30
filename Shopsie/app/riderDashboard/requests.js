@@ -21,19 +21,18 @@ export default function RiderRequests() {
   const router = useRouter();
   
   // ==========================================
-  // STATE MANAGEMENT (Variables to save data)
+  // STATE MANAGEMENT ENTRIES
   // ==========================================
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [warning, setWarning] = useState("");
 
-  // --- Confirmation Modal States ---
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedRequestId, setSelectedRequestId] = useState(null);
 
   // ==========================================
-  // WARNING TOAST FUNCTION (Show orange box)
+  // UTILITY NOTIFICATION HANDLERS
   // ==========================================
   const triggerWarning = (message) => {
     setWarning(message);
@@ -43,7 +42,7 @@ export default function RiderRequests() {
   };
 
   // ==========================================
-  // API CALLS (Get data and update backend)
+  // HTTP REMOTE API DATA INTERACTIONS
   // ==========================================
   const loadRequests = useCallback(async () => {
     try {
@@ -70,9 +69,6 @@ export default function RiderRequests() {
     }
   }, []);
 
-  // ==========================================
-  // SCREEN FOCUS TRIGGER (Auto reload data)
-  // ==========================================
   useFocusEffect(
     useCallback(() => {
       loadRequests();
@@ -106,13 +102,11 @@ export default function RiderRequests() {
     });
   };
 
-  // --- Trigger the delete modal target ---
   const promptDelete = (id) => {
     setSelectedRequestId(id);
     setModalVisible(true);
   };
 
-  // --- Confirms target deletion inside the modal ---
   const handleConfirmDelete = () => {
     setModalVisible(false);
     if (selectedRequestId) {
@@ -162,13 +156,12 @@ export default function RiderRequests() {
   );
 
   // ==========================================
-  // UI LAYOUT (What the user sees)
+  // ROOT UI SCREEN PRESENTATION ENGINE
   // ==========================================
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <View style={styles.container}>
         
-        {/* TOP HEADER */}
         <LinearGradient
           colors={["#eef4fe", "#2e4466"]}
           start={{ x: 1, y: 0 }}
@@ -205,7 +198,6 @@ export default function RiderRequests() {
           />
         )}
 
-        {/* CUSTOM DELETION CONFIRMATION MODAL */}
         <Modal
           animationType="fade"
           transparent={true}
@@ -231,7 +223,6 @@ export default function RiderRequests() {
           </View>
         </Modal>
 
-        {/* ORANGE WARNING TOAST */}
         {!!warning && (
           <View style={styles.warningBox}>
             <Ionicons name="warning" size={20} color="#fff" />
@@ -239,7 +230,6 @@ export default function RiderRequests() {
           </View>
         )}
 
-        {/* BOTTOM NAVIGATION BAR */}
         <View style={styles.bottomNav}>
           <TouchableOpacity
             style={styles.tabItem}
@@ -271,7 +261,7 @@ export default function RiderRequests() {
 }
 
 // ==========================================
-// CSS STYLES (Colors, shapes and spacing)
+// CENTRAL DESIGN LAYOUT REGISTRY
 // ==========================================
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8fafc" },
@@ -286,7 +276,7 @@ const styles = StyleSheet.create({
     flex: 1,
     color: "#2e4466",
     fontSize: 22,
-    fontWeight: "800",
+    fontWeight: "700",
     textAlign: "center",
   },
   list: { padding: 16, paddingBottom: 90 },
@@ -299,19 +289,19 @@ const styles = StyleSheet.create({
     borderColor: "#e2e8f0",
   },
   row: { flexDirection: "row" },
-  title: { fontSize: 16, fontWeight: "900", color: "#1e293b" },
+  title: { fontSize: 16, fontWeight: "700", color: "#1e293b" },
   meta: { fontSize: 12, color: "#64748b", marginTop: 4 },
   location: { fontSize: 12, color: "#334155", marginTop: 4 },
   status: {
     color: "#2e4466",
-    fontWeight: "900",
+    fontWeight: "700",
     fontSize: 12,
   },
   empty: {
     textAlign: "center",
     marginTop: 50,
     color: "#94a3b8",
-    fontWeight: "700",
+    fontWeight: "600",
   },
   expiredStatus: { color: "#ef4444" },
   warningBox: {
@@ -327,11 +317,11 @@ const styles = StyleSheet.create({
     zIndex: 9999,
     elevation: 6,
   },
-  warningText: { color: '#fff', marginLeft: 10, fontSize: 14, fontWeight: '600', flex: 1 },
+  warningText: { color: '#fff', marginLeft: 10, fontSize: 14, fontWeight: '500', flex: 1 },
   deleteText: {
     color: "#fff",
     marginLeft: 8,
-    fontWeight: "800",
+    fontWeight: "600",
     fontSize: 14,
   },
   deleteBtn: {
@@ -371,8 +361,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "500",
   },
-
-  // --- Custom Confirmation Modal Styles ---
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -389,7 +377,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: "900",
+    fontWeight: "700",
     color: "#1e293b",
     marginBottom: 8,
   },
@@ -422,10 +410,10 @@ const styles = StyleSheet.create({
   },
   modalCancelText: {
     color: "#64748b",
-    fontWeight: "700",
+    fontWeight: "600",
   },
   modalConfirmText: {
     color: "#fff",
-    fontWeight: "700",
+    fontWeight: "600",
   },
 });

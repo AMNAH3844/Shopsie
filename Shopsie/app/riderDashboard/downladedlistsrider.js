@@ -21,7 +21,7 @@ export default function RiderDownloadedLists() {
   const router = useRouter();
 
   // ==========================================
-  // STATE MANAGEMENT (Variables to save data)
+  // STATE MANAGEMENT
   // ==========================================
   const [lists, setLists] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,7 +34,7 @@ export default function RiderDownloadedLists() {
   const [showItemsModal, setShowItemsModal] = useState(false);
 
   // ==========================================
-  // WARNING TOAST FUNCTION (Show orange box)
+  // WARNING TOAST ACTIONS
   // ==========================================
   const triggerWarning = (message) => {
     setWarning(message);
@@ -44,7 +44,7 @@ export default function RiderDownloadedLists() {
   };
 
   // ==========================================
-  // API CALLS (Get data and update backend)
+  // DATA FETCHING & API COMMUNICATIONS
   // ==========================================
   const loadLists = useCallback(async () => {
     try {
@@ -63,7 +63,7 @@ export default function RiderDownloadedLists() {
   }, []);
 
   // ==========================================
-  // SCREEN FOCUS TRIGGER (Auto reload data)
+  // SCREEN FOCUS TRIGGER HOOKS
   // ==========================================
   useFocusEffect(useCallback(() => { loadLists(); }, [loadLists]));
 
@@ -101,7 +101,7 @@ export default function RiderDownloadedLists() {
   };
 
   // ==========================================
-  // UI LAYOUT (What the user sees)
+  // MAIN COMPONENT LAYOUT UI
   // ==========================================
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -125,6 +125,8 @@ export default function RiderDownloadedLists() {
             contentContainerStyle={styles.listContent}
             ListEmptyComponent={<Text style={styles.emptyText}>No lists saved</Text>}
             renderItem={({ item }) => (
+              
+              /* CARD CONTAINER */
               <View style={styles.card}>
                 <View style={styles.cardHeader}>
                   <View style={{ flex: 1, paddingRight: 10 }}>
@@ -153,6 +155,7 @@ export default function RiderDownloadedLists() {
                   {!!item.receiverType && <Text style={styles.summaryPill}>{item.receiverType}</Text>}
                 </View>
 
+                {/* CARD ACTIONS */}
                 <View style={styles.row}>
                   <TouchableOpacity
                     style={styles.openBtn}
@@ -276,7 +279,7 @@ export default function RiderDownloadedLists() {
           </View>
         </Modal>
 
-        {/* ORANGE WARNING TOAST */}
+        {/* ORANGE WARNING TOAST ALERT */}
         {!!warning && (
           <View style={styles.warningBox}>
             <Ionicons name="warning" size={20} color="#fff" />
@@ -284,7 +287,7 @@ export default function RiderDownloadedLists() {
           </View>
         )}
 
-        {/* BOTTOM NAVIGATION BAR */}
+        {/* FIXED BOTTOM NAVIGATION BAR */}
         <View style={styles.bottomNav}>
           <TouchableOpacity
             style={styles.tabItem}
@@ -316,26 +319,33 @@ export default function RiderDownloadedLists() {
 }
 
 // ==========================================
-// CSS STYLES (Colors, shapes and spacing)
+// STYLESHEET REGISTRY
 // ==========================================
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8fafc" },
   header: { height: 85, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  headerTitle: { flex: 1, color: "#2e4466", fontSize: 22, fontWeight: "800", textAlign: "center" },
+  
+  // Headings set to 700
+  headerTitle: { flex: 1, color: "#2e4466", fontSize: 22, fontWeight: "700", textAlign: "center" },
+  title: { fontSize: 20, fontWeight: "700", color: "#2e4466", marginBottom: 10, textAlign: "center" },
+  modalListTitle: { fontWeight: "700", fontSize: 20, color: "#2e4466", flex: 1 },
+  
   listContent: { padding: 16, paddingBottom: 90 },
-  emptyText: { textAlign: "center", color: "#64748b", fontWeight: "800", marginTop: 30 },
+  emptyText: { textAlign: "center", color: "#64748b", fontWeight: "600", marginTop: 30 },
   card: { backgroundColor: "#fff", borderRadius: 18, padding: 18, marginBottom: 14, borderWidth: 1, borderColor: "#e2e8f0", elevation: 2 },
   cardHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
-  cardTitle: { fontSize: 24, fontWeight: "900", color: "#2e4466", flex: 1 },
-  meta: { fontSize: 14, color: "#64748b", fontWeight: "600", marginTop: 2 },
-  summaryRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: "#f1f5f9" },
-  summaryText: { fontSize: 14, color: "#475569", fontWeight: "700" },
-  summaryPill: { backgroundColor: "#eef2f7", color: "#2e4466", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, fontSize: 11, fontWeight: "800", overflow: "hidden" },
+  
+  // Custom structural elements lowered from 800/900 to 600 or 500
+  cardTitle: { fontSize: 22, fontWeight: "600", color: "#2e4466", flex: 1 },
+  meta: { fontSize: 14, color: "#64748b", fontWeight: "500", marginTop: 2 },
+  summaryRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderTopWidth: 1, borderTopColor: "#f1f5f9" },
+  summaryText: { fontSize: 14, color: "#475569", fontWeight: "600" },
+  summaryPill: { backgroundColor: "#eef2f7", color: "#2e4466", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, fontSize: 11, fontWeight: "600", overflow: "hidden" },
   optimizeBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: "#eef4fe", alignItems: "center", justifyContent: "center" },
   row: { flexDirection: "row", gap: 10, marginTop: 14 },
   openBtn: { flex: 1, height: 44, backgroundColor: "#344b73", borderRadius: 12, flexDirection: "row", justifyContent: "center", alignItems: "center" },
   delBtn: { flex: 1, height: 44, backgroundColor: "#ef4444", borderRadius: 12, flexDirection: "row", justifyContent: "center", alignItems: "center" },
-  btnText: { color: "#fff", fontSize: 15, fontWeight: "800", marginLeft: 6 },
+  btnText: { color: "#fff", fontSize: 15, fontWeight: "600", marginLeft: 6 },
   warningBox: {
     position: 'absolute',
     bottom: 90,
@@ -349,7 +359,7 @@ const styles = StyleSheet.create({
     zIndex: 9999,
     elevation: 6,
   },
-  warningText: { color: '#fff', marginLeft: 10, fontSize: 14, fontWeight: '600', flex: 1 },
+  warningText: { color: '#fff', marginLeft: 10, fontSize: 14, fontWeight: '500', flex: 1 },
   bottomNav: {
     position: "absolute",
     left: 0,
@@ -386,7 +396,7 @@ const styles = StyleSheet.create({
   locationTitle: {
     color: "#2e4466",
     fontSize: 14,
-    fontWeight: "800",
+    fontWeight: "600",
     marginBottom: 4,
   },
   locationText: {
@@ -406,13 +416,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     alignItems: "center",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "800",
-    color: "#2e4466",
-    marginBottom: 10,
-    textAlign: "center",
   },
   modalSubtitle: {
     fontSize: 14,
@@ -437,7 +440,7 @@ const styles = StyleSheet.create({
   },
   cancelText: {
     color: "#475569",
-    fontWeight: "800",
+    fontWeight: "600",
   },
   redBtn: {
     flex: 1,
@@ -456,7 +459,7 @@ const styles = StyleSheet.create({
   closeX: {
     fontSize: 22,
     color: "#94a3b8",
-    fontWeight: "800",
+    fontWeight: "600",
   },
   modalBoxLarge: {
     width: "100%",
@@ -473,12 +476,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 12,
   },
-  modalListTitle: {
-    fontWeight: "800",
-    fontSize: 20,
-    color: "#2e4466",
-    flex: 1,
-  },
   modalItemBlock: {
     paddingVertical: 10,
     borderBottomWidth: 1,
@@ -487,12 +484,12 @@ const styles = StyleSheet.create({
   modalCategory: {
     color: "#2e4466",
     fontSize: 14,
-    fontWeight: "800",
+    fontWeight: "600",
   },
   modalItemName: {
     color: "#334155",
     fontSize: 14,
-    fontWeight: "700",
+    fontWeight: "600",
     marginTop: 4,
   },
   modalMeta: {
@@ -504,13 +501,13 @@ const styles = StyleSheet.create({
     color: "#10b981",
     marginTop: 3,
     fontSize: 12,
-    fontWeight: "800",
+    fontWeight: "600",
   },
   modalTotal: {
     color: "#10b981",
     marginTop: 3,
     fontSize: 12,
-    fontWeight: "800",
+    fontWeight: "600",
   },
   billRow: {
     width: "100%",
@@ -525,12 +522,12 @@ const styles = StyleSheet.create({
   billLabel: {
     color: "#1e293b",
     fontSize: 15,
-    fontWeight: "900",
+    fontWeight: "600",
   },
   billValue: {
     color: "#10b981",
     fontSize: 17,
-    fontWeight: "900",
+    fontWeight: "600",
   },
   modalCloseButton: {
     backgroundColor: "#2e4466",
@@ -541,7 +538,7 @@ const styles = StyleSheet.create({
   },
   modalCloseButtonText: {
     color: "#fff",
-    fontWeight: "800",
+    fontWeight: "600",
     fontSize: 14,
   },
 });

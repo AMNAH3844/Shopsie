@@ -108,11 +108,11 @@ export default function DashboardRider() {
         
         {/* TOP HEADER */}
         <LinearGradient
-          colors={["#eef4fe", "#2e4466"]}
-          start={{ x: 1, y: 0 }}
-          end={{ x: 0, y: 0 }}
-          style={styles.header}
-        >
+  colors={["#eef4fe", "#2e4466"]}
+  start={{ x: 1, y: 0 }}
+  end={{ x: 0, y: 0 }}
+  style={styles.header}
+>
           <Text style={styles.logo}>SHOPSIE</Text>
 
           <View style={styles.icons}>
